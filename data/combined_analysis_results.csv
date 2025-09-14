@@ -1,13 +1,1 @@
-country_code,year,estabilidad_jiang,inestabilidad_turchin,social_polarization,institutional_distrust,neet_ratio,suicide_rate,education_gap,elite_overproduction,wealth_concentration
-ARG,2025,8.54,0.12,0.75,0.85,15.2,10.5,2.1,12.3,45.8
-ARG,2024,9.12,0.09,0.72,0.82,14.8,10.1,2.0,11.9,44.5
-ARG,2023,9.55,0.08,0.70,0.80,14.5,9.8,1.9,11.5,43.2
-AFG,2025,2.10,0.45,0.92,0.95,35.1,18.9,4.5,25.6,68.7
-AFG,2024,2.50,0.40,0.90,0.93,34.5,18.5,4.4,25.1,67.5
-AFG,2023,2.80,0.38,0.88,0.90,33.8,18.1,4.3,24.8,66.9
-USA,2025,7.80,0.18,0.65,0.75,10.3,12.5,1.5,8.9,38.1
-USA,2024,8.10,0.15,0.62,0.73,9.9,12.1,1.4,8.5,37.5
-USA,2023,8.40,0.13,0.60,0.70,9.5,11.8,1.3,8.2,36.9
-ESP,2025,9.25,0.11,0.58,0.65,16.8,8.2,1.8,9.5,41.2
-ESP,2024,9.50,0.09,0.55,0.62,16.5,8.0,1.7,9.1,40.8
-ESP,2023,9.75,0.08,0.53,0.60,16.2,7.8,1.6,8.8,40.1
+country_code,year,month,date,estabilidad_jiang,inestabilidad_turchin,social_polarization,institutional_distrust,neet_ratio,suicide_rate,education_gap,elite_overproduction,wealth_concentration
