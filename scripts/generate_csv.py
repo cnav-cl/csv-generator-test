@@ -258,11 +258,12 @@ class CliodynamicDataProcessor:
             institutional_distrust = (100.0 - trust_percentage) / 100.0
             institutional_distrust = round(max(0.15, min(0.95, institutional_distrust)), 2)
             
-            gini = economic_data.get('gini_coefficient', 0.35)
-            unemployment = economic_data.get('youth_unemployment', 15.0)
-            
-            polarization = 0.4 + (gini * 0.3) + (unemployment / 80)
-            polarization = min(0.8, max(0.3, polarization))
+            gini = economic_data.get('gini_coefficient', 0.40)
+            neet_ratio = economic_data.get('neet_ratio', 15.0)
+
+            # Nueva formula para la polarización social
+            polarization = (gini * 0.6) + (institutional_distrust * 0.7) + (neet_ratio / 100)
+            polarization = min(0.9, max(0.3, polarization)) # Se ajustan los limites para evitar valores extremos
             
             return round(polarization, 2), institutional_distrust
             
