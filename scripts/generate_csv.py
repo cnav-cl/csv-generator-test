@@ -396,7 +396,7 @@ class CliodynamicDataProcessor:
         current_year = datetime.now().year
         
         if test_mode:
-            country_list = ['CHL', 'ARG', 'USA', 'CHN', 'IND', 'ISR']
+            country_list = ['CHL', 'ARG', 'USA', 'CHN', 'CAN', 'ISR']
         else:
             country_list = self.country_codes
         
