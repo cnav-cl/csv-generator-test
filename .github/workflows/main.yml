@@ -1,9 +1,0 @@
-# Descomprimir el archivo que te envié
-tar -xzf github-actions-test.tar.gz
-cd github-actions-test
-
-# Agregar el remote de tu repositorio (reemplaza con tu URL)
-git remote add origin https://github.com/cnav-cl/csv-generator-test.git
-
-# Subir el código
-git push -u origin main
