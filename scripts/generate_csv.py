@@ -267,27 +267,57 @@ class CliodynamicDataProcessor:
         except:
             return 12.0
 
-    def calculate_social_indicators(self, country_code: str, economic_data: Dict) -> Tuple[float, float]:
-        """Calcular indicadores sociales basados en datos económicos"""
-        try:
-            gini = economic_data.get('gini_coefficient', 0.35)
-            unemployment = economic_data.get('youth_unemployment', 15.0)
-            inflation = economic_data.get('inflation_annual', 5.0)
-            
-            # Modelo mejorado de polarización social
-            polarization = 0.3 + (gini * 0.8) + (unemployment / 50) + (inflation / 40)
-            polarization = min(0.95, max(0.3, polarization))
-            
-            # Modelo mejorado de desconfianza institucional
-            distrust = 0.2 + (gini * 0.7) + (unemployment / 60) + (inflation / 35)
-            distrust = min(0.95, max(0.1, distrust))
-            
-            return round(polarization, 2), round(distrust, 2)
-            
-        except Exception as e:
-            print(f"Error calculating social indicators for {country_code}: {e}")
-            return 0.55, 0.45
+   def calculate_social_indicators(self, country_code: str, economic_data: Dict) -> Tuple[float, float]:
+    """Versión simplificada con valores realistas"""
+    try:
+        gini = economic_data.get('gini_coefficient', 0.35)
+        unemployment = economic_data.get('youth_unemployment', 15.0)
+        
+        # Desconfianza institucional base por tipo de país
+        if country_code in ['USA', 'CAN', 'GBR', 'DEU', 'FRA', 'AUS']:
+            distrust_base = 0.45  # Países desarrollados
+        elif country_code in ['BRA', 'ARG', 'MEX', 'COL', 'CHL']:
+            distrust_base = 0.75  # América Latina
+        elif country_code in ['CHN', 'IND', 'IDN', 'VNM']:
+            distrust_base = 0.60  # Asia en desarrollo
+        else:
+            distrust_base = 0.65  # Global promedio
+        
+        # Ajustar con indicadores económicos
+        distrust = distrust_base + (gini * 0.15) + (unemployment / 100)
+        distrust = min(0.85, max(0.3, distrust))
+        
+        # Polarización social
+        polarization = 0.4 + (gini * 0.25) + (unemployment / 80)
+        polarization = min(0.75, max(0.3, polarization))
+        
+        return round(polarization, 2), round(distrust, 2)
+        
+    except:
+        return 0.5, 0.6  # Valores promedio
 
+def get_country_region(self, country_code: str) -> str:
+    """Determinar la región de un país basado en su código"""
+    region_mapping = {
+        'North America': ['USA', 'CAN', 'MEX'],
+        'Europe': ['DEU', 'GBR', 'FRA', 'ITA', 'ESP', 'NLD', 'POL', 'SWE', 'BEL', 
+                  'PRT', 'GRC', 'AUT', 'CHE', 'IRL', 'DNK', 'NOR', 'FIN', 'CZE',
+                  'HUN', 'ROU', 'BGR', 'SRB', 'HRV', 'UKR'],
+        'Asia': ['CHN', 'IND', 'JPN', 'KOR', 'IDN', 'THA', 'PHL', 'MYS', 'SGP',
+                'VNM', 'BGD', 'PAK', 'IRN', 'TUR', 'SAU', 'ARE', 'ISR', 'LKA'],
+        'Latin America': ['BRA', 'ARG', 'COL', 'CHL', 'PER', 'VEN', 'ECU', 'BOL',
+                         'PRY', 'URY', 'GTM', 'DOM', 'CRI', 'PAN', 'SLV', 'HND'],
+        'Africa': ['ZAF', 'NGA', 'EGY', 'KEN', 'GHA', 'DZA', 'MAR', 'TUN', 'SDN',
+                  'ETH', 'TZA', 'UGA', 'MOZ', 'AGO', 'CMR', 'CIV', 'SEN'],
+        'Middle East': ['IRQ', 'JOR', 'LBN', 'QAT', 'KWT', 'OMN', 'YEM']
+    }
+    
+    for region, countries in region_mapping.items():
+        if country_code in countries:
+            return region
+    
+    return 'Global'  # Por defecto
+    
     def calculate_estabilidad_jiang(self, indicators: Dict) -> float:
         """Calcular índice de estabilidad de Jiang"""
         try:
