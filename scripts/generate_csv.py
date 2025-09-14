@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 import requests
 import os
 import time
@@ -8,7 +8,6 @@ from typing import Dict, List, Optional, Tuple
 import json
 import csv
 from dataclasses import dataclass
-from bs4 import BeautifulSoup
 import re
 
 @dataclass
@@ -25,11 +24,6 @@ class CliodynamicDataProcessor:
                 name="World Bank",
                 base_url="https://api.worldbank.org/v2/country/{}/indicator/{}?format=json&per_page=100&date=2015:2024",
                 rate_limit=0.2
-            ),
-            'oecd': DataSource(
-                name="OECD",
-                base_url="https://stats.oecd.org/SDMX-JSON/data/{}/all?startTime=2015&endTime=2024",
-                rate_limit=0.2
             )
         }
 
@@ -40,7 +34,8 @@ class CliodynamicDataProcessor:
             'neet_ratio': [('world_bank', 'SL.UEM.NEET.ZS')],
             'tertiary_education': [('world_bank', 'SE.TER.CUAT.BA.ZS')],
             'gdppc': [('world_bank', 'NY.GDP.PCAP.CD')],
-            'suicide_rate': [('world_bank', 'SH.STA.SUIC.P5')]
+            'suicide_rate': [('world_bank', 'SH.STA.SUIC.P5')],
+            'government_effectiveness': [('world_bank', 'GE.EST')]  # Nuevo indicador
         }
 
         self.country_codes = self.load_all_countries()
@@ -56,7 +51,6 @@ class CliodynamicDataProcessor:
         }
     
     def load_all_countries(self) -> List[str]:
-        """Cargar lista de todos los países"""
         try:
             url = "https://api.worldbank.org/v2/country?format=json&per_page=300"
             response = requests.get(url, timeout=30)
@@ -83,7 +77,6 @@ class CliodynamicDataProcessor:
                    'AGO', 'NGA', 'MOZ', 'GHA', 'MDG', 'COD', 'TCD', 'YEM', 'AFG']
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str) -> Optional[float]:
-        """Obtener datos del Banco Mundial"""
         try:
             url = self.sources['world_bank'].base_url.format(country_code, indicator_code)
             response = requests.get(url, timeout=30)
@@ -104,164 +97,36 @@ class CliodynamicDataProcessor:
             print(f"Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
             return None
 
-    def scrape_trust_data(self, country_code: str) -> Optional[float]:
-        """Web scraping para obtener datos de confianza institucional en tiempo real"""
+    def convert_effectiveness_to_distrust(self, effectiveness: float) -> float:
+        """
+        Convierte el índice de efectividad del Banco Mundial (-2.5 a 2.5)
+        en un valor de desconfianza (0 a 1).
+        """
+        # Se normaliza el rango a 0-1
+        normalized_effectiveness = (effectiveness - (-2.5)) / (2.5 - (-2.5))
+        
+        # Se invierte el valor: mayor efectividad = menor desconfianza
+        distrust = 1.0 - normalized_effectiveness
+        
+        return round(max(0.1, min(0.9, distrust)), 2)
+    
+    def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
+        """Calcula la polarización social y la desconfianza institucional"""
         try:
-            country_name_map = {
-                'ARG': 'argentina', 'BRA': 'brazil', 'MEX': 'mexico', 'CHL': 'chile',
-                'COL': 'colombia', 'PER': 'peru', 'USA': 'united-states', 'CAN': 'canada',
-                'GBR': 'united-kingdom', 'DEU': 'germany', 'FRA': 'france', 'ESP': 'spain',
-                'ITA': 'italy', 'CHN': 'china', 'IND': 'india', 'ZAF': 'south-africa',
-                'RUS': 'russia', 'JPN': 'japan', 'AUS': 'australia', 'TUR': 'turkey', 'ISR': 'israel',
-                'AUT': 'austria', 'BEL': 'belgium'
-            }
+            # Obtiene el dato de efectividad gubernamental
+            gov_effectiveness = all_indicators.get('government_effectiveness')
             
-            country_name = country_name_map.get(country_code)
-            if not country_name:
-                return None
-            
-            trust_data = self.scrape_owid_trust_data(country_name)
-            if trust_data:
-                return trust_data
-            
-            trust_data = self.scrape_news_trust_data(country_name)
-            if trust_data:
-                return trust_data
-            
-            trust_data = self.scrape_survey_data(country_name)
-            
-            return trust_data
-            
-        except Exception as e:
-            print(f"Error scraping trust data for {country_code}: {e}")
-            return None
-
-    def scrape_owid_trust_data(self, country_name: str) -> Optional[float]:
-        """Scraping de Our World in Data para datos de confianza"""
-        try:
-            url = f"https://ourworldindata.org/trust"
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            response = requests.get(url, headers=headers, timeout=15)
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
-                
-                patterns = [
-                    f"{country_name}.*trust.*government.*(\d+)%",
-                    f"trust.*government.*{country_name}.*(\d+)%",
-                    f"{country_name}.*government.*trust.*(\d+)%"
-                ]
-                
-                content = soup.get_text().lower()
-                for pattern in patterns:
-                    match = re.search(pattern, content)
-                    if match:
-                        return float(match.group(1))
-            
-            return None
-            
-        except Exception as e:
-            print(f"Error scraping OWiD: {e}")
-            return None
-
-    def scrape_news_trust_data(self, country_name: str) -> Optional[float]:
-        """Scraping de noticias recientes sobre confianza institucional"""
-        try:
-            search_query = f"{country_name} government trust approval rating percentage"
-            url = f"https://www.google.com/search?q={search_query.replace(' ', '+')}&tbm=nws"
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            response = requests.get(url, headers=headers, timeout=15)
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
-                
-                news_headlines = soup.find_all('div', class_='BNeawe vvjwJb AP7Wnd')
-                for headline in news_headlines[:10]:
-                    text = headline.get_text().lower()
-                    
-                    patterns = [
-                        r'(\d+)%.*trust', r'trust.*(\d+)%',
-                        r'approval.*(\d+)%', r'(\d+)%.*approval',
-                        r'confidence.*(\d+)%', r'(\d+)%.*confidence'
-                    ]
-                    
-                    for pattern in patterns:
-                        matches = re.findall(pattern, text)
-                        if matches:
-                            percentage = float(matches[0])
-                            if 5 <= percentage <= 95:
-                                return percentage
-            
-            return None
-            
-        except Exception as e:
-            print(f"Error scraping news: {e}")
-            return None
-
-    def scrape_survey_data(self, country_name: str) -> Optional[float]:
-        """Scraping de sitios de encuestas internacionales"""
-        try:
-            pew_url = "https://www.pewresearch.org/global/"
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-            
-            response = requests.get(pew_url, headers=headers, timeout=15)
-            if response.status_code == 200:
-                soup = BeautifulSoup(response.content, 'html.parser')
-                content = soup.get_text().lower()
-                
-                pattern = f"{country_name}.*trust.*government.*(\d+)%"
-                match = re.search(pattern, content)
-                if match:
-                    return float(match.group(1))
-            
-            return None
-            
-        except Exception as e:
-            print(f"Error scraping survey data: {e}")
-            return None
-
-    def estimate_from_economic_indicators(self, economic_data: Dict) -> float:
-        """Estimar confianza basado en indicadores económicos cuando no hay datos reales"""
-        try:
-            gini = economic_data.get('gini_coefficient', 0.35)
-            unemployment = economic_data.get('youth_unemployment', 15.0)
-            inflation = economic_data.get('inflation_annual', 5.0)
-            gdp_growth = economic_data.get('gdppc', 10000)
-            
-            trust_estimate = 50.0
-            trust_estimate -= gini * 40
-            trust_estimate -= unemployment / 2
-            trust_estimate -= inflation * 2
-            trust_estimate += (gdp_growth / 1000)
-            
-            return max(5.0, min(85.0, trust_estimate))
-            
-        except:
-            return 45.0
-
-    def calculate_social_indicators(self, country_code: str, economic_data: Dict) -> Tuple[float, float]:
-        """Calcular indicadores sociales con datos REALES obtenidos automáticamente"""
-        try:
-            trust_percentage = self.scrape_trust_data(country_code)
-            
-            if trust_percentage is None:
-                trust_percentage = self.estimate_from_economic_indicators(economic_data)
-                print(f"  Using economic estimate for trust: {trust_percentage}%")
+            # Convierte la efectividad en desconfianza
+            if gov_effectiveness is not None:
+                institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness)
+                print(f"  Using Government Effectiveness index ({gov_effectiveness}) to estimate institutional distrust: {institutional_distrust}")
             else:
-                print(f"  Found real trust data: {trust_percentage}%")
-            
-            institutional_distrust = (100.0 - trust_percentage) / 100.0
-            institutional_distrust = round(max(0.15, min(0.95, institutional_distrust)), 2)
-            
-            gini = economic_data.get('gini_coefficient', 0.40)
-            neet_ratio = economic_data.get('neet_ratio', 15.0)
+                # Usa una estimación si no se encuentra el dato
+                institutional_distrust = 0.5  # Valor por defecto
+                print("  Government Effectiveness data not available, using default value for distrust.")
+
+            gini = all_indicators.get('gini_coefficient', 0.40)
+            neet_ratio = all_indicators.get('neet_ratio', 15.0)
 
             polarization = (gini * 0.6) + (institutional_distrust * 0.7) + (neet_ratio / 100)
             polarization = min(0.9, max(0.3, polarization))
@@ -333,7 +198,8 @@ class CliodynamicDataProcessor:
                 'neet_ratio': 'SL.UEM.NEET.ZS',
                 'tertiary_education': 'SE.TER.CUAT.BA.ZS',
                 'gdppc': 'NY.GDP.PCAP.CD',
-                'suicide_rate': 'SH.STA.SUIC.P5'
+                'suicide_rate': 'SH.STA.SUIC.P5',
+                'government_effectiveness': 'GE.EST' # Nuevo
             }
 
             for indicator, wb_code in indicators_to_fetch.items():
@@ -341,12 +207,11 @@ class CliodynamicDataProcessor:
                 if value is not None:
                     all_indicators[indicator] = value
                 else:
-                    # Usar valores predeterminados para indicadores no encontrados
                     defaults = {
                         'gini_coefficient': 0.40, 'youth_unemployment': 20.0,
                         'inflation_annual': 6.0, 'neet_ratio': 15.0,
                         'tertiary_education': 18.0, 'gdppc': 10000,
-                        'suicide_rate': 10.0
+                        'suicide_rate': 10.0, 'government_effectiveness': -0.25
                     }
                     all_indicators[indicator] = defaults[indicator]
             
