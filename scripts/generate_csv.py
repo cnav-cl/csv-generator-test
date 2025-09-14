@@ -154,6 +154,14 @@ class CliodynamicDataProcessor:
             'suicide_rate': indicators.get('suicide_rate')
         }
 
+        # Aplicar la lógica de las redes sociales
+        social_media_penalty = 0.0
+        if indicators.get('institutional_distrust', 0.0) >= 0.5:
+            social_media_penalty = -0.5
+            print(f"  Significant social media influence detected. Applying {social_media_penalty} penalty.")
+        
+        stability_score += social_media_penalty
+
         for key, value in risk_factors.items():
             if value is not None:
                 thresholds = self.thresholds.get(key)
