@@ -2,9 +2,8 @@ name: Generate Cliodynamic Data
 
 on:
   schedule:
-    # Ejecutar diariamente a las 08:00 UTC
-    - cron: '0 8 * * *'
-  workflow_dispatch:  # Permite ejecución manual
+    - cron: '0 8 * * *'  # Diario a las 08:00 UTC
+  workflow_dispatch:      # Ejecución manual
 
 jobs:
   generate-data:
@@ -28,13 +27,19 @@ jobs:
 
     - name: Generate CSV data
       run: |
-        # Asegurar que el directorio existe
         mkdir -p data
-        # Ejecutar el script de generación
         python scripts/generate_csv.py
 
-    - name: Upload CSV as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: cliodynamic-data-$(date +%Y-%m-%d)
-        path: data/combined_analysis_results.csv
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        
+        # Verificar si hay cambios reales
+        git add data/combined_analysis_results.csv
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Auto-update: Cliodynamic data $(date +'%Y-%m-%d') [skip ci]"
+          git push origin main
+        fi
