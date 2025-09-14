@@ -375,7 +375,7 @@ class CliodynamicDataProcessor:
             print(f"Error processing {country_code}: {e}")
             return None
 
-    def save_to_csv(self, data: List[Dict], filename: str = 'cliodynamic_data.csv'):
+    def save_to_csv(self, data: List[Dict], filename: str = 'data/combined_analysis_results.csv'):
         """Guardar los datos procesados en un archivo CSV."""
         if not data:
             print("No data to save.")
