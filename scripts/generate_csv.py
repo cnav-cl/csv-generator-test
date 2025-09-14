@@ -49,10 +49,10 @@ class CliodynamicDataProcessor:
             'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
             'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
             'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
-            ### CAMBIOS AQUÍ: Puntos de umbral para nuevos indicadores usando proxies existentes ###
-            'wealth_concentration': {'alert': 0.5, 'critical': 0.6, 'points': {'alert': -1.5, 'critical': -3.0}}, # Usa un valor conceptual para Gini
-            'education_gap': {'alert': 0.15, 'critical': 0.25, 'points': {'alert': -1.0, 'critical': -2.5}},
-            'elite_overproduction': {'alert': 0.25, 'critical': 0.35, 'points': {'alert': -1.5, 'critical': -3.0}}
+            ### CAMBIOS AQUÍ: Umbrales ajustados a la nueva escala de 0 a 1 ###
+            'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
+            'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}}
             ### FIN CAMBIOS ###
         }
     
@@ -112,20 +112,18 @@ class CliodynamicDataProcessor:
         distrust = 1.0 - normalized_effectiveness
         return round(max(0.1, min(0.9, distrust)), 2)
     
-    ### CAMBIOS AQUÍ: Nuevas funciones de cálculo que usan proxies ###
+    ### CAMBIOS AQUÍ: Funciones de cálculo que usan proxies normalizados ###
     def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
-        """Calcula los valores de los nuevos indicadores usando proxies."""
-        # Se usa Gini (dividido por 100) como proxy para la concentración de riqueza
-        wealth_concentration = all_indicators.get('gini_coefficient', 0.40) / 100 
+        """Calcula los valores de los nuevos indicadores usando proxies normalizados."""
+        # Se usa Gini normalizado como proxy para la concentración de riqueza
+        wealth_concentration = all_indicators.get('gini_coefficient', 40.0) / 100 
         
-        # Se usa la educación terciaria como proxy para la brecha y sobreproducción
-        # El cálculo es una simulación basada en la idea de que una alta educación
-        # con alto desempleo o baja estabilidad es un problema.
-        tertiary_education = all_indicators.get('tertiary_education', 18.0)
-        youth_unemployment = all_indicators.get('youth_unemployment', 20.0)
+        # Se usan datos de educación y desempleo normalizados para la brecha y sobreproducción
+        tertiary_education = all_indicators.get('tertiary_education', 18.0) / 100
+        youth_unemployment = all_indicators.get('youth_unemployment', 20.0) / 100
         
-        education_gap = (youth_unemployment / 100) * (tertiary_education / 10)
-        elite_overproduction = (tertiary_education / 100) * (youth_unemployment / 10)
+        education_gap = tertiary_education * youth_unemployment
+        elite_overproduction = tertiary_education * youth_unemployment
 
         return wealth_concentration, education_gap, elite_overproduction
     ### FIN CAMBIOS ###
@@ -141,10 +139,12 @@ class CliodynamicDataProcessor:
                 institutional_distrust = 0.5
                 print("  Government Effectiveness data not available, using default value for distrust.")
 
-            gini = all_indicators.get('gini_coefficient', 0.40)
+            # ### CORRECCIÓN AQUÍ: Usar Gini normalizado para la polarización ###
+            gini_normalized = all_indicators.get('gini_coefficient', 40.0) / 100
             neet_ratio = all_indicators.get('neet_ratio', 15.0)
 
-            polarization = (gini * 0.6) + (institutional_distrust * 0.7) + (neet_ratio / 100)
+            # La fórmula original estaba mal. Ajuste a una fórmula más equilibrada.
+            polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio / 100 * 0.2)
             polarization = min(0.9, max(0.3, polarization))
             
             return round(polarization, 2), institutional_distrust
@@ -184,14 +184,29 @@ class CliodynamicDataProcessor:
             if value is not None:
                 thresholds = self.thresholds.get(key)
                 if thresholds:
-                    if value >= thresholds['critical']:
-                        stability_score += thresholds.get('points', {}).get('critical', -2.0)
-                        risk_indicators_status[key] = 'critical'
-                    elif value >= thresholds['alert']:
-                        stability_score += thresholds.get('points', {}).get('alert', -1.0)
-                        risk_indicators_status[key] = 'alert'
+                    # Normalizar los valores antes de la comparación si corresponde
+                    if key in ['gini_coefficient', 'youth_unemployment', 'tertiary_education', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
+                        normalized_value = value
+                        if key in ['gini_coefficient', 'youth_unemployment']:
+                            normalized_value = value / 100
+                        
+                        if normalized_value >= thresholds['critical']:
+                            stability_score += thresholds.get('points', {}).get('critical', -2.0)
+                            risk_indicators_status[key] = 'critical'
+                        elif normalized_value >= thresholds['alert']:
+                            stability_score += thresholds.get('points', {}).get('alert', -1.0)
+                            risk_indicators_status[key] = 'alert'
+                        else:
+                            risk_indicators_status[key] = 'stable'
                     else:
-                        risk_indicators_status[key] = 'stable'
+                        if value >= thresholds['critical']:
+                            stability_score += thresholds.get('points', {}).get('critical', -2.0)
+                            risk_indicators_status[key] = 'critical'
+                        elif value >= thresholds['alert']:
+                            stability_score += thresholds.get('points', {}).get('alert', -1.0)
+                            risk_indicators_status[key] = 'alert'
+                        else:
+                            risk_indicators_status[key] = 'stable'
             else:
                 risk_indicators_status[key] = 'not_available'
         
@@ -234,20 +249,18 @@ class CliodynamicDataProcessor:
                     all_indicators[indicator] = value
                 else:
                     defaults = {
-                        'gini_coefficient': 0.40, 'youth_unemployment': 20.0,
+                        'gini_coefficient': 40.0, 'youth_unemployment': 20.0,
                         'inflation_annual': 6.0, 'neet_ratio': 15.0,
                         'tertiary_education': 18.0, 'gdppc': 10000,
                         'suicide_rate': 10.0, 'government_effectiveness': -0.25
                     }
                     all_indicators[indicator] = defaults[indicator]
             
-            ### CAMBIOS AQUÍ: Llamar a la nueva función de cálculo de proxies ###
             wealth_concentration, education_gap, elite_overproduction = self.calculate_proxies(all_indicators)
             all_indicators['wealth_concentration'] = wealth_concentration
             all_indicators['education_gap'] = education_gap
             all_indicators['elite_overproduction'] = elite_overproduction
-            ### FIN CAMBIOS ###
-
+            
             social_polarization, institutional_distrust = self.calculate_social_indicators(country_code, all_indicators)
             
             all_indicators['social_polarization'] = social_polarization
