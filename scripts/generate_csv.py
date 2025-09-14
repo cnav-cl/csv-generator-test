@@ -420,6 +420,18 @@ class CliodynamicDataProcessor:
             return None
 
     def main(self):
+         # Regenerar completamente el CSV desde cero
+        import os
+        import shutil
+        
+        # Eliminar y recrear el directorio data para empezar fresco
+        data_dir = 'data'
+        if os.path.exists(data_dir):
+            shutil.rmtree(data_dir)
+        os.makedirs(data_dir)
+        
+        print("Starting fresh CSV generation...")
+    
         """Función principal"""
         print("Starting improved cliodynamic data generation...")
         print("Using multiple data sources and fallback estimation methods...")
