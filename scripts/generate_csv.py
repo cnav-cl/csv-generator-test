@@ -39,19 +39,20 @@ class CliodynamicDataProcessor:
             'inflation_annual': [('world_bank', 'FP.CPI.TOTL.ZG')],
             'neet_ratio': [('world_bank', 'SL.UEM.NEET.ZS')],
             'tertiary_education': [('world_bank', 'SE.TER.CUAT.BA.ZS')],
-            'gdppc': [('world_bank', 'NY.GDP.PCAP.CD')]
+            'gdppc': [('world_bank', 'NY.GDP.PCAP.CD')],
+            'suicide_rate': [('world_bank', 'SH.STA.SUIC.P5')]
         }
 
         self.country_codes = self.load_all_countries()
         
-        # Umbrales y penalizaciones actualizados
         self.thresholds = {
             'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.0, 'critical': -2.0}},
             'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}}
+            'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}}
         }
     
     def load_all_countries(self) -> List[str]:
@@ -111,7 +112,8 @@ class CliodynamicDataProcessor:
                 'COL': 'colombia', 'PER': 'peru', 'USA': 'united-states', 'CAN': 'canada',
                 'GBR': 'united-kingdom', 'DEU': 'germany', 'FRA': 'france', 'ESP': 'spain',
                 'ITA': 'italy', 'CHN': 'china', 'IND': 'india', 'ZAF': 'south-africa',
-                'RUS': 'russia', 'JPN': 'japan', 'AUS': 'australia', 'TUR': 'turkey', 'ISR': 'israel'
+                'RUS': 'russia', 'JPN': 'japan', 'AUS': 'australia', 'TUR': 'turkey', 'ISR': 'israel',
+                'AUT': 'austria', 'BEL': 'belgium'
             }
             
             country_name = country_name_map.get(country_code)
@@ -261,9 +263,8 @@ class CliodynamicDataProcessor:
             gini = economic_data.get('gini_coefficient', 0.40)
             neet_ratio = economic_data.get('neet_ratio', 15.0)
 
-            # Nueva formula para la polarización social
             polarization = (gini * 0.6) + (institutional_distrust * 0.7) + (neet_ratio / 100)
-            polarization = min(0.9, max(0.3, polarization)) # Se ajustan los limites para evitar valores extremos
+            polarization = min(0.9, max(0.3, polarization))
             
             return round(polarization, 2), institutional_distrust
             
@@ -271,7 +272,6 @@ class CliodynamicDataProcessor:
             print(f"Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
     
-    # --- Método de cálculo de estabilidad actualizado ---
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         """
         Calcula la puntuación de estabilidad de Jiang y el nivel de riesgo.
@@ -279,7 +279,6 @@ class CliodynamicDataProcessor:
         stability_score = 10.0
         risk_indicators_status = {}
         
-        # Mapeo de indicadores de riesgo
         risk_factors = {
             'neet_ratio': indicators.get('neet_ratio'),
             'gini_coefficient': indicators.get('gini_coefficient'),
@@ -287,25 +286,24 @@ class CliodynamicDataProcessor:
             'inflation_annual': indicators.get('inflation_annual'),
             'social_polarization': indicators.get('social_polarization'),
             'institutional_distrust': indicators.get('institutional_distrust'),
+            'suicide_rate': indicators.get('suicide_rate')
         }
 
-        # Calcular penalizaciones y estado de los indicadores
         for key, value in risk_factors.items():
             if value is not None:
                 thresholds = self.thresholds.get(key)
                 if thresholds:
                     if value >= thresholds['critical']:
-                        stability_score += thresholds['points']['critical']
+                        stability_score += thresholds.get('points', {}).get('critical', -2.0)
                         risk_indicators_status[key] = 'critical'
                     elif value >= thresholds['alert']:
-                        stability_score += thresholds['points']['alert']
+                        stability_score += thresholds.get('points', {}).get('alert', -1.0)
                         risk_indicators_status[key] = 'alert'
                     else:
                         risk_indicators_status[key] = 'stable'
             else:
                 risk_indicators_status[key] = 'not_available'
         
-        # Mapear el score a los nuevos niveles de estabilidad
         if stability_score <= 4.9:
             stability_level = 'critical'
         elif stability_score <= 7.4:
@@ -326,47 +324,37 @@ class CliodynamicDataProcessor:
         try:
             print(f"Processing {country_code} for {year}...")
             
-            economic_data = {}
-            indicators_to_fetch = [
-                'gini_coefficient',
-                'youth_unemployment',
-                'inflation_annual',
-                'neet_ratio',
-                'tertiary_education',
-                'gdppc'
-            ]
-            
-            for indicator in indicators_to_fetch:
-                value = self.fetch_world_bank_data(country_code, self.indicator_sources.get(indicator, [None, None])[0][1])
-                if value is not None:
-                    economic_data[indicator] = value
-                else:
-                    defaults = {
-                        'gini_coefficient': 0.40,
-                        'youth_unemployment': 20.0,
-                        'inflation_annual': 6.0,
-                        'neet_ratio': 15.0,
-                        'tertiary_education': 18.0,
-                        'gdppc': 10000
-                    }
-                    economic_data[indicator] = defaults[indicator]
-            
-            social_polarization, institutional_distrust = self.calculate_social_indicators(country_code, economic_data)
-            
-            all_indicators = {
-                'country_code': country_code,
-                'year': year,
-                'gini_coefficient': economic_data['gini_coefficient'],
-                'youth_unemployment': economic_data['youth_unemployment'],
-                'inflation_annual': economic_data['inflation_annual'],
-                'neet_ratio': economic_data['neet_ratio'],
-                'tertiary_education': economic_data['tertiary_education'],
-                'social_polarization': social_polarization,
-                'institutional_distrust': institutional_distrust,
-                'gdppc': economic_data['gdppc']
+            all_indicators = {'country_code': country_code, 'year': year}
+
+            indicators_to_fetch = {
+                'gini_coefficient': 'SI.POV.GINI',
+                'youth_unemployment': 'SL.UEM.1524.ZS',
+                'inflation_annual': 'FP.CPI.TOTL.ZG',
+                'neet_ratio': 'SL.UEM.NEET.ZS',
+                'tertiary_education': 'SE.TER.CUAT.BA.ZS',
+                'gdppc': 'NY.GDP.PCAP.CD',
+                'suicide_rate': 'SH.STA.SUIC.P5'
             }
 
-            # Llamar a la nueva función
+            for indicator, wb_code in indicators_to_fetch.items():
+                value = self.fetch_world_bank_data(country_code, wb_code)
+                if value is not None:
+                    all_indicators[indicator] = value
+                else:
+                    # Usar valores predeterminados para indicadores no encontrados
+                    defaults = {
+                        'gini_coefficient': 0.40, 'youth_unemployment': 20.0,
+                        'inflation_annual': 6.0, 'neet_ratio': 15.0,
+                        'tertiary_education': 18.0, 'gdppc': 10000,
+                        'suicide_rate': 10.0
+                    }
+                    all_indicators[indicator] = defaults[indicator]
+            
+            social_polarization, institutional_distrust = self.calculate_social_indicators(country_code, all_indicators)
+            
+            all_indicators['social_polarization'] = social_polarization
+            all_indicators['institutional_distrust'] = institutional_distrust
+
             jiang_metrics = self.calculate_jiang_stability(all_indicators)
             
             result = {
@@ -401,7 +389,7 @@ class CliodynamicDataProcessor:
         current_year = datetime.now().year
         
         if test_mode:
-            country_list = ['CHL', 'AUS', 'USA', 'AUT', 'BUL', 'ISR']
+            country_list = ['CHL', 'AUT', 'AUS', 'BEL', 'USA']
         else:
             country_list = self.country_codes
         
@@ -416,5 +404,4 @@ class CliodynamicDataProcessor:
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
     
-    # Cambia 'True' a 'False' para ejecutar en modo normal con todos los países
     processor.main(test_mode=True)
