@@ -44,17 +44,14 @@ class CliodynamicDataProcessor:
 
         self.country_codes = self.load_all_countries()
         
+        # Umbrales y penalizaciones actualizados
         self.thresholds = {
-            'neet_ratio': {'alert': 20.0, 'critical': 25.0},
-            'gini_coefficient': {'alert': 0.40, 'critical': 0.45},
-            'youth_unemployment': {'alert': 25.0, 'critical': 30.0},
-            'inflation_annual': {'alert': 10.0, 'critical': 15.0},
-            'suicide_rate': {'alert': 10.0, 'critical': 15.0},
-            'education_gap': {'alert': 4.0, 'critical': 6.0},
-            'elite_overproduction': {'alert': 15.0, 'critical': 20.0},
-            'wealth_concentration': {'alert': 40.0, 'critical': 50.0},
-            'social_polarization': {'alert': 0.60, 'critical': 0.75},
-            'institutional_distrust': {'alert': 0.30, 'critical': 0.45}
+            'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}}
         }
     
     def load_all_countries(self) -> List[str]:
@@ -273,13 +270,15 @@ class CliodynamicDataProcessor:
             print(f"Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
     
-    def calculate_jiang_risk(self, indicators: Dict) -> Dict:
+    # --- Nuevo método de cálculo para la Alternativa Ajustada ---
+    def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         """
-        Calcula el riesgo de inestabilidad acumulado y el nivel de estabilidad.
+        Calcula la puntuación de estabilidad de Jiang y el nivel de riesgo.
         """
-        risk_score = 0
-        risk_indicators = {}
+        stability_score = 10.0
+        risk_indicators_status = {}
         
+        # Mapeo de indicadores de riesgo
         risk_factors = {
             'neet_ratio': indicators.get('neet_ratio'),
             'gini_coefficient': indicators.get('gini_coefficient'),
@@ -289,34 +288,40 @@ class CliodynamicDataProcessor:
             'institutional_distrust': indicators.get('institutional_distrust'),
         }
 
+        # Calcular penalizaciones y estado de los indicadores
         for key, value in risk_factors.items():
             if value is not None:
                 thresholds = self.thresholds.get(key)
                 if thresholds:
                     if value >= thresholds['critical']:
-                        risk_score += 2
-                        risk_indicators[key] = 'critical'
+                        stability_score += thresholds['points']['critical']
+                        risk_indicators_status[key] = 'critical'
                     elif value >= thresholds['alert']:
-                        risk_score += 1
-                        risk_indicators[key] = 'alert'
+                        stability_score += thresholds['points']['alert']
+                        risk_indicators_status[key] = 'alert'
                     else:
-                        risk_indicators[key] = 'stable'
+                        risk_indicators_status[key] = 'stable'
             else:
-                risk_indicators[key] = 'not_available'
-
-        if risk_score >= 5:
+                risk_indicators_status[key] = 'not_available'
+        
+        # Mapear el score a los niveles de estabilidad
+        if stability_score <= 4.0:
             stability_level = 'critical'
-        elif risk_score >= 3:
+        elif stability_score <= 8.0:
             stability_level = 'alert'
         else:
             stability_level = 'stable'
 
+        final_score = round(max(1.0, min(10.0, stability_score)), 2)
+
         return {
-            'jiang_risk_score': risk_score,
+            'estabilidad_jiang': final_score,
             'stability_level': stability_level,
-            'risk_indicators': risk_indicators
+            'risk_indicators_status': risk_indicators_status
         }
     
+    # ---------------------------------------------------------------------------
+
     def process_country(self, country_code: str, year: int) -> Optional[Dict]:
         """Procesar datos para un país específico"""
         try:
@@ -362,7 +367,8 @@ class CliodynamicDataProcessor:
                 'gdppc': economic_data['gdppc']
             }
 
-            jiang_metrics = self.calculate_jiang_risk(all_indicators)
+            # Llamar a la nueva función
+            jiang_metrics = self.calculate_jiang_stability(all_indicators)
             
             result = {
                 **all_indicators,
