@@ -270,7 +270,7 @@ class CliodynamicDataProcessor:
             print(f"Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
     
-    # --- Nuevo método de cálculo para la Alternativa Ajustada ---
+    # --- Método de cálculo de estabilidad actualizado ---
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         """
         Calcula la puntuación de estabilidad de Jiang y el nivel de riesgo.
@@ -304,10 +304,10 @@ class CliodynamicDataProcessor:
             else:
                 risk_indicators_status[key] = 'not_available'
         
-        # Mapear el score a los niveles de estabilidad
-        if stability_score <= 4.0:
+        # Mapear el score a los nuevos niveles de estabilidad
+        if stability_score <= 4.9:
             stability_level = 'critical'
-        elif stability_score <= 8.0:
+        elif stability_score <= 7.4:
             stability_level = 'alert'
         else:
             stability_level = 'stable'
@@ -320,8 +320,6 @@ class CliodynamicDataProcessor:
             'risk_indicators_status': risk_indicators_status
         }
     
-    # ---------------------------------------------------------------------------
-
     def process_country(self, country_code: str, year: int) -> Optional[Dict]:
         """Procesar datos para un país específico"""
         try:
@@ -402,7 +400,7 @@ class CliodynamicDataProcessor:
         current_year = datetime.now().year
         
         if test_mode:
-            country_list = ['CHL', 'AUS', 'USA', 'CHN', 'AUT', 'ISR']
+            country_list = ['CHL', 'ARG', 'USA', 'CHN', 'CAN', 'ISR']
         else:
             country_list = self.country_codes
         
