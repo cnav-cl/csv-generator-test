@@ -6,6 +6,9 @@ on:
     - cron: '0 0 1 * *'
   workflow_dispatch:  # Permite ejecución manual
 
+permissions:
+  contents: write
+  
 jobs:
   update-csv:
     runs-on: ubuntu-latest
