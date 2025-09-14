@@ -9,6 +9,7 @@ import json
 import csv
 from dataclasses import dataclass
 import re
+import random
 
 @dataclass
 class DataSource:
@@ -35,19 +36,24 @@ class CliodynamicDataProcessor:
             'tertiary_education': [('world_bank', 'SE.TER.CUAT.BA.ZS')],
             'gdppc': [('world_bank', 'NY.GDP.PCAP.CD')],
             'suicide_rate': [('world_bank', 'SH.STA.SUIC.P5')],
-            'government_effectiveness': [('world_bank', 'GE.EST')]  # Nuevo indicador
+            'government_effectiveness': [('world_bank', 'GE.EST')]
         }
-
+        
         self.country_codes = self.load_all_countries()
         
         self.thresholds = {
             'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.0, 'critical': -2.0}},
-            'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
             'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
             'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}}
+            'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            ### CAMBIOS AQUÍ: Puntos de umbral para nuevos indicadores usando proxies existentes ###
+            'wealth_concentration': {'alert': 0.5, 'critical': 0.6, 'points': {'alert': -1.5, 'critical': -3.0}}, # Usa un valor conceptual para Gini
+            'education_gap': {'alert': 0.15, 'critical': 0.25, 'points': {'alert': -1.0, 'critical': -2.5}},
+            'elite_overproduction': {'alert': 0.25, 'critical': 0.35, 'points': {'alert': -1.5, 'critical': -3.0}}
+            ### FIN CAMBIOS ###
         }
     
     def load_all_countries(self) -> List[str]:
@@ -64,7 +70,7 @@ class CliodynamicDataProcessor:
             return sorted(countries)
         except Exception as e:
             print(f"Error loading countries: {e}")
-            return ['USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'FRA', 
+            return ['USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'FRA',
                    'ITA', 'CAN', 'AUS', 'ESP', 'MEX', 'IDN', 'TUR', 'SAU', 'CHE',
                    'NLD', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ARE',
                    'ISR', 'ZAF', 'DNK', 'SGP', 'FIN', 'COL', 'MYS', 'IRL', 'CHL',
@@ -102,27 +108,37 @@ class CliodynamicDataProcessor:
         Convierte el índice de efectividad del Banco Mundial (-2.5 a 2.5)
         en un valor de desconfianza (0 a 1).
         """
-        # Se normaliza el rango a 0-1
         normalized_effectiveness = (effectiveness - (-2.5)) / (2.5 - (-2.5))
-        
-        # Se invierte el valor: mayor efectividad = menor desconfianza
         distrust = 1.0 - normalized_effectiveness
-        
         return round(max(0.1, min(0.9, distrust)), 2)
     
+    ### CAMBIOS AQUÍ: Nuevas funciones de cálculo que usan proxies ###
+    def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
+        """Calcula los valores de los nuevos indicadores usando proxies."""
+        # Se usa Gini (dividido por 100) como proxy para la concentración de riqueza
+        wealth_concentration = all_indicators.get('gini_coefficient', 0.40) / 100 
+        
+        # Se usa la educación terciaria como proxy para la brecha y sobreproducción
+        # El cálculo es una simulación basada en la idea de que una alta educación
+        # con alto desempleo o baja estabilidad es un problema.
+        tertiary_education = all_indicators.get('tertiary_education', 18.0)
+        youth_unemployment = all_indicators.get('youth_unemployment', 20.0)
+        
+        education_gap = (youth_unemployment / 100) * (tertiary_education / 10)
+        elite_overproduction = (tertiary_education / 100) * (youth_unemployment / 10)
+
+        return wealth_concentration, education_gap, elite_overproduction
+    ### FIN CAMBIOS ###
+
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
         """Calcula la polarización social y la desconfianza institucional"""
         try:
-            # Obtiene el dato de efectividad gubernamental
             gov_effectiveness = all_indicators.get('government_effectiveness')
-            
-            # Convierte la efectividad en desconfianza
             if gov_effectiveness is not None:
                 institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness)
                 print(f"  Using Government Effectiveness index ({gov_effectiveness}) to estimate institutional distrust: {institutional_distrust}")
             else:
-                # Usa una estimación si no se encuentra el dato
-                institutional_distrust = 0.5  # Valor por defecto
+                institutional_distrust = 0.5
                 print("  Government Effectiveness data not available, using default value for distrust.")
 
             gini = all_indicators.get('gini_coefficient', 0.40)
@@ -144,6 +160,13 @@ class CliodynamicDataProcessor:
         stability_score = 10.0
         risk_indicators_status = {}
         
+        social_media_penalty = 0.0
+        if indicators.get('institutional_distrust', 0.0) >= 0.5:
+            social_media_penalty = -0.5
+            print(f"  Significant social media influence detected. Applying {social_media_penalty} penalty.")
+        
+        stability_score += social_media_penalty
+
         risk_factors = {
             'neet_ratio': indicators.get('neet_ratio'),
             'gini_coefficient': indicators.get('gini_coefficient'),
@@ -151,16 +174,11 @@ class CliodynamicDataProcessor:
             'inflation_annual': indicators.get('inflation_annual'),
             'social_polarization': indicators.get('social_polarization'),
             'institutional_distrust': indicators.get('institutional_distrust'),
-            'suicide_rate': indicators.get('suicide_rate')
+            'suicide_rate': indicators.get('suicide_rate'),
+            'wealth_concentration': indicators.get('wealth_concentration'),
+            'education_gap': indicators.get('education_gap'),
+            'elite_overproduction': indicators.get('elite_overproduction')
         }
-
-        # Aplicar la lógica de las redes sociales
-        social_media_penalty = 0.0
-        if indicators.get('institutional_distrust', 0.0) >= 0.5:
-            social_media_penalty = -0.5
-            print(f"  Significant social media influence detected. Applying {social_media_penalty} penalty.")
-        
-        stability_score += social_media_penalty
 
         for key, value in risk_factors.items():
             if value is not None:
@@ -207,7 +225,7 @@ class CliodynamicDataProcessor:
                 'tertiary_education': 'SE.TER.CUAT.BA.ZS',
                 'gdppc': 'NY.GDP.PCAP.CD',
                 'suicide_rate': 'SH.STA.SUIC.P5',
-                'government_effectiveness': 'GE.EST' # Nuevo
+                'government_effectiveness': 'GE.EST'
             }
 
             for indicator, wb_code in indicators_to_fetch.items():
@@ -223,6 +241,13 @@ class CliodynamicDataProcessor:
                     }
                     all_indicators[indicator] = defaults[indicator]
             
+            ### CAMBIOS AQUÍ: Llamar a la nueva función de cálculo de proxies ###
+            wealth_concentration, education_gap, elite_overproduction = self.calculate_proxies(all_indicators)
+            all_indicators['wealth_concentration'] = wealth_concentration
+            all_indicators['education_gap'] = education_gap
+            all_indicators['elite_overproduction'] = elite_overproduction
+            ### FIN CAMBIOS ###
+
             social_polarization, institutional_distrust = self.calculate_social_indicators(country_code, all_indicators)
             
             all_indicators['social_polarization'] = social_polarization
@@ -247,11 +272,24 @@ class CliodynamicDataProcessor:
             print("No data to save.")
             return
 
-        keys = data[0].keys()
+        keys = ['country_code', 'year', 'gini_coefficient', 'youth_unemployment', 'inflation_annual', 'neet_ratio',
+                'tertiary_education', 'gdppc', 'suicide_rate', 'government_effectiveness', 'wealth_concentration',
+                'education_gap', 'elite_overproduction', 'social_polarization', 'institutional_distrust',
+                'estabilidad_jiang', 'stability_level', 'risk_indicators_status']
+        
+        clean_data = []
+        for row in data:
+            new_row = {k: row[k] for k in keys if k in row}
+            new_row['risk_indicators_status'] = json.dumps(new_row['risk_indicators_status'])
+            clean_data.append(new_row)
+
+        if not os.path.exists('data'):
+            os.makedirs('data')
+
         with open(filename, 'w', newline='', encoding='utf-8') as output_file:
-            dict_writer = csv.DictWriter(output_file, keys)
+            dict_writer = csv.DictWriter(output_file, fieldnames=keys)
             dict_writer.writeheader()
-            dict_writer.writerows(data)
+            dict_writer.writerows(clean_data)
         print(f"Data successfully saved to {filename}")
 
     def main(self, test_mode: bool = False):
