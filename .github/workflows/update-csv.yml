@@ -2,8 +2,9 @@ name: Update Cliodynamic Data Monthly
 
 on:
   schedule:
+    # Ejecutar el primer día de cada mes a las 00:00 UTC
     - cron: '0 0 1 * *'
-  workflow_dispatch:
+  workflow_dispatch:  # Permite ejecución manual
 
 jobs:
   update-csv:
@@ -13,6 +14,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -21,17 +24,12 @@ jobs:
 
     - name: Install dependencies
       run: |
+        python -m pip install --upgrade pip
         pip install pandas numpy requests
 
-    - name: Generate new CSV
+    - name: Run cliodynamic data processor
       run: |
         python scripts/generate_csv.py
-
-    - name: Upload CSV as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: cliodynamic-data
-        path: data/combined_analysis_results.csv
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v5
@@ -40,5 +38,6 @@ jobs:
         commit-message: "Auto-update: Cliodynamic data $(date +'%Y-%m-%d')"
         title: "Monthly Cliodynamic Data Update"
         body: "Automated update of cliodynamic indicators"
-        branch: auto-update-csv
+        branch: auto-update-csv-$(date +%s)
         base: main
+        labels: automated-pr, data-update
