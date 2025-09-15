@@ -6,7 +6,6 @@ import os
 import time
 from typing import Dict, List, Optional, Tuple
 import json
-import csv
 from dataclasses import dataclass
 import re
 import random
@@ -94,24 +93,21 @@ class CliodynamicDataProcessor:
                 
                 if recent_values:
                     recent_values.sort(key=lambda x: x[0], reverse=True)
+                    print(f"  -> Data fetched for {indicator_code}: {recent_values[0][1]}")
                     return recent_values[0][1]
             
+            print(f"  -> No data found for {indicator_code}")
             return None
         except Exception as e:
-            print(f"Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
+            print(f"  -> Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
             return None
 
     def convert_effectiveness_to_distrust(self, effectiveness: float) -> float:
-        """
-        Convierte el índice de efectividad del Banco Mundial (-2.5 a 2.5)
-        en un valor de desconfianza (0 a 1).
-        """
         normalized_effectiveness = (effectiveness - (-2.5)) / (2.5 - (-2.5))
         distrust = 1.0 - normalized_effectiveness
         return round(max(0.1, min(0.9, distrust)), 2)
     
     def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
-        """Calcula los valores de los nuevos indicadores usando proxies normalizados."""
         wealth_concentration = all_indicators.get('gini_coefficient', 40.0) / 100
         
         tertiary_education = all_indicators.get('tertiary_education', 18.0) / 100
@@ -123,7 +119,6 @@ class CliodynamicDataProcessor:
         return wealth_concentration, education_gap, elite_overproduction
 
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
-        """Calcula la polarización social y la desconfianza institucional"""
         try:
             gov_effectiveness = all_indicators.get('government_effectiveness')
             if gov_effectiveness is not None:
@@ -142,13 +137,10 @@ class CliodynamicDataProcessor:
             return round(polarization, 2), institutional_distrust
             
         except Exception as e:
-            print(f"Error calculating social indicators for {country_code}: {e}")
+            print(f"  -> Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
     
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
-        """
-        Calcula la puntuación de estabilidad de Jiang y el nivel de riesgo.
-        """
         stability_score = 10.0
         risk_indicators_status = {}
         
@@ -216,24 +208,25 @@ class CliodynamicDataProcessor:
             'risk_indicators_status': risk_indicators_status
         }
     
-    def process_country(self, country_code: str, year: int) -> Optional[Dict]:
+    def process_country(self, country_code: str, year: int) -> Dict:
         """Procesar datos para un país específico"""
+        print(f"Processing {country_code} for {year}...")
+        
+        all_indicators = {'country_code': country_code, 'year': year}
+
+        indicators_to_fetch = {
+            'gini_coefficient': 'SI.POV.GINI',
+            'youth_unemployment': 'SL.UEM.1524.ZS',
+            'inflation_annual': 'FP.CPI.TOTL.ZG',
+            'neet_ratio': 'SL.UEM.NEET.ZS',
+            'tertiary_education': 'SE.TER.CUAT.BA.ZS',
+            'gdppc': 'NY.GDP.PCAP.CD',
+            'suicide_rate': 'SH.STA.SUIC.P5',
+            'government_effectiveness': 'GE.EST'
+        }
+
+        # La versión anterior del código podía retornar None aquí. Se ha modificado para evitarlo.
         try:
-            print(f"Processing {country_code} for {year}...")
-            
-            all_indicators = {'country_code': country_code, 'year': year}
-
-            indicators_to_fetch = {
-                'gini_coefficient': 'SI.POV.GINI',
-                'youth_unemployment': 'SL.UEM.1524.ZS',
-                'inflation_annual': 'FP.CPI.TOTL.ZG',
-                'neet_ratio': 'SL.UEM.NEET.ZS',
-                'tertiary_education': 'SE.TER.CUAT.BA.ZS',
-                'gdppc': 'NY.GDP.PCAP.CD',
-                'suicide_rate': 'SH.STA.SUIC.P5',
-                'government_effectiveness': 'GE.EST'
-            }
-
             for indicator, wb_code in indicators_to_fetch.items():
                 value = self.fetch_world_bank_data(country_code, wb_code)
                 if value is not None:
@@ -266,11 +259,23 @@ class CliodynamicDataProcessor:
                 'risk_indicators_status': jiang_metrics['risk_indicators_status']
             }
             
+            print(f"  -> Finished processing {country_code}. Result: {result.get('estabilidad_jiang')}, {result.get('stability_level')}")
             return result
-            
         except Exception as e:
-            print(f"Error processing {country_code}: {e}")
-            return None
+            # En caso de un fallo inesperado, se retornan los datos parciales
+            print(f"  -> Error processing {country_code}: {e}. Returning partial data.")
+            # Añade los campos esperados con valores nulos para no romper el JSON
+            all_indicators['wealth_concentration'] = None
+            all_indicators['education_gap'] = None
+            all_indicators['elite_overproduction'] = None
+            all_indicators['social_polarization'] = None
+            all_indicators['institutional_distrust'] = None
+            all_indicators['estabilidad_jiang'] = None
+            all_indicators['stability_level'] = 'not_available'
+            all_indicators['risk_indicators_status'] = {}
+
+            return all_indicators
+
 
     def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
         """Guardar los datos procesados en un archivo JSON, con cada objeto en una nueva línea."""
@@ -300,10 +305,12 @@ class CliodynamicDataProcessor:
         
         for country_code in country_list:
             data = self.process_country(country_code, current_year)
-            if data:
-                all_data.append(data)
+            all_data.append(data)
             time.sleep(self.sources['world_bank'].rate_limit)
 
+        print("\nFinal data to be saved:")
+        print(all_data)
+        
         self.save_to_json(all_data)
 
 if __name__ == "__main__":
