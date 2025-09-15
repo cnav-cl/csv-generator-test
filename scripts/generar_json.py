@@ -134,7 +134,7 @@ class CliodynamicDataProcessor:
             'TCD': ['Chad', 'TD'],
             'YEM': ['Yemen', 'YE'],
             'AFG': ['Afghanistan', 'AF'],
-            'PSE': ['Palestine', 'PS']  # Added for completeness
+            'PSE': ['Palestine', 'PS']
         }
 
         self.country_to_iso = {
@@ -156,7 +156,7 @@ class CliodynamicDataProcessor:
             ),
             'gdelt': DataSource(
                 name="GDELT Monitoring",
-                base_url="https://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=artlist&format=json&maxrecords=250",
+                base_url="https://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=artlist&format=json&maxrecords=100",
                 rate_limit=0.5
             )
         }
@@ -429,12 +429,12 @@ class CliodynamicDataProcessor:
         
         for country_name in country_names:
             query = f"sourcecountry:{country_name} (protest OR violence OR conflict OR crisis)"
-            attempts = 3
+            attempts = 2  # Reducido a 2 intentos
             for attempt in range(attempts):
                 try:
-                    url = self.sources['gdelt'].base_url.format(query=query)
+                    url = self.sources['gdelt'].base_url.format(query=query)  # maxrecords=100 ya está en la URL base
                     logging.debug(f"GDELT query URL for {country_code} ({country_name}): {url}")
-                    response = requests.get(url, timeout=30, headers=headers)
+                    response = requests.get(url, timeout=15, headers=headers)  # Timeout reducido
                     response.raise_for_status()
                     if 'application/json' not in response.headers.get('Content-Type', ''):
                         logging.warning(f"Non-JSON response from GDELT for {country_code} ({country_name}): {response.text[:200]}")
@@ -443,7 +443,7 @@ class CliodynamicDataProcessor:
                     articles = data.get('articles', [])
                     logging.info(f"GDELT data retrieved for {country_code} ({country_name}): {len(articles)} articles")
                     total_events = len(articles)
-                    shock_factor = 2.5 if total_events > 100 else 1.8 if total_events > 20 else 1.0
+                    shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0  # Ajustar umbrales
                     with self.cache_lock:  # Synchronize cache write
                         self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
                         self.save_cache()
@@ -456,11 +456,11 @@ class CliodynamicDataProcessor:
                         logging.error(f"Error fetching GDELT for {country_code} ({country_name}): {e}")
                         break
                 except json.JSONDecodeError as e:
-                    logging.error(f"GDELT JSON decode error for {country_code} ({country_name}): {e}. Response: {response.text[:200] if 'response' in locals() else 'No response'}")
+                    logging.error(f"GDELT JSON decode error for {country_code} ({country_name}): {e}")
                     time.sleep(2 ** attempt)
         
         logging.warning(f"Failed to fetch GDELT data for {country_code}, using default shock factor")
-        with self.cache_lock:  # Synchronize cache write
+        with self.cache_lock:
             self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
             self.save_cache()
         return shock_factor
@@ -801,15 +801,17 @@ class CliodynamicDataProcessor:
         results = []
         countries = self.country_codes[:10] if test_mode else self.country_codes
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:  # Aumentar workers
             future_to_country = {executor.submit(self.process_country, country, year): country for country in countries}
-            for future in concurrent.futures.as_completed(future_to_country):
+            for future in concurrent.futures.as_completed(future_to_country, timeout=600):  # Timeout de 10 minutos por país
                 country = future_to_country[future]
                 try:
                     result = future.result()
                     if result:
                         results.append(result)
                     logging.info(f"Completed processing for {country}")
+                except concurrent.futures.TimeoutError:
+                    logging.error(f"Timeout processing {country}, skipping")
                 except Exception as e:
                     logging.error(f"Error processing {country}: {e}", exc_info=True)
 
