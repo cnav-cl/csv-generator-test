@@ -211,22 +211,35 @@ class CliodynamicDataProcessor:
         values = [historical[year] for year in years]
         # Apply log-transformation to stabilize variance (avoid log(0) or negative values)
         values = [np.log1p(max(0, v)) for v in values]
-        dates = pd.to_datetime([f"{year}-01-01" for year in years])
-        series = pd.Series(values, index=pd.PeriodIndex(dates, freq='Y'))
+        # Apply first-order differencing to improve stationarity
+        values_diff = np.diff(values)
+        if len(values_diff) < 2:
+            logging.debug(f"Insufficient data after differencing for {country_code}-{indicator}")
+            return np.expm1(values[-1]) if values else 0.0
+        dates = pd.to_datetime([f"{year}-01-01" for year in years[1:]])
+        series = pd.Series(values_diff, index=pd.PeriodIndex(dates, freq='Y'))
         
-        orders = [(1, 1, 0), (1, 0, 0), (0, 1, 1)]
+        orders = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]  # Simplified orders for differenced data
         for order in orders:
             try:
                 model = ARIMA(series, order=order, enforce_stationarity=False, enforce_invertibility=False)
-                fit = model.fit(maxiter=100)  # Increased max iterations
-                forecast = fit.forecast(steps=steps)
-                # Reverse log-transformation
-                return float(np.expm1(forecast.iloc[-1]))
+                fit = model.fit()  # Removed maxiter for compatibility
+                forecast_diff = fit.forecast(steps=steps)
+                # Reverse differencing and log-transformation
+                last_value = values[-1]
+                forecast = np.cumsum([last_value] + list(forecast_diff))[-1]
+                return float(np.expm1(forecast))
             except Exception as e:
                 logging.warning(f"ARIMA failed with order {order} for {country_code}-{indicator}: {e}")
                 continue
-        logging.warning(f"All ARIMA orders failed for {country_code}-{indicator}, returning last value")
-        return np.expm1(series.iloc[-1]) if series.size > 0 else 0.0
+        
+        # Fallback to simple moving average if ARIMA fails
+        logging.warning(f"All ARIMA orders failed for {country_code}-{indicator}, using moving average")
+        window_size = min(3, len(values))
+        if window_size > 0:
+            moving_avg = np.mean(values[-window_size:])
+            return float(np.expm1(moving_avg))
+        return 0.0
 
     def get_gdelt_shock_factor(self, country_code: str) -> float:
         cache_key = f"gdelt_{country_code}"
@@ -506,7 +519,6 @@ class CliodynamicDataProcessor:
 
         if not valid_data:
             logging.warning(f"No valid historical data for {country_code}, using default values")
-            # Still proceed with default values
             for indicator in self.indicator_sources:
                 if indicator not in all_indicators or all_indicators[indicator] is None:
                     all_indicators[indicator] = self.default_indicator_values.get(indicator, 0.0)
