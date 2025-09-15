@@ -795,6 +795,8 @@ class CliodynamicDataProcessor:
             logging.error(f"Error saving to JSON: {e}")
 
     def main(self, test_mode: bool = False):
+        import os
+        test_mode = test_mode or os.getenv('TEST_MODE', 'false').lower() == 'true'
         year = datetime.now().year
         results = []
         countries = self.country_codes[:10] if test_mode else self.country_codes
