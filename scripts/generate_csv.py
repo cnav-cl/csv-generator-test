@@ -116,10 +116,15 @@ class CliodynamicDataProcessor:
                 data = response.json()
                 
                 historical = {}
-                if data and len(data) > 1 and data[1]:  # Verifica estructura de respuesta
+                if data and len(data) > 1 and data[1]:
                     for item in data[1]:
-                        if item['value'] is not None and item['date'].isdigit():
-                            historical[int(item['date'])] = float(item['value'])
+                        if item['date'].isdigit() and item['value'] is not None:
+                            try:
+                                value = float(item['value'])
+                                historical[int(item['date'])] = value
+                            except (ValueError, TypeError):
+                                logging.warning(f"Invalid value for {country_code}-{indicator_code} in {item['date']}: {item['value']}")
+                                continue
                 
                 if historical:
                     years = sorted(historical.keys())
@@ -146,12 +151,10 @@ class CliodynamicDataProcessor:
             logging.debug(f"Insufficient data for forecast: {len(historical)} points")
             return list(historical.values())[-1]
         
-        # Convertir años a pd.PeriodIndex (anual)
         years = sorted(historical.keys())
         values = [historical[year] for year in years]
-        # Crear fechas como 1 de enero de cada año
         dates = pd.to_datetime([f"{year}-01-01" for year in years])
-        series = pd.Series(values, index=pd.PeriodIndex(dates, freq='A'))
+        series = pd.Series(values, index=pd.PeriodIndex(dates, freq='Y'))  # Cambiado de 'A' a 'Y'
         
         try:
             model = ARIMA(series, order=(1,1,0))
@@ -231,9 +234,16 @@ class CliodynamicDataProcessor:
         return round(max(0.1, min(0.9, distrust)), 2)
 
     def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
-        wealth_concentration = all_indicators.get('gini_coefficient', 40.0) / 100
-        tertiary_education = all_indicators.get('tertiary_education', 18.0) / 100
-        youth_unemployment = all_indicators.get('youth_unemployment', 20.0) / 100
+        def safe_float(value, default):
+            try:
+                return float(value) if value is not None else default
+            except (ValueError, TypeError):
+                logging.warning(f"Invalid value for proxy calculation: {value}, using default {default}")
+                return default
+
+        wealth_concentration = safe_float(all_indicators.get('gini_coefficient', 40.0), 40.0) / 100
+        tertiary_education = safe_float(all_indicators.get('tertiary_education', 18.0), 18.0) / 100
+        youth_unemployment = safe_float(all_indicators.get('youth_unemployment', 20.0), 20.0) / 100
         education_gap = tertiary_education * youth_unemployment
         elite_overproduction = tertiary_education * youth_unemployment
         return wealth_concentration, education_gap, elite_overproduction
@@ -242,8 +252,8 @@ class CliodynamicDataProcessor:
         gov_effectiveness = all_indicators.get('government_effectiveness')
         institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness) if gov_effectiveness is not None else 0.5
         gini_normalized = all_indicators.get('gini_coefficient', 40.0) / 100
-        neet_ratio = all_indicators.get('neet_ratio', 15.0)
-        polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio / 100 * 0.2)
+        neet_ratio = all_indicators.get('neet_ratio', 15.0) / 100
+        polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio * 0.2)
         polarization = min(0.9, max(0.3, polarization))
         return round(polarization, 2), institutional_distrust
 
@@ -260,18 +270,23 @@ class CliodynamicDataProcessor:
         for indicator, weight in weights.items():
             value = indicators.get(indicator)
             if value is not None:
-                if indicator == 'elite_overproduction':
-                    norm_value = min(1.0, value / 0.15)
-                elif indicator == 'wealth_concentration':
-                    norm_value = min(1.0, value / 0.7)
-                elif indicator in ['social_polarization', 'institutional_distrust']:
-                    norm_value = min(1.0, value)
-                else:
-                    norm_value = min(1.0, value / 100)
-                instability_score += weight * norm_value
+                try:
+                    value = float(value)
+                    if indicator == 'elite_overproduction':
+                        norm_value = min(1.0, value / 0.15)
+                    elif indicator == 'wealth_concentration':
+                        norm_value = min(1.0, value / 0.7)
+                    elif indicator in ['social_polarization', 'institutional_distrust']:
+                        norm_value = min(1.0, value)
+                    else:
+                        norm_value = min(1.0, value / 100)
+                    instability_score += weight * norm_value
+                except (ValueError, TypeError):
+                    logging.warning(f"Invalid value for {indicator} in Turchin calculation: {value}")
+                    continue
         
         delta_adjust = sum(deltas.get(ind, 0) for ind in weights if deltas.get(ind, 0) > 0) * 0.1
-        forecast_adjust = sum(max(0, forecasts.get(ind, value) - value) for ind, value in indicators.items() if ind in weights) * 0.05
+        forecast_adjust = sum(max(0, forecasts.get(ind, value) - value) for ind, value in indicators.items() if ind in weights and isinstance(value, (int, float))) * 0.05
         instability_score += delta_adjust + forecast_adjust
         final_score = round(min(1.0, max(0.0, instability_score)), 2)
         
@@ -286,12 +301,20 @@ class CliodynamicDataProcessor:
     def calculate_jiang_stability(self, indicators: Dict, deltas: Dict, forecasts: Dict, country_code: str) -> Dict:
         normalized_values = {}
         for indicator, value in indicators.items():
-            if indicator in ['gini_coefficient', 'neet_ratio', 'youth_unemployment', 'inflation_annual', 'suicide_rate']:
-                normalized_values[indicator] = value / 100 if value is not None else 0.5
-            elif indicator in ['social_polarization', 'institutional_distrust', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
-                normalized_values[indicator] = value if value is not None else 0.5
-            else:
-                normalized_values[indicator] = value / 10000 if value is not None else 0.5
+            try:
+                if value is not None:
+                    value = float(value)
+                    if indicator in ['gini_coefficient', 'neet_ratio', 'youth_unemployment', 'inflation_annual', 'suicide_rate']:
+                        normalized_values[indicator] = value / 100
+                    elif indicator in ['social_polarization', 'institutional_distrust', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
+                        normalized_values[indicator] = value
+                    else:
+                        normalized_values[indicator] = value / 10000
+                else:
+                    normalized_values[indicator] = 0.5
+            except (ValueError, TypeError):
+                logging.warning(f"Invalid value for {indicator} in Jiang calculation: {value}, using default 0.5")
+                normalized_values[indicator] = 0.5
 
         groups = {
             'economic': ['gini_coefficient', 'inflation_annual', 'gdppc', 'wealth_concentration'],
@@ -301,10 +324,18 @@ class CliodynamicDataProcessor:
         weights = {'economic': 0.4, 'social': 0.35, 'demographic': 0.25}
 
         base_score = 6.0
-        if indicators.get('gdppc') is not None:
-            base_score += min(4.0, np.log1p(indicators['gdppc']) / 10)
-        if indicators.get('government_effectiveness') is not None:
-            base_score += indicators['government_effectiveness'] * 0.5
+        gdppc = indicators.get('gdppc')
+        if gdppc is not None:
+            try:
+                base_score += min(4.0, np.log1p(float(gdppc)) / 10)
+            except (ValueError, TypeError):
+                logging.warning(f"Invalid gdppc for {country_code}: {gdppc}")
+        gov_effectiveness = indicators.get('government_effectiveness')
+        if gov_effectiveness is not None:
+            try:
+                base_score += float(gov_effectiveness) * 0.5
+            except (ValueError, TypeError):
+                logging.warning(f"Invalid government_effectiveness for {country_code}: {gov_effectiveness}")
         base_score = min(10.0, max(1.0, base_score))
 
         systemic_risk_score = 0.0
@@ -341,7 +372,7 @@ class CliodynamicDataProcessor:
         systemic_risk_score += geo_risk * 0.15
 
         delta_penalty = sum(deltas.get(ind, 0) for ind in indicators if deltas.get(ind, 0) > 0 and ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']) * 0.1
-        forecast_penalty = sum(max(0, forecasts.get(ind, val) - val) for ind, val in indicators.items() if ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']) * 0.05
+        forecast_penalty = sum(max(0, forecasts.get(ind, val) - val) for ind, val in indicators.items() if ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual'] and isinstance(val, (int, float))) * 0.05
         systemic_risk_score += delta_penalty + forecast_penalty
 
         systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
@@ -414,7 +445,7 @@ class CliodynamicDataProcessor:
         results = []
         countries = self.country_codes[:10] if test_mode else self.country_codes
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:  # Reducido para rate limits
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             future_to_country = {executor.submit(self.process_country, country, year): country for country in countries}
             for future in concurrent.futures.as_completed(future_to_country):
                 country = future_to_country[future]
@@ -429,4 +460,4 @@ class CliodynamicDataProcessor:
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
-    processor.main(test_mode=True)
+    processor.main(test_mode=False)
