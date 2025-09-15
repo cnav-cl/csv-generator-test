@@ -214,14 +214,17 @@ class CliodynamicDataProcessor:
                 return key
         return None
 
-    def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Optional[Dict]:
-        """Fetches World Bank data for a specific country and indicator, with retries."""
-        api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={start_year}:{end_year}&format=json"
-        
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
-        
+    def get_default_value(self, indicator_code: str, country_code: str) -> float:
         default_key = self.get_default_key(indicator_code)
-        default_value = self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0))
+        if default_key:
+            return self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0))
+        return 0.0
+
+    def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
+        """Fetches World Bank data, ensuring a default value is always returned on failure."""
+        api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={start_year}:{end_year}&format=json"
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        default_value = self.get_default_value(indicator_code, country_code)
 
         try:
             response = requests.get(api_url, headers=headers)
@@ -234,15 +237,12 @@ class CliodynamicDataProcessor:
             else:
                 logging.warning(f"No valid data found for {indicator_code} in {country_code}. Using default value.")
                 return {str(end_year): default_value}
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error fetching data from World Bank for {indicator_code} in {country_code}: {e}")
-            return {str(end_year): default_value}
-        except (json.JSONDecodeError, IndexError, TypeError) as e:
-            logging.error(f"Failed to parse JSON for {indicator_code} in {country_code}: {e}")
+        except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
+            logging.error(f"Failed to fetch or parse data for {indicator_code} in {country_code}: {e}")
             return {str(end_year): default_value}
 
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
-        """Calculates indicators for a given country and year."""
+        """Calculates indicators, ensuring values are never None."""
         indicators = {}
         end_year = datetime.now().year - 1
         
@@ -270,12 +270,6 @@ class CliodynamicDataProcessor:
             indicators[name] = random.uniform(0.1, 0.9)
 
         return indicators
-
-    def get_default_value(self, indicator_code: str, country_code: str) -> float:
-        default_key = self.get_default_key(indicator_code)
-        if default_key:
-            return self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0))
-        return 0.0
 
     def calculate_border_pressure(self, country_code: str, all_results: Dict) -> float:
         """
@@ -392,9 +386,8 @@ class CliodynamicDataProcessor:
         end_year = datetime.now().year - 1
         
         initial_results = {}
-        countries = ['USA', 'RUS', 'CHN', 'UKR'] if test_mode else self.country_codes
+        countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD'] if test_mode else self.country_codes
         
-        # Primera pasada: calcular indicadores e inestabilidad interna
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country_initial, country, end_year): country for country in countries}
             for future in concurrent.futures.as_completed(future_to_country, timeout=600):
@@ -417,7 +410,6 @@ class CliodynamicDataProcessor:
                 result = initial_results[country_code]
                 border_pressure = self.calculate_border_pressure(country_code, initial_results)
                 
-                # Recalcular la inestabilidad con la presión fronteriza
                 final_instability = self.calculate_turchin_instability(result['indicators'], border_pressure)
                 result['inestabilidad_turchin'] = final_instability
                 result['border_pressure'] = round(border_pressure, 2)
