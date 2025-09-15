@@ -187,7 +187,7 @@ class CliodynamicDataProcessor:
         
         self.thresholds = {
             'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.5, 'critical': -2.5}},
-            'gini_coefficient': {'alert': 40.0, 'critical': 45.0, 'points': {'alert': -1.5, 'critical': -3.0}},  # Ajustado para valores reales
+            'gini_coefficient': {'alert': 40.0, 'critical': 45.0, 'points': {'alert': -1.5, 'critical': -3.0}},
             'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
@@ -724,7 +724,8 @@ class CliodynamicDataProcessor:
         missing_indicators = []
 
         valid_data = False
-        for indicator, (source, code) in self.indicator_sources.items():
+        for indicator, sources in self.indicator_sources.items():
+            source, code = sources[0]  # Extract the first (and only) tuple
             hist_data = self.fetch_world_bank_data(country_code, code, indicator, years_back=10)
             if hist_data and hist_data['historical']:
                 valid_data = True
