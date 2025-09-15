@@ -141,6 +141,49 @@ class CliodynamicDataProcessor:
         except Exception as e:
             print(f"  -> Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
+
+    def calculate_turchin_instability(self, indicators: Dict) -> float:
+        """Calcular índice de inestabilidad de Turchin basado en los trabajos originales"""
+        try:
+            # Pesos basados en la investigación de Peter Turchin
+            weights = {
+                'elite_overproduction': 0.25,
+                'wealth_concentration': 0.20,
+                'institutional_distrust': 0.18,
+                'social_polarization': 0.15,
+                'youth_unemployment': 0.12,
+                'neet_ratio': 0.10
+            }
+            
+            instability = 0.0
+            
+            for indicator, weight in weights.items():
+                value = indicators.get(indicator)
+                if value is not None:
+                    # Normalizar valores entre 0-1
+                    if indicator == 'elite_overproduction':
+                        norm_value = min(1.0, value / 0.15)  # >15% es crítico
+                    elif indicator == 'wealth_concentration':
+                        norm_value = min(1.0, value / 0.55)  # >55% es crítico
+                    elif indicator == 'institutional_distrust':
+                        norm_value = value  # Ya está en escala 0-1
+                    elif indicator == 'social_polarization':
+                        norm_value = value  # Ya está en escala 0-1
+                    elif indicator == 'youth_unemployment':
+                        norm_value = min(1.0, value / 40.0)  # >40% es crítico
+                    elif indicator == 'neet_ratio':
+                        norm_value = min(1.0, value / 30.0)  # >30% es crítico
+                    
+                    instability += weight * norm_value
+            
+            # Ajustar escala a 0-1
+            instability = min(1.0, max(0.0, instability))
+            
+            return round(instability, 2)
+            
+        except Exception as e:
+            print(f"Error calculating Turchin instability: {e}")
+            return 0.3  # Valor promedio
     
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         stability_score = 10.0
@@ -229,7 +272,6 @@ class CliodynamicDataProcessor:
             'government_effectiveness': 'GE.EST'
         }
 
-        # La versión anterior del código podía retornar None aquí. Se ha modificado para evitarlo.
         try:
             for indicator, wb_code in indicators_to_fetch.items():
                 value = self.fetch_world_bank_data(country_code, wb_code)
@@ -254,82 +296,17 @@ class CliodynamicDataProcessor:
             all_indicators['social_polarization'] = social_polarization
             all_indicators['institutional_distrust'] = institutional_distrust
 
+            # Calcular ambos índices
             jiang_metrics = self.calculate_jiang_stability(all_indicators)
+            turchin_instability = self.calculate_turchin_instability(all_indicators)
             
             result = {
                 'country_code': country_code,
                 'year': year,
                 'indicators': all_indicators,
-                'risk_indicators_status': jiang_metrics['risk_indicators_status']
+                'risk_indicators_status': jiang_metrics['risk_indicators_status'],
+                'inestabilidad_turchin': turchin_instability
             }
             
-            print(f"  -> Finished processing {country_code}. Result: {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('valor')}, {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('status')}")
-            return result
-        except Exception as e:
-            # En caso de un fallo inesperado, se retornan los datos parciales
-            print(f"  -> Error processing {country_code}: {e}. Returning partial data.")
-            # Añade los campos esperados con valores nulos para no romper el JSON
-            all_indicators['wealth_concentration'] = None
-            all_indicators['education_gap'] = None
-            all_indicators['elite_overproduction'] = None
-            all_indicators['social_polarization'] = None
-            all_indicators['institutional_distrust'] = None
-            
-            result = {
-                'country_code': country_code,
-                'year': year,
-                'indicators': all_indicators,
-                'risk_indicators_status': {}
-            }
-            
-            return result
-
-
-    def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
-        """Guardar los datos procesados en un archivo JSON, con cada objeto en una nueva línea."""
-        if not data:
-            print("No data to save.")
+            print(f"  -> Finished processing {country_code}. Jiang: {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('valor')}, Turchin: {turchin_instability}")
             return
-
-        if not os.path.exists('data'):
-            os.makedirs('data')
-        
-        # Acomoda la salida en un formato más usable para el frontend
-        formatted_data = {
-            "metadata": {
-                "creation_date": datetime.now().isoformat(),
-                "test_mode": True # Ajusta esto según el modo
-            },
-            "country_data": {}
-        }
-        for item in data:
-            country_code = item.pop('country_code')
-            formatted_data['country_data'][country_code] = item
-        
-        with open(filename, 'w', encoding='utf-8') as output_file:
-            json.dump(formatted_data, output_file, indent=4, ensure_ascii=False)
-        print(f"Data successfully saved to {filename}")
-
-    def main(self, test_mode: bool = False):
-        """Función principal con modo de prueba"""
-        print(f"Starting cliodynamic data generation. Test Mode: {test_mode}")
-        
-        all_data = []
-        current_year = datetime.now().year
-        
-        if test_mode:
-            country_list = ['CHL', 'AUT', 'AUS', 'BEL', 'USA']
-        else:
-            country_list = self.country_codes
-        
-        for country_code in country_list:
-            data = self.process_country(country_code, current_year)
-            all_data.append(data)
-            time.sleep(self.sources['world_bank'].rate_limit)
-        
-        self.save_to_json(all_data)
-
-if __name__ == "__main__":
-    processor = CliodynamicDataProcessor()
-    
-    processor.main(test_mode=True)
