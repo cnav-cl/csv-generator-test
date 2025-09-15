@@ -225,6 +225,69 @@ class CliodynamicDataProcessor:
             indicators[name] = random.uniform(0.1, 0.9)
 
         return indicators
+    
+    # --- INICIO DE NUEVA LÓGICA DE CÁLCULO DE PSICOHISTORIA ---
+    def calculate_turchin_instability(self, indicators: Dict) -> Dict:
+        """
+        Calcula la inestabilidad según un modelo simplificado de Turchin,
+        basado en la sobreproducción de élites, empobrecimiento de las masas
+        y debilidad del estado. Los valores se normalizan de 0 a 1.
+        """
+        # Suponemos un rango de valores para normalizar, basándonos en datos históricos
+        # Cuanto más alto el valor, mayor la inestabilidad.
+        wealth_norm = (indicators.get('wealth_concentration', 0.5) - 0.1) / 0.8
+        unemployment_norm = min(1.0, max(0.0, (indicators.get('youth_unemployment', 20.0) - 5.0) / 25.0))
+        inflation_norm = min(1.0, max(0.0, (indicators.get('inflation_annual', 3.0) - 1.0) / 10.0))
+        social_pol_norm = indicators.get('social_polarization', 0.5)
+        
+        # Modelo simplificado con pesos
+        instability_score = (
+            (wealth_norm * 0.35) + 
+            (unemployment_norm * 0.3) +
+            (inflation_norm * 0.2) +
+            (social_pol_norm * 0.15)
+        )
+        
+        status = 'stable'
+        if instability_score > 0.7:
+            status = 'critical'
+        elif instability_score > 0.4:
+            status = 'at_risk'
+        
+        return {
+            "status": status,
+            "valor": round(instability_score, 2),
+            "comment": "Calculado basado en indicadores económicos y sociales."
+        }
+
+    def calculate_jiang_stability(self, indicators: Dict) -> Dict:
+        """
+        Calcula la estabilidad institucional según un modelo simplificado de Jiang,
+        basado en la efectividad del gobierno y el estado de derecho.
+        """
+        # Los indicadores de gobernanza ya están en un rango de -2.5 a +2.5.
+        # Un valor más alto significa mayor estabilidad.
+        gov_eff_norm = (indicators.get('government_effectiveness', 0.0) + 2.5) / 5.0
+        pol_stab_norm = (indicators.get('political_stability', 0.0) + 2.5) / 5.0
+        rule_of_law_norm = (indicators.get('rule_of_law', 0.0) + 2.5) / 5.0
+
+        # Promedio ponderado para el puntaje de estabilidad
+        stability_score = (
+            (gov_eff_norm * 0.4) +
+            (pol_stab_norm * 0.4) +
+            (rule_of_law_norm * 0.2)
+        )
+        
+        status = 'stable'
+        if stability_score < 0.4:
+            status = 'fragile'
+        
+        return {
+            "status": status,
+            "valor": round(stability_score, 2),
+            "comment": "Calculado basado en indicadores de gobernanza."
+        }
+    # --- FIN DE NUEVA LÓGICA DE CÁLCULO ---
 
     def process_country(self, country_code: str, year: int) -> Optional[Dict]:
         """Main processing logic for a single country."""
@@ -233,27 +296,27 @@ class CliodynamicDataProcessor:
             logging.warning(f"Skipping {country_code} due to missing data.")
             return None
 
+        # Llamamos a las nuevas funciones para calcular la estabilidad y la inestabilidad
+        instability_turchin = self.calculate_turchin_instability(indicators)
+        estabilidad_jiang = self.calculate_jiang_stability(indicators)
+
         result = {
             'country_code': country_code,
             'year': year,
             'indicators': indicators,
-            'estabilidad_jiang': {'status': 'stable', 'valor': 7.05},
-            'inestabilidad_turchin': {'status': 'stable', 'valor': 0.26}
+            'estabilidad_jiang': estabilidad_jiang,
+            'inestabilidad_turchin': instability_turchin
         }
         return result
 
     def save_to_json(self, data: List[Dict]):
-        """
-        Saves the final data structure to a JSON file.
-        He cambiado el nombre del archivo de salida.
-        """
+        """Saves the final data structure to a JSON file."""
         final_output = {
             'timestamp': datetime.now().isoformat(),
             'version': '1.0',
             'countries_processed': len(data),
             'results': data
         }
-        # Nuevo nombre del archivo
         with open('data/data_paises.json', 'w') as f:
             json.dump(final_output, f, indent=2)
 
@@ -265,7 +328,7 @@ class CliodynamicDataProcessor:
         end_year = datetime.now().year - 1
         
         results = []
-        countries = ['USA'] if test_mode else self.country_codes
+        countries = ['USA', 'RUS', 'CHN'] if test_mode else self.country_codes
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country, country, end_year): country for country in countries}
