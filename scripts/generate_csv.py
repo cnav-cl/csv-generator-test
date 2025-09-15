@@ -80,6 +80,14 @@ class CliodynamicDataProcessor:
 
         self.crisis_forecasts = {'SDN': 0.4, 'MMR': 0.3, 'YEM': 0.35, 'SYR': 0.3, 'UKR': 0.25, 'HTI': 0.2, 'LBN': 0.25}
 
+    def safe_float(self, value, default):
+        """Convert value to float, return default if conversion fails."""
+        try:
+            return float(value) if value is not None else default
+        except (ValueError, TypeError):
+            logging.warning(f"Invalid value for conversion: {value}, using default {default}")
+            return default
+
     def load_cache(self) -> Dict:
         try:
             if os.path.exists(self.cache_file):
@@ -162,7 +170,7 @@ class CliodynamicDataProcessor:
         
         try:
             model = ARIMA(series, order=(1,1,0), enforce_stationarity=False, enforce_invertibility=False)
-            fit = model.fit(method='yulewalker')  # Removed maxiter
+            fit = model.fit()  # Removed method='yulewalker'
             forecast = fit.forecast(steps=steps)
             return float(forecast.iloc[-1])
         except Exception as e:
@@ -189,7 +197,6 @@ class CliodynamicDataProcessor:
                 else:
                     data = response.json()
                     logging.debug(f"GDELT response for {country_code}: {response.text[:200]}")
-                    # Filtrar eventos con EventBaseCode 1, 2, 3, 4 (si disponible en artlist)
                     total_events = sum(1 for item in data if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
                     shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
                 self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
@@ -252,16 +259,9 @@ class CliodynamicDataProcessor:
         return round(max(0.1, min(0.9, distrust)), 2)
 
     def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
-        def safe_float(value, default):
-            try:
-                return float(value) if value is not None else default
-            except (ValueError, TypeError):
-                logging.warning(f"Invalid value for proxy calculation: {value}, using default {default}")
-                return default
-
-        wealth_concentration = safe_float(all_indicators.get('gini_coefficient', 40.0), 40.0) / 100
-        tertiary_education = safe_float(all_indicators.get('tertiary_education', 18.0), 18.0) / 100
-        youth_unemployment = safe_float(all_indicators.get('youth_unemployment', 20.0), 20.0) / 100
+        wealth_concentration = self.safe_float(all_indicators.get('gini_coefficient', 40.0), 40.0) / 100
+        tertiary_education = self.safe_float(all_indicators.get('tertiary_education', 18.0), 18.0) / 100
+        youth_unemployment = self.safe_float(all_indicators.get('youth_unemployment', 20.0), 20.0) / 100
         education_gap = tertiary_education * youth_unemployment
         elite_overproduction = tertiary_education * youth_unemployment
         return wealth_concentration, education_gap, elite_overproduction
@@ -269,8 +269,8 @@ class CliodynamicDataProcessor:
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
         gov_effectiveness = all_indicators.get('government_effectiveness')
         institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness)
-        gini_normalized = safe_float(all_indicators.get('gini_coefficient', 40.0), 40.0) / 100
-        neet_ratio = safe_float(all_indicators.get('neet_ratio', 15.0), 15.0) / 100
+        gini_normalized = self.safe_float(all_indicators.get('gini_coefficient', 40.0), 40.0) / 100
+        neet_ratio = self.safe_float(all_indicators.get('neet_ratio', 15.0), 15.0) / 100
         polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio * 0.2)
         polarization = min(0.9, max(0.3, polarization))
         return round(polarization, 2), institutional_distrust
@@ -323,13 +323,6 @@ class CliodynamicDataProcessor:
         return {'status': status, 'valor': final_score}
 
     def calculate_jiang_stability(self, indicators: Dict, deltas: Dict, forecasts: Dict, country_code: str) -> Dict:
-        def safe_float(value, default):
-            try:
-                return float(value) if value is not None else default
-            except (ValueError, TypeError):
-                logging.warning(f"Invalid value for {indicator} in Jiang calculation for {country_code}: {value}, using default {default}")
-                return default
-
         normalized_values = {}
         numeric_keys = [k for k in indicators if k not in ['country_code', 'year']]
         for indicator in numeric_keys:
@@ -360,13 +353,13 @@ class CliodynamicDataProcessor:
         gdppc = indicators.get('gdppc')
         if gdppc is not None:
             try:
-                base_score += min(4.0, np.log1p(safe_float(gdppc, 1000.0)) / 10)
+                base_score += min(4.0, np.log1p(self.safe_float(gdppc, 1000.0)) / 10)
             except (ValueError, TypeError):
                 logging.warning(f"Invalid gdppc for {country_code}: {gdppc}")
         gov_effectiveness = indicators.get('government_effectiveness')
         if gov_effectiveness is not None:
             try:
-                base_score += safe_float(gov_effectiveness, 0.0) * 0.5
+                base_score += self.safe_float(gov_effectiveness, 0.0) * 0.5
             except (ValueError, TypeError):
                 logging.warning(f"Invalid government_effectiveness for {country_code}: {gov_effectiveness}")
         base_score = min(10.0, max(1.0, base_score))
