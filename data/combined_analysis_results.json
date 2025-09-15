@@ -1,51 +1,5 @@
 [
   {
-    "country_code": "IND",
-    "year": 2025,
-    "estabilidad_jiang": {
-      "status": "stable",
-      "valor": 8.99,
-      "indicators": {
-        "neet_ratio": "stable",
-        "gini_coefficient": "stable",
-        "youth_unemployment": "stable",
-        "inflation_annual": "stable",
-        "social_polarization": "stable",
-        "institutional_distrust": "stable",
-        "suicide_rate": "stable",
-        "wealth_concentration": "stable",
-        "education_gap": "stable",
-        "elite_overproduction": "stable"
-      },
-      "groups": {
-        "economic": 0.21,
-        "social": 0.28,
-        "demographic": 0.11
-      }
-    },
-    "inestabilidad_turchin": {
-      "status": "stable",
-      "valor": 0.27
-    },
-    "indicators": {
-      "country_code": "IND",
-      "year": 2025,
-      "gini_coefficient": 25.5,
-      "youth_unemployment": 16.028,
-      "inflation_annual": 4.95303550973656,
-      "neet_ratio": 23.494,
-      "tertiary_education": 13.2299995422363,
-      "gdppc": 2696.66389984463,
-      "suicide_rate": 12.56,
-      "government_effectiveness": 0.47511014342308,
-      "wealth_concentration": 0.255,
-      "education_gap": 0.02120504326629634,
-      "elite_overproduction": 0.02120504326629634,
-      "social_polarization": 0.31,
-      "institutional_distrust": 0.4
-    }
-  },
-  {
     "country_code": "USA",
     "year": 2025,
     "estabilidad_jiang": {
@@ -138,52 +92,6 @@
     }
   },
   {
-    "country_code": "CHN",
-    "year": 2025,
-    "estabilidad_jiang": {
-      "status": "stable",
-      "valor": 7.83,
-      "indicators": {
-        "neet_ratio": "stable",
-        "gini_coefficient": "stable",
-        "youth_unemployment": "stable",
-        "inflation_annual": "stable",
-        "social_polarization": "stable",
-        "institutional_distrust": "stable",
-        "suicide_rate": "stable",
-        "wealth_concentration": "stable",
-        "education_gap": "stable",
-        "elite_overproduction": "stable"
-      },
-      "groups": {
-        "economic": 0.51,
-        "social": 0.25,
-        "demographic": 0.04
-      }
-    },
-    "inestabilidad_turchin": {
-      "status": "alert",
-      "valor": 0.37
-    },
-    "indicators": {
-      "country_code": "CHN",
-      "year": 2025,
-      "gini_coefficient": 35.7,
-      "youth_unemployment": 15.226,
-      "inflation_annual": 0.218128938439177,
-      "neet_ratio": 0.0,
-      "tertiary_education": 7.67999982833862,
-      "gdppc": 13303.1481543868,
-      "suicide_rate": 8.95,
-      "government_effectiveness": 0.679014027118683,
-      "wealth_concentration": 0.35700000000000004,
-      "education_gap": 0.011693567738628383,
-      "elite_overproduction": 0.011693567738628383,
-      "social_polarization": 0.3,
-      "institutional_distrust": 0.36
-    }
-  },
-  {
     "country_code": "RUS",
     "year": 2025,
     "estabilidad_jiang": {
@@ -227,6 +135,98 @@
       "elite_overproduction": 0.03813674512939451,
       "social_polarization": 0.41,
       "institutional_distrust": 0.64
+    }
+  },
+  {
+    "country_code": "IND",
+    "year": 2025,
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 8.99,
+      "indicators": {
+        "neet_ratio": "stable",
+        "gini_coefficient": "stable",
+        "youth_unemployment": "stable",
+        "inflation_annual": "stable",
+        "social_polarization": "stable",
+        "institutional_distrust": "stable",
+        "suicide_rate": "stable",
+        "wealth_concentration": "stable",
+        "education_gap": "stable",
+        "elite_overproduction": "stable"
+      },
+      "groups": {
+        "economic": 0.21,
+        "social": 0.28,
+        "demographic": 0.11
+      }
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.27
+    },
+    "indicators": {
+      "country_code": "IND",
+      "year": 2025,
+      "gini_coefficient": 25.5,
+      "youth_unemployment": 16.028,
+      "inflation_annual": 4.95303550973656,
+      "neet_ratio": 23.494,
+      "tertiary_education": 13.2299995422363,
+      "gdppc": 2696.66389984463,
+      "suicide_rate": 12.56,
+      "government_effectiveness": 0.47511014342308,
+      "wealth_concentration": 0.255,
+      "education_gap": 0.02120504326629634,
+      "elite_overproduction": 0.02120504326629634,
+      "social_polarization": 0.31,
+      "institutional_distrust": 0.4
+    }
+  },
+  {
+    "country_code": "CHN",
+    "year": 2025,
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 7.83,
+      "indicators": {
+        "neet_ratio": "stable",
+        "gini_coefficient": "stable",
+        "youth_unemployment": "stable",
+        "inflation_annual": "stable",
+        "social_polarization": "stable",
+        "institutional_distrust": "stable",
+        "suicide_rate": "stable",
+        "wealth_concentration": "stable",
+        "education_gap": "stable",
+        "elite_overproduction": "stable"
+      },
+      "groups": {
+        "economic": 0.51,
+        "social": 0.25,
+        "demographic": 0.04
+      }
+    },
+    "inestabilidad_turchin": {
+      "status": "alert",
+      "valor": 0.37
+    },
+    "indicators": {
+      "country_code": "CHN",
+      "year": 2025,
+      "gini_coefficient": 35.7,
+      "youth_unemployment": 15.226,
+      "inflation_annual": 0.218128938439177,
+      "neet_ratio": 0.0,
+      "tertiary_education": 7.67999982833862,
+      "gdppc": 13303.1481543868,
+      "suicide_rate": 8.95,
+      "government_effectiveness": 0.679014027118683,
+      "wealth_concentration": 0.35700000000000004,
+      "education_gap": 0.011693567738628383,
+      "elite_overproduction": 0.011693567738628383,
+      "social_polarization": 0.3,
+      "institutional_distrust": 0.36
     }
   },
   {
@@ -276,11 +276,11 @@
     }
   },
   {
-    "country_code": "DEU",
+    "country_code": "GBR",
     "year": 2025,
     "estabilidad_jiang": {
       "status": "stable",
-      "valor": 5.18,
+      "valor": 5.96,
       "indicators": {
         "neet_ratio": "stable",
         "gini_coefficient": "stable",
@@ -294,31 +294,31 @@
         "elite_overproduction": "stable"
       },
       "groups": {
-        "economic": 1.56,
-        "social": 0.23,
-        "demographic": 0.05
+        "economic": 1.49,
+        "social": 0.22,
+        "demographic": 0.09
       }
     },
     "inestabilidad_turchin": {
       "status": "stable",
-      "valor": 0.25
+      "valor": 0.29
     },
     "indicators": {
-      "country_code": "DEU",
+      "country_code": "GBR",
       "year": 2025,
       "gini_coefficient": 32.4,
-      "youth_unemployment": 6.7,
-      "inflation_annual": 2.2564981433876,
-      "neet_ratio": 7.456,
-      "tertiary_education": 29.2060985565186,
-      "gdppc": 55800.2194549412,
-      "suicide_rate": 12.9,
-      "government_effectiveness": 1.18541669845581,
+      "youth_unemployment": 12.444,
+      "inflation_annual": 3.2715729463592,
+      "neet_ratio": 12.802,
+      "tertiary_education": 37.1295585632324,
+      "gdppc": 52636.7865943853,
+      "suicide_rate": 9.55,
+      "government_effectiveness": 1.16114270687103,
       "wealth_concentration": 0.324,
-      "education_gap": 0.019568086032867464,
-      "elite_overproduction": 0.019568086032867464,
+      "education_gap": 0.046204022676086406,
+      "elite_overproduction": 0.046204022676086406,
       "social_polarization": 0.3,
-      "institutional_distrust": 0.26
+      "institutional_distrust": 0.27
     }
   },
   {
@@ -368,11 +368,11 @@
     }
   },
   {
-    "country_code": "GBR",
+    "country_code": "DEU",
     "year": 2025,
     "estabilidad_jiang": {
       "status": "stable",
-      "valor": 5.96,
+      "valor": 5.18,
       "indicators": {
         "neet_ratio": "stable",
         "gini_coefficient": "stable",
@@ -386,31 +386,31 @@
         "elite_overproduction": "stable"
       },
       "groups": {
-        "economic": 1.49,
-        "social": 0.22,
-        "demographic": 0.09
+        "economic": 1.56,
+        "social": 0.23,
+        "demographic": 0.05
       }
     },
     "inestabilidad_turchin": {
       "status": "stable",
-      "valor": 0.29
+      "valor": 0.25
     },
     "indicators": {
-      "country_code": "GBR",
+      "country_code": "DEU",
       "year": 2025,
       "gini_coefficient": 32.4,
-      "youth_unemployment": 12.444,
-      "inflation_annual": 3.2715729463592,
-      "neet_ratio": 12.802,
-      "tertiary_education": 37.1295585632324,
-      "gdppc": 52636.7865943853,
-      "suicide_rate": 9.55,
-      "government_effectiveness": 1.16114270687103,
+      "youth_unemployment": 6.7,
+      "inflation_annual": 2.2564981433876,
+      "neet_ratio": 7.456,
+      "tertiary_education": 29.2060985565186,
+      "gdppc": 55800.2194549412,
+      "suicide_rate": 12.9,
+      "government_effectiveness": 1.18541669845581,
       "wealth_concentration": 0.324,
-      "education_gap": 0.046204022676086406,
-      "elite_overproduction": 0.046204022676086406,
+      "education_gap": 0.019568086032867464,
+      "elite_overproduction": 0.019568086032867464,
       "social_polarization": 0.3,
-      "institutional_distrust": 0.27
+      "institutional_distrust": 0.26
     }
   },
   {
