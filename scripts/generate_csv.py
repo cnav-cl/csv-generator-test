@@ -421,4 +421,4 @@ class CliodynamicDataProcessor:
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
-    processor.main(test_mode=False)
+    processor.main(test_mode=True)
