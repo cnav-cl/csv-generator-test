@@ -1,4 +1,4 @@
-name: Generar Datos Cliodinamicos
+name: Generar Datos JSON Cliodinamicos
 
 on:
   schedule:
@@ -23,18 +23,31 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pandas numpy requests beautifulsoup4 lxml statsmodels
+        echo "$REQUIREMENTS" > requirements.txt
+        pip install -r requirements.txt
+      env:
+        REQUIREMENTS: |
+          pandas==2.2.3
+          numpy==2.1.2
+          requests==2.32.3
+          beautifulsoup4==4.12.3
+          lxml==5.3.0
+          statsmodels==0.14.4
 
     - name: Generate data for JSON
       run: |
         mkdir -p data
         python scripts/generar_json.py
+      env:
+        TEST_MODE: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}  # Test mode for manual runs
+      continue-on-error: false
 
     - name: Upload analysis results
       uses: actions/upload-artifact@v4
       with:
         name: analysis-results
-        path: data/resultados_analisis.json
+        path: data/combined_analysis_results.json
+        retention-days: 7
 
     - name: Commit and push changes
       run: |
@@ -44,6 +57,9 @@ jobs:
         if git diff --staged --quiet; then
           echo "No changes to commit"
         else
-          git commit -m "Auto-update: Cliodynamic data $(date +'%Y-%m-%d') [skip ci]"
-          git push origin main
+          git commit -m "Auto-update: Cliodynamic JSON data $(date +'%Y-%m-%d') [skip ci]"
+          git push origin main || echo "Failed to push changes, continuing"
         fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
