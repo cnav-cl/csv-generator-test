@@ -55,18 +55,18 @@ class CliodynamicDataProcessor:
         self.country_codes = self.load_all_countries()
         
         self.thresholds = {
-            'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.5, 'critical': -2.5}},  # Ajustado
+            'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.5, 'critical': -2.5}},
             'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
             'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'institutional_distrust': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},  # Ajustado
+            'institutional_distrust': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
             'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
             'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
             'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'estabilidad_jiang': {'alert': 5.0, 'critical': 4.0, 'points': {'alert': 0.0, 'critical': 0.0}},  # Ajustado
-            'inestabilidad_turchin': {'alert': 0.35, 'critical': 0.5, 'points': {'alert': 0.0, 'critical': 0.0}}  # Ajustado
+            'estabilidad_jiang': {'alert': 5.0, 'critical': 4.0, 'points': {'alert': 0.0, 'critical': 0.0}},
+            'inestabilidad_turchin': {'alert': 0.35, 'critical': 0.5, 'points': {'alert': 0.0, 'critical': 0.0}}
         }
 
         self.high_risk_countries = {
@@ -116,9 +116,9 @@ class CliodynamicDataProcessor:
                 data = response.json()
                 
                 historical = {}
-                if data and data[0]['total'] > 0:
+                if data and len(data) > 1 and data[1]:  # Verifica estructura de respuesta
                     for item in data[1]:
-                        if item['value'] is not None:
+                        if item['value'] is not None and item['date'].isdigit():
                             historical[int(item['date'])] = float(item['value'])
                 
                 if historical:
@@ -143,13 +143,21 @@ class CliodynamicDataProcessor:
 
     def forecast_indicator(self, historical: Dict[int, float], steps=2) -> float:
         if len(historical) < 3:
+            logging.debug(f"Insufficient data for forecast: {len(historical)} points")
             return list(historical.values())[-1]
-        series = pd.Series(historical)
+        
+        # Convertir años a pd.PeriodIndex (anual)
+        years = sorted(historical.keys())
+        values = [historical[year] for year in years]
+        # Crear fechas como 1 de enero de cada año
+        dates = pd.to_datetime([f"{year}-01-01" for year in years])
+        series = pd.Series(values, index=pd.PeriodIndex(dates, freq='A'))
+        
         try:
             model = ARIMA(series, order=(1,1,0))
             fit = model.fit()
             forecast = fit.forecast(steps=steps)
-            return forecast.iloc[-1]
+            return float(forecast.iloc[-1])
         except Exception as e:
             logging.warning(f"ARIMA error: {e}")
             return series.iloc[-1]
@@ -406,7 +414,7 @@ class CliodynamicDataProcessor:
         results = []
         countries = self.country_codes[:10] if test_mode else self.country_codes
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:  # Reducido para rate limits
             future_to_country = {executor.submit(self.process_country, country, year): country for country in countries}
             for future in concurrent.futures.as_completed(future_to_country):
                 country = future_to_country[future]
