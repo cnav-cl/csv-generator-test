@@ -1,6 +1,6 @@
 {
     "metadata": {
-        "creation_date": "2025-09-15T02:29:26.053707",
+        "creation_date": "2025-09-15T02:55:42.771462",
         "test_mode": true
     },
     "country_data": {
@@ -68,7 +68,8 @@
                     "status": "alert",
                     "valor": 7.0
                 }
-            }
+            },
+            "inestabilidad_turchin": 0.47
         },
         "AUT": {
             "year": 2025,
@@ -134,7 +135,8 @@
                     "status": "stable",
                     "valor": 9.0
                 }
-            }
+            },
+            "inestabilidad_turchin": 0.31
         },
         "AUS": {
             "year": 2025,
@@ -200,7 +202,8 @@
                     "status": "stable",
                     "valor": 7.5
                 }
-            }
+            },
+            "inestabilidad_turchin": 0.33
         },
         "BEL": {
             "year": 2025,
@@ -266,7 +269,8 @@
                     "status": "alert",
                     "valor": 5.5
                 }
-            }
+            },
+            "inestabilidad_turchin": 0.38
         },
         "USA": {
             "year": 2025,
@@ -332,7 +336,8 @@
                     "status": "alert",
                     "valor": 6.5
                 }
-            }
+            },
+            "inestabilidad_turchin": 0.37
         }
     }
 }
