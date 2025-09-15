@@ -1,51 +1,5 @@
 [
   {
-    "country_code": "CHN",
-    "year": 2025,
-    "estabilidad_jiang": {
-      "status": "stable",
-      "valor": 7.83,
-      "indicators": {
-        "neet_ratio": "stable",
-        "gini_coefficient": "stable",
-        "youth_unemployment": "stable",
-        "inflation_annual": "stable",
-        "social_polarization": "stable",
-        "institutional_distrust": "stable",
-        "suicide_rate": "stable",
-        "wealth_concentration": "stable",
-        "education_gap": "stable",
-        "elite_overproduction": "stable"
-      },
-      "groups": {
-        "economic": 0.51,
-        "social": 0.25,
-        "demographic": 0.04
-      }
-    },
-    "inestabilidad_turchin": {
-      "status": "alert",
-      "valor": 0.37
-    },
-    "indicators": {
-      "country_code": "CHN",
-      "year": 2025,
-      "gini_coefficient": 35.7,
-      "youth_unemployment": 15.226,
-      "inflation_annual": 0.218128938439177,
-      "neet_ratio": 0.0,
-      "tertiary_education": 7.67999982833862,
-      "gdppc": 13303.1481543868,
-      "suicide_rate": 8.95,
-      "government_effectiveness": 0.679014027118683,
-      "wealth_concentration": 0.35700000000000004,
-      "education_gap": 0.011693567738628383,
-      "elite_overproduction": 0.011693567738628383,
-      "social_polarization": 0.3,
-      "institutional_distrust": 0.36
-    }
-  },
-  {
     "country_code": "IND",
     "year": 2025,
     "estabilidad_jiang": {
@@ -184,6 +138,52 @@
     }
   },
   {
+    "country_code": "CHN",
+    "year": 2025,
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 7.83,
+      "indicators": {
+        "neet_ratio": "stable",
+        "gini_coefficient": "stable",
+        "youth_unemployment": "stable",
+        "inflation_annual": "stable",
+        "social_polarization": "stable",
+        "institutional_distrust": "stable",
+        "suicide_rate": "stable",
+        "wealth_concentration": "stable",
+        "education_gap": "stable",
+        "elite_overproduction": "stable"
+      },
+      "groups": {
+        "economic": 0.51,
+        "social": 0.25,
+        "demographic": 0.04
+      }
+    },
+    "inestabilidad_turchin": {
+      "status": "alert",
+      "valor": 0.37
+    },
+    "indicators": {
+      "country_code": "CHN",
+      "year": 2025,
+      "gini_coefficient": 35.7,
+      "youth_unemployment": 15.226,
+      "inflation_annual": 0.218128938439177,
+      "neet_ratio": 0.0,
+      "tertiary_education": 7.67999982833862,
+      "gdppc": 13303.1481543868,
+      "suicide_rate": 8.95,
+      "government_effectiveness": 0.679014027118683,
+      "wealth_concentration": 0.35700000000000004,
+      "education_gap": 0.011693567738628383,
+      "elite_overproduction": 0.011693567738628383,
+      "social_polarization": 0.3,
+      "institutional_distrust": 0.36
+    }
+  },
+  {
     "country_code": "USA",
     "year": 2025,
     "estabilidad_jiang": {
@@ -227,6 +227,52 @@
       "elite_overproduction": 0.03621152101631165,
       "social_polarization": 0.3,
       "institutional_distrust": 0.26
+    }
+  },
+  {
+    "country_code": "JPN",
+    "year": 2025,
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 6.85,
+      "indicators": {
+        "neet_ratio": "stable",
+        "gini_coefficient": "stable",
+        "youth_unemployment": "stable",
+        "inflation_annual": "stable",
+        "social_polarization": "stable",
+        "institutional_distrust": "stable",
+        "suicide_rate": "stable",
+        "wealth_concentration": "stable",
+        "education_gap": "stable",
+        "elite_overproduction": "stable"
+      },
+      "groups": {
+        "economic": 0.98,
+        "social": 0.21,
+        "demographic": 0.02
+      }
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.22
+    },
+    "indicators": {
+      "country_code": "JPN",
+      "year": 2025,
+      "gini_coefficient": 32.3,
+      "youth_unemployment": 3.925,
+      "inflation_annual": 2.73853681635241,
+      "neet_ratio": 3.14,
+      "tertiary_education": 25.5400009155273,
+      "gdppc": 32475.8924992191,
+      "suicide_rate": 17.43,
+      "government_effectiveness": 1.63126504421234,
+      "wealth_concentration": 0.32299999999999995,
+      "education_gap": 0.010024450359344465,
+      "elite_overproduction": 0.010024450359344465,
+      "social_polarization": 0.3,
+      "institutional_distrust": 0.17
     }
   },
   {
@@ -276,57 +322,11 @@
     }
   },
   {
-    "country_code": "JPN",
-    "year": 2025,
-    "estabilidad_jiang": {
-      "status": "stable",
-      "valor": 6.9,
-      "indicators": {
-        "neet_ratio": "stable",
-        "gini_coefficient": "stable",
-        "youth_unemployment": "stable",
-        "inflation_annual": "stable",
-        "social_polarization": "stable",
-        "institutional_distrust": "stable",
-        "suicide_rate": "stable",
-        "wealth_concentration": "stable",
-        "education_gap": "stable",
-        "elite_overproduction": "stable"
-      },
-      "groups": {
-        "economic": 0.98,
-        "social": 0.21,
-        "demographic": 0.02
-      }
-    },
-    "inestabilidad_turchin": {
-      "status": "stable",
-      "valor": 0.19
-    },
-    "indicators": {
-      "country_code": "JPN",
-      "year": 2025,
-      "gini_coefficient": 32.3,
-      "youth_unemployment": 3.925,
-      "inflation_annual": 2.73853681635241,
-      "neet_ratio": 3.14,
-      "tertiary_education": 25.5400009155273,
-      "gdppc": 32475.8924992191,
-      "suicide_rate": 17.43,
-      "government_effectiveness": 1.63126504421234,
-      "wealth_concentration": 0.32299999999999995,
-      "education_gap": 0.010024450359344465,
-      "elite_overproduction": 0.010024450359344465,
-      "social_polarization": 0.3,
-      "institutional_distrust": 0.17
-    }
-  },
-  {
     "country_code": "DEU",
     "year": 2025,
     "estabilidad_jiang": {
       "status": "stable",
-      "valor": 5.18,
+      "valor": 5.29,
       "indicators": {
         "neet_ratio": "stable",
         "gini_coefficient": "stable",
