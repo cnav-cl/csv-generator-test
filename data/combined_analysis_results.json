@@ -1,6 +1,6 @@
 {
     "metadata": {
-        "creation_date": "2025-09-15T03:59:59.403462",
+        "creation_date": "2025-09-15T08:35:26.723952",
         "test_mode": true
     },
     "country_data": {
@@ -151,7 +151,7 @@
                 "year": 2025,
                 "gini_coefficient": 25.5,
                 "youth_unemployment": 16.028,
-                "inflation_annual": 4.95303550973656,
+                "inflation_annual": 6.0,
                 "neet_ratio": 23.494,
                 "tertiary_education": 13.2299995422363,
                 "gdppc": 2696.66389984463,
@@ -178,7 +178,7 @@
                 },
                 "inflation_annual": {
                     "status": "stable",
-                    "valor": 4.95303550973656
+                    "valor": 6.0
                 },
                 "social_polarization": {
                     "status": "stable",
