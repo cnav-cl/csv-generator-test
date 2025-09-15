@@ -41,56 +41,20 @@ class CliodynamicDataProcessor:
         self.country_codes = self.load_all_countries()
         
         self.thresholds = {
-            'gini_coefficient': {'stable_min': None, 'stable_max': 39.9, 'alert_min': 40.0, 'alert_max': 49.9, 'critical_min': 50.0, 'critical_max': None},
-            'youth_unemployment': {'stable_min': None, 'stable_max': 29.9, 'alert_min': 30.0, 'alert_max': 39.9, 'critical_min': 40.0, 'critical_max': None},
-            'inflation_annual': {'stable_min': None, 'stable_max': 5.0, 'alert_min': 5.1, 'alert_max': 9.9, 'critical_min': 10.0, 'critical_max': None},
-            'neet_ratio': {'stable_min': None, 'stable_max': 19.9, 'alert_min': 20.0, 'alert_max': 29.9, 'critical_min': 30.0, 'critical_max': None},
-            'tertiary_education': {'stable_min': 20.0, 'stable_max': None, 'alert_min': 10.0, 'alert_max': 20.0, 'critical_min': None, 'critical_max': 10.0},
-            'gdppc': {'stable_min': 15000.0, 'stable_max': None, 'alert_min': 5000.0, 'alert_max': 14999.0, 'critical_min': None, 'critical_max': 5000.0},
-            'suicide_rate': {'stable_min': None, 'stable_max': 9.9, 'alert_min': 10.0, 'alert_max': 14.9, 'critical_min': 15.0, 'critical_max': None},
-            'government_effectiveness': {'stable_min': 0.5, 'stable_max': None, 'alert_min': 0.0, 'alert_max': 0.49, 'critical_min': None, 'critical_max': 0.0},
-            'wealth_concentration': {'stable_min': None, 'stable_max': 0.5, 'alert_min': 0.51, 'alert_max': 0.7, 'critical_min': 0.7, 'critical_max': None},
-            'education_gap': {'stable_min': None, 'stable_max': 0.05, 'alert_min': 0.051, 'alert_max': 0.1, 'critical_min': 0.1, 'critical_max': None},
-            'elite_overproduction': {'stable_min': None, 'stable_max': 0.05, 'alert_min': 0.051, 'alert_max': 0.1, 'critical_min': 0.1, 'critical_max': None},
-            'social_polarization': {'stable_min': None, 'stable_max': 0.4, 'alert_min': 0.41, 'alert_max': 0.6, 'critical_min': 0.6, 'critical_max': None},
-            'institutional_distrust': {'stable_min': None, 'stable_max': 0.35, 'alert_min': 0.36, 'alert_max': 0.5, 'critical_min': 0.5, 'critical_max': None},
-            'estabilidad_jiang': {'stable_min': 7.0, 'stable_max': None, 'alert_min': 5.0, 'alert_max': 6.9, 'critical_min': None, 'critical_max': 5.0}
+            'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
+            'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'estabilidad_jiang': {'alert': 4.9, 'critical': 7.4, 'points': {'alert': 0.0, 'critical': 0.0}}
         }
 
-        self.indicator_names = {
-            'estabilidad_jiang': "Nivel de Estabilidad Jiang",
-            'gini_coefficient': "Coeficiente de Gini",
-            'institutional_distrust': "Desconfianza Institucional",
-            'youth_unemployment': "Desempleo Juvenil",
-            'inflation_annual': "Inflación Anual",
-            'neet_ratio': "Tasa NEET (No estudia, No trabaja)",
-            'tertiary_education': "Educación Terciaria",
-            'gdppc': "PIB per cápita",
-            'suicide_rate': "Tasa de Suicidio",
-            'government_effectiveness': "Efectividad Gubernamental",
-            'wealth_concentration': "Concentración de Riqueza",
-            'education_gap': "Brecha Educativa",
-            'elite_overproduction': "Sobreproducción de Élite",
-            'social_polarization': "Polarización Social"
-        }
-        
-        self.indicator_descriptions = {
-            'estabilidad_jiang': "Una métrica agregada que evalúa la estabilidad social y económica.",
-            'gini_coefficient': "Mide la desigualdad en la distribución de ingresos.",
-            'institutional_distrust': "Evalúa el nivel de desconfianza de la población en las instituciones gubernamentales.",
-            'youth_unemployment': "Tasa de desempleo en la población entre 15 y 24 años.",
-            'inflation_annual': "Variación porcentual de los precios en un año.",
-            'neet_ratio': "Porcentaje de jóvenes que no trabajan ni estudian ni están en formación.",
-            'tertiary_education': "Porcentaje de la población con educación postsecundaria.",
-            'gdppc': "Producto Interno Bruto por persona.",
-            'suicide_rate': "Número de suicidios por cada 100,000 habitantes.",
-            'government_effectiveness': "Mide la calidad de la administración pública y el servicio civil.",
-            'wealth_concentration': "Evalúa el porcentaje de la riqueza total del país en manos del 1% más rico.",
-            'education_gap': "La diferencia en años de educación entre los niveles socioeconómicos.",
-            'elite_overproduction': "Mide la proporción de la población educada en exceso de los empleos disponibles para ellos.",
-            'social_polarization': "Evalúa la división de la sociedad en grupos con opiniones extremas y opuestas."
-        }
-
+    
     def load_all_countries(self) -> List[str]:
         try:
             url = "https://api.worldbank.org/v2/country?format=json&per_page=300"
@@ -178,56 +142,78 @@ class CliodynamicDataProcessor:
             print(f"  -> Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
     
-    def calculate_status(self, indicator_key: str, value: float) -> str:
-        """Determina el estado de un indicador basado en sus umbrales."""
-        thresholds = self.thresholds.get(indicator_key)
-        if not thresholds or value is None:
-            return "not_available"
-
-        stable_min = thresholds.get('stable_min')
-        stable_max = thresholds.get('stable_max')
-        alert_min = thresholds.get('alert_min')
-        alert_max = thresholds.get('alert_max')
-        critical_min = thresholds.get('critical_min')
-        critical_max = thresholds.get('critical_max')
-
-        if (stable_min is None or value >= stable_min) and (stable_max is None or value <= stable_max):
-            return "stable"
-        if (alert_min is None or value >= alert_min) and (alert_max is None or value <= alert_max):
-            return "alert"
-        if (critical_min is None or value >= critical_min) and (critical_max is None or value <= critical_max):
-            return "critical"
+    def calculate_jiang_stability(self, indicators: Dict) -> Dict:
+        stability_score = 10.0
+        risk_indicators_status = {}
         
-        return "not_available"
+        social_media_penalty = 0.0
+        if indicators.get('institutional_distrust', 0.0) >= 0.5:
+            social_media_penalty = -0.5
+            print(f"  Significant social media influence detected. Applying {social_media_penalty} penalty.")
+        
+        stability_score += social_media_penalty
 
-    def get_indicators_definitions(self) -> Dict:
-        """Genera la estructura de definiciones de indicadores."""
-        definitions = {}
-        for key in self.thresholds.keys():
-            if key == 'estabilidad_jiang':
-                definitions[key] = {
-                    "name": self.indicator_names.get(key),
-                    "description": self.indicator_descriptions.get(key),
-                    "thresholds": {
-                        "stable": {"min": self.thresholds[key]['stable_min'], "max": self.thresholds[key]['stable_max']},
-                        "alert": {"min": self.thresholds[key]['alert_min'], "max": self.thresholds[key]['alert_max']},
-                        "critical": {"min": self.thresholds[key]['critical_min'], "max": self.thresholds[key]['critical_max']}
-                    }
-                }
+        risk_factors = {
+            'neet_ratio': indicators.get('neet_ratio'),
+            'gini_coefficient': indicators.get('gini_coefficient'),
+            'youth_unemployment': indicators.get('youth_unemployment'),
+            'inflation_annual': indicators.get('inflation_annual'),
+            'social_polarization': indicators.get('social_polarization'),
+            'institutional_distrust': indicators.get('institutional_distrust'),
+            'suicide_rate': indicators.get('suicide_rate'),
+            'wealth_concentration': indicators.get('wealth_concentration'),
+            'education_gap': indicators.get('education_gap'),
+            'elite_overproduction': indicators.get('elite_overproduction')
+        }
+
+        for key, value in risk_factors.items():
+            if value is not None:
+                thresholds = self.thresholds.get(key)
+                if thresholds:
+                    if key in ['gini_coefficient', 'youth_unemployment', 'tertiary_education', 'wealth_concentration', 'education_gap', 'elite_overproduction', 'social_polarization', 'institutional_distrust']:
+                        normalized_value = value
+                        if key in ['gini_coefficient', 'youth_unemployment']:
+                            normalized_value = value / 100
+                        
+                        if normalized_value >= thresholds['critical']:
+                            stability_score += thresholds.get('points', {}).get('critical', -2.0)
+                            risk_indicators_status[key] = {'status': 'critical', 'valor': value}
+                        elif normalized_value >= thresholds['alert']:
+                            stability_score += thresholds.get('points', {}).get('alert', -1.0)
+                            risk_indicators_status[key] = {'status': 'alert', 'valor': value}
+                        else:
+                            risk_indicators_status[key] = {'status': 'stable', 'valor': value}
+                    else:
+                        if value >= thresholds['critical']:
+                            stability_score += thresholds.get('points', {}).get('critical', -2.0)
+                            risk_indicators_status[key] = {'status': 'critical', 'valor': value}
+                        elif value >= thresholds['alert']:
+                            stability_score += thresholds.get('points', {}).get('alert', -1.0)
+                            risk_indicators_status[key] = {'status': 'alert', 'valor': value}
+                        else:
+                            risk_indicators_status[key] = {'status': 'stable', 'valor': value}
             else:
-                definitions[key] = {
-                    "name": self.indicator_names.get(key),
-                    "description": self.indicator_descriptions.get(key),
-                    "thresholds": {
-                        "stable": {"min": self.thresholds[key]['stable_min'], "max": self.thresholds[key]['stable_max']},
-                        "alert": {"min": self.thresholds[key]['alert_min'], "max": self.thresholds[key]['alert_max']},
-                        "critical": {"min": self.thresholds[key]['critical_min'], "max": self.thresholds[key]['critical_max']}
-                    }
-                }
-        return definitions
+                risk_indicators_status[key] = {'status': 'not_available', 'valor': None}
+        
+        # Determine the status for the Jiang Stability Score
+        if stability_score <= 4.9:
+            stability_level = 'critical'
+        elif stability_score <= 7.4:
+            stability_level = 'alert'
+        else:
+            stability_level = 'stable'
 
+        final_score = round(max(1.0, min(10.0, stability_score)), 2)
+
+        # Add the Jiang Stability Score to the risk_indicators_status dictionary for consistency
+        risk_indicators_status['estabilidad_jiang'] = {'status': stability_level, 'valor': final_score}
+        
+        return {
+            'risk_indicators_status': risk_indicators_status
+        }
+    
     def process_country(self, country_code: str, year: int) -> Dict:
-        """Procesar datos para un país específico y devolver la estructura de datos para 'country_data'."""
+        """Procesar datos para un país específico"""
         print(f"Processing {country_code} for {year}...")
         
         all_indicators = {'country_code': country_code, 'year': year}
@@ -243,6 +229,7 @@ class CliodynamicDataProcessor:
             'government_effectiveness': 'GE.EST'
         }
 
+        # La versión anterior del código podía retornar None aquí. Se ha modificado para evitarlo.
         try:
             for indicator, wb_code in indicators_to_fetch.items():
                 value = self.fetch_world_bank_data(country_code, wb_code)
@@ -269,78 +256,37 @@ class CliodynamicDataProcessor:
 
             jiang_metrics = self.calculate_jiang_stability(all_indicators)
             
-            # Formatear el resultado para la nueva estructura
-            country_data = {
-                "country_code": country_code,
-                "year": year,
-                "estabilidad_jiang": {
-                    "value": jiang_metrics['estabilidad_jiang'],
-                    "status": jiang_metrics['stability_level']
-                },
-                "indicators": {}
+            result = {
+                'country_code': country_code,
+                'year': year,
+                'indicators': all_indicators,
+                'risk_indicators_status': jiang_metrics['risk_indicators_status']
             }
             
-            for key, value in all_indicators.items():
-                if key not in ['country_code', 'year', 'estabilidad_jiang']:
-                    country_data['indicators'][key] = {
-                        'value': value,
-                        'status': self.calculate_status(key, value)
-                    }
-
-            print(f"  -> Finished processing {country_code}. Result: {country_data.get('estabilidad_jiang')}, {country_data.get('estabilidad_jiang').get('status')}")
-            return country_data
+            print(f"  -> Finished processing {country_code}. Result: {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('valor')}, {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('status')}")
+            return result
         except Exception as e:
+            # En caso de un fallo inesperado, se retornan los datos parciales
             print(f"  -> Error processing {country_code}: {e}. Returning partial data.")
-            return {
-                "country_code": country_code,
-                "year": year,
-                "estabilidad_jiang": {"value": None, "status": "not_available"},
-                "indicators": {}
+            # Añade los campos esperados con valores nulos para no romper el JSON
+            all_indicators['wealth_concentration'] = None
+            all_indicators['education_gap'] = None
+            all_indicators['elite_overproduction'] = None
+            all_indicators['social_polarization'] = None
+            all_indicators['institutional_distrust'] = None
+            
+            result = {
+                'country_code': country_code,
+                'year': year,
+                'indicators': all_indicators,
+                'risk_indicators_status': {}
             }
+            
+            return result
 
-    def calculate_jiang_stability(self, indicators: Dict) -> Dict:
-        # Esta función mantiene su lógica interna, pero el resultado se formatea en `process_country`
-        stability_score = 10.0
-        
-        social_media_penalty = 0.0
-        if indicators.get('institutional_distrust', 0.0) >= 0.5:
-            social_media_penalty = -0.5
-            print(f"  Significant social media influence detected. Applying {social_media_penalty} penalty.")
-        
-        stability_score += social_media_penalty
 
-        risk_factors = {
-            'neet_ratio': indicators.get('neet_ratio'),
-            'gini_coefficient': indicators.get('gini_coefficient'),
-            'youth_unemployment': indicators.get('youth_unemployment'),
-            'inflation_annual': indicators.get('inflation_annual'),
-            'social_polarization': indicators.get('social_polarization'),
-            'institutional_distrust': indicators.get('institutional_distrust'),
-            'suicide_rate': indicators.get('suicide_rate'),
-            'wealth_concentration': indicators.get('wealth_concentration'),
-            'education_gap': indicators.get('education_gap'),
-            'elite_overproduction': indicators.get('elite_overproduction')
-        }
-
-        # Aplicar penalizaciones
-        for key, value in risk_factors.items():
-            if value is not None:
-                status = self.calculate_status(key, value)
-                if status == 'alert':
-                    stability_score += -1.5 # Ejemplo de puntos de penalización
-                elif status == 'critical':
-                    stability_score += -3.0 # Ejemplo de puntos de penalización
-        
-        final_score = round(max(1.0, min(10.0, stability_score)), 2)
-        stability_level = self.calculate_status('estabilidad_jiang', final_score)
-
-        return {
-            'estabilidad_jiang': final_score,
-            'stability_level': stability_level
-        }
-
-    def save_to_json(self, data: Dict, filename: str = 'data/combined_analysis_results.json'):
-        """Guardar los datos procesados en un archivo JSON en un solo bloque."""
+    def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
+        """Guardar los datos procesados en un archivo JSON, con cada objeto en una nueva línea."""
         if not data:
             print("No data to save.")
             return
@@ -348,16 +294,27 @@ class CliodynamicDataProcessor:
         if not os.path.exists('data'):
             os.makedirs('data')
         
+        # Acomoda la salida en un formato más usable para el frontend
+        formatted_data = {
+            "metadata": {
+                "creation_date": datetime.now().isoformat(),
+                "test_mode": True # Ajusta esto según el modo
+            },
+            "country_data": {}
+        }
+        for item in data:
+            country_code = item.pop('country_code')
+            formatted_data['country_data'][country_code] = item
+        
         with open(filename, 'w', encoding='utf-8') as output_file:
-            json.dump(data, output_file, indent=2, ensure_ascii=False)
+            json.dump(formatted_data, output_file, indent=4, ensure_ascii=False)
         print(f"Data successfully saved to {filename}")
 
     def main(self, test_mode: bool = False):
         """Función principal con modo de prueba"""
         print(f"Starting cliodynamic data generation. Test Mode: {test_mode}")
         
-        indicators_definitions = self.get_indicators_definitions()
-        country_data_all = {}
+        all_data = []
         current_year = datetime.now().year
         
         if test_mode:
@@ -367,18 +324,10 @@ class CliodynamicDataProcessor:
         
         for country_code in country_list:
             data = self.process_country(country_code, current_year)
-            country_data_all[country_code] = data
+            all_data.append(data)
             time.sleep(self.sources['world_bank'].rate_limit)
-
-        final_json = {
-            "indicators_definitions": indicators_definitions,
-            "country_data": country_data_all
-        }
         
-        print("\nFinal data to be saved:")
-        print(json.dumps(final_json, indent=2, ensure_ascii=False))
-        
-        self.save_to_json(final_json)
+        self.save_to_json(all_data)
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
