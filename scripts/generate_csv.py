@@ -11,6 +11,7 @@ import re
 import random
 from bs4 import BeautifulSoup
 from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.holtwinters import SimpleExpSmoothing
 import concurrent.futures
 import logging
 import copy
@@ -82,16 +83,16 @@ class CliodynamicDataProcessor:
             'government_effectiveness': [('world_bank', 'GE.EST')]
         }
 
-        # Default values for missing indicators
+        # Default values for missing indicators (refined for regional averages)
         self.default_indicator_values = {
-            'gini_coefficient': 40.0,
-            'youth_unemployment': 20.0,
-            'inflation_annual': 5.0,
-            'neet_ratio': 15.0,
-            'tertiary_education': 18.0,
-            'gdppc': 1000.0,
-            'suicide_rate': 10.0,
-            'government_effectiveness': 0.0
+            'gini_coefficient': 40.0,  # Global average
+            'youth_unemployment': 20.0,  # Global average
+            'inflation_annual': 5.0,  # Global average
+            'neet_ratio': 12.0,  # Adjusted for East Asia & Pacific (for CHN)
+            'tertiary_education': 18.0,  # Global average
+            'gdppc': 1000.0,  # Low-income country average
+            'suicide_rate': 10.0,  # Global average
+            'government_effectiveness': 0.0  # Neutral value
         }
 
         self.country_codes = self.load_all_countries()
@@ -209,6 +210,11 @@ class CliodynamicDataProcessor:
         
         years = sorted(historical.keys())
         values = [historical[year] for year in years]
+        # Check for low variance to avoid ARIMA on near-constant series
+        if np.var(values) < 1e-6:
+            logging.debug(f"Low variance in data for {country_code}-{indicator}, using last value")
+            return values[-1]
+        
         # Apply log-transformation to stabilize variance (avoid log(0) or negative values)
         values = [np.log1p(max(0, v)) for v in values]
         # Apply first-order differencing to improve stationarity
@@ -219,11 +225,12 @@ class CliodynamicDataProcessor:
         dates = pd.to_datetime([f"{year}-01-01" for year in years[1:]])
         series = pd.Series(values_diff, index=pd.PeriodIndex(dates, freq='Y'))
         
-        orders = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]  # Simplified orders for differenced data
+        # Try ARIMA
+        orders = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]
         for order in orders:
             try:
                 model = ARIMA(series, order=order, enforce_stationarity=False, enforce_invertibility=False)
-                fit = model.fit()  # Removed maxiter for compatibility
+                fit = model.fit()
                 forecast_diff = fit.forecast(steps=steps)
                 # Reverse differencing and log-transformation
                 last_value = values[-1]
@@ -233,17 +240,26 @@ class CliodynamicDataProcessor:
                 logging.warning(f"ARIMA failed with order {order} for {country_code}-{indicator}: {e}")
                 continue
         
-        # Fallback to simple moving average if ARIMA fails
-        logging.warning(f"All ARIMA orders failed for {country_code}-{indicator}, using moving average")
+        # Fallback to exponential smoothing
+        try:
+            model = SimpleExpSmoothing(values)
+            fit = model.fit()
+            forecast = fit.forecast(steps=steps)
+            return float(np.expm1(forecast[-1]))
+        except Exception as e:
+            logging.warning(f"Exponential smoothing failed for {country_code}-{indicator}: {e}")
+        
+        # Fallback to moving average
+        logging.warning(f"All forecasting methods failed for {country_code}-{indicator}, using moving average")
         window_size = min(3, len(values))
         if window_size > 0:
             moving_avg = np.mean(values[-window_size:])
             return float(np.expm1(moving_avg))
         return 0.0
 
-    def get_gdelt_shock_factor(self, country_code: str) -> float:
+    def get_gdelt_shock_factor(self, country_code: str, force_refresh: bool = False) -> float:
         cache_key = f"gdelt_{country_code}"
-        if cache_key in self.cache:
+        if not force_refresh and cache_key in self.cache:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
                 logging.info(f"Using cached GDELT shock factor for {country_code}: {self.cache[cache_key]['data']}")
                 return self.cache[cache_key]['data']
@@ -262,8 +278,9 @@ class CliodynamicDataProcessor:
                     shock_factor = 1.0
                 else:
                     data = response.json()
-                    logging.info(f"GDELT data retrieved for {country_code}: {len(data.get('articles', []))} articles")
-                    total_events = sum(1 for item in data.get('articles', []) if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
+                    articles = data.get('articles', [])
+                    logging.info(f"GDELT data retrieved for {country_code}: {len(articles)} articles")
+                    total_events = sum(1 for item in articles if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
                     shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
                 self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
                 self.save_cache()
@@ -452,7 +469,7 @@ class CliodynamicDataProcessor:
             group_scores[group] = round(group_score, 2)
             systemic_risk_score += group_score * weights[group]
 
-        shock_factor = self.get_gdelt_shock_factor(country_code)
+        shock_factor = self.get_gdelt_shock_factor(country_code, force_refresh=True)  # Force refresh in test mode
         systemic_risk_score *= shock_factor
 
         high_risk = self.fetch_latest_fsi()
@@ -505,6 +522,7 @@ class CliodynamicDataProcessor:
         all_indicators = {'country_code': country_code, 'year': year}
         deltas = {}
         forecasts = {}
+        missing_indicators = []
 
         valid_data = False
         for indicator, wb_code in self.indicator_sources.items():
@@ -515,7 +533,11 @@ class CliodynamicDataProcessor:
                 deltas[indicator] = hist_data['delta']
                 forecasts[indicator] = self.forecast_indicator(hist_data['historical'], country_code=country_code, indicator=indicator)
             else:
-                all_indicators[indicator] = hist_data['current']  # Use default value if no historical data
+                all_indicators[indicator] = hist_data['current']  # Use default value
+                missing_indicators.append(indicator)
+
+        if missing_indicators:
+            logging.info(f"Missing indicators for {country_code}: {', '.join(missing_indicators)}")
 
         if not valid_data:
             logging.warning(f"No valid historical data for {country_code}, using default values")
