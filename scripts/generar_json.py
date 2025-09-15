@@ -32,6 +32,7 @@ class CliodynamicDataProcessor:
         self.cache_file = cache_file
         self.cache = self.load_cache()
         self.cache_lock = threading.Lock()  # Lock for thread-safe cache access
+        self.temp_cache = {}  # Temporary cache to store updates during processing
 
         # GDELT country mapping
         self.gdelt_country_mapping = {
@@ -156,7 +157,7 @@ class CliodynamicDataProcessor:
             ),
             'gdelt': DataSource(
                 name="GDELT Monitoring",
-                base_url="https://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=artlist&format=json&maxrecords=100",
+                base_url="https://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=artlist&format=json&maxrecords={maxrecords}",
                 rate_limit=0.5
             )
         }
@@ -229,6 +230,8 @@ class CliodynamicDataProcessor:
     def load_cache(self) -> Dict:
         try:
             if os.path.exists(self.cache_file):
+                start_time = time.time()
+                logging.debug(f"Loading cache from {self.cache_file}")
                 with open(self.cache_file, 'r') as f:
                     cache = json.load(f)
                 # Convert string keys to int for historical data
@@ -258,30 +261,39 @@ class CliodynamicDataProcessor:
                     if not isinstance(data.get('variance', 0.0), (int, float)) or np.isnan(data.get('variance', 0.0)):
                         logging.warning(f"Invalid cached variance value for {key}: {data.get('variance')}, clearing cache")
                         return {}
+                logging.debug(f"Cache loaded in {time.time() - start_time:.2f} seconds")
                 return cache
         except Exception as e:
             logging.warning(f"Error loading cache: {e}, clearing cache")
         return {}
 
     def save_cache(self):
-        with self.cache_lock:  # Synchronize cache access
-            try:
-                os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
-                cache_copy = copy.deepcopy(self.cache)
-                with open(self.cache_file, 'w') as f:
-                    json.dump(cache_copy, f)
-            except Exception as e:
-                logging.warning(f"Error saving cache: {e}")
+        start_time = time.time()
+        logging.debug(f"Saving cache to {self.cache_file}")
+        try:
+            os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
+            cache_copy = copy.deepcopy(self.cache)
+            with open(self.cache_file, 'w') as f:
+                json.dump(cache_copy, f)
+            logging.debug(f"Cache saved in {time.time() - start_time:.2f} seconds")
+        except Exception as e:
+            logging.error(f"Error saving cache: {e}, continuing without saving")
 
     def load_all_countries(self) -> List[str]:
         return list(self.gdelt_country_mapping.keys())
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str, indicator_name: str, years_back=10) -> Optional[Dict]:
         cache_key = f"{country_code}_{indicator_code}"
+        start_time = time.time()
+        logging.debug(f"Checking cache for {cache_key}")
+        if cache_key in self.temp_cache:
+            if (datetime.now() - datetime.fromisoformat(self.temp_cache[cache_key]['timestamp'])).days < 7:
+                logging.debug(f"Using temp cache for {country_code}-{indicator_code} in {time.time() - start_time:.2f} seconds")
+                return self.temp_cache[cache_key]['data']
         with self.cache_lock:  # Synchronize cache read
             if cache_key in self.cache:
                 if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 7:
-                    logging.debug(f"Using cached data for {country_code}-{indicator_code}")
+                    logging.debug(f"Using file cache for {country_code}-{indicator_code} in {time.time() - start_time:.2f} seconds")
                     return self.cache[cache_key]['data']
         
         end_year = datetime.now().year
@@ -318,9 +330,8 @@ class CliodynamicDataProcessor:
                     variance = np.var(list(historical.values()))
                     result = {'historical': historical, 'current': current, 'delta': delta, 'variance': variance}
                     with self.cache_lock:  # Synchronize cache write
-                        self.cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
-                        self.save_cache()
-                    logging.debug(f"Fetched data for {country_code}-{indicator_code}: {result}")
+                        self.temp_cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
+                    logging.debug(f"Fetched data for {country_code}-{indicator_code} in {time.time() - start_time:.2f} seconds")
                     return result
                 
                 logging.warning(f"No valid data for {country_code}-{indicator_code}, using default value")
@@ -340,6 +351,7 @@ class CliodynamicDataProcessor:
         return {'historical': {}, 'current': default_value, 'delta': 0.0, 'variance': 0.0}
 
     def forecast_indicator(self, historical: Dict[int, float], steps=2, country_code: str = "", indicator: str = "") -> float:
+        start_time = time.time()
         if len(historical) < 7:  # Increased to 7 for more robust ARIMA fitting
             logging.debug(f"Insufficient data for forecast: {len(historical)} points for {country_code}-{indicator}")
             return list(historical.values())[-1] if historical else 0.0
@@ -393,6 +405,7 @@ class CliodynamicDataProcessor:
                     forecast = forecast_diff.iloc[-1]
                 else:
                     forecast = np.cumsum([last_value] + list(forecast_diff))[-1]
+                logging.debug(f"Forecast for {country_code}-{indicator} completed in {time.time() - start_time:.2f} seconds")
                 return float(np.expm1(forecast))
             except Exception as e:
                 logging.warning(f"ARIMA failed with order {order} for {country_code}-{indicator}: {e}")
@@ -403,6 +416,7 @@ class CliodynamicDataProcessor:
             model = SimpleExpSmoothing(values)
             fit = model.fit()
             forecast = fit.forecast(steps=steps)
+            logging.debug(f"Exponential smoothing forecast for {country_code}-{indicator} in {time.time() - start_time:.2f} seconds")
             return float(np.expm1(forecast.iloc[-1]))
         except Exception as e:
             logging.warning(f"Exponential smoothing failed for {country_code}-{indicator}: {e}")
@@ -412,29 +426,37 @@ class CliodynamicDataProcessor:
         window_size = min(3, len(values))
         if window_size > 0:
             moving_avg = np.mean(values[-window_size:])
+            logging.debug(f"Moving average forecast for {country_code}-{indicator} in {time.time() - start_time:.2f} seconds")
             return float(np.expm1(moving_avg))
         return 0.0
 
     def get_gdelt_shock_factor(self, country_code: str, force_refresh: bool = False) -> float:
         cache_key = f"gdelt_{country_code}"
-        with self.cache_lock:  # Synchronize cache read
+        start_time = time.time()
+        logging.debug(f"Starting GDELT fetch for {country_code}")
+        if not force_refresh and cache_key in self.temp_cache:
+            if (datetime.now() - datetime.fromisoformat(self.temp_cache[cache_key]['timestamp'])).days < 1:
+                logging.info(f"Using temp cache GDELT shock factor for {country_code}: {self.temp_cache[cache_key]['data']}")
+                return self.temp_cache[cache_key]['data']
+        with self.cache_lock:
             if not force_refresh and cache_key in self.cache:
                 if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
-                    logging.info(f"Using cached GDELT shock factor for {country_code}: {self.cache[cache_key]['data']}")
+                    logging.info(f"Using file cache GDELT shock factor for {country_code}: {self.cache[cache_key]['data']}")
                     return self.cache[cache_key]['data']
         
         country_names = self.gdelt_country_mapping.get(country_code, [country_code])
         shock_factor = 1.0
         headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
+        maxrecords = 50 if country_code == 'USA' else 100  # Reducir carga para USA
         
         for country_name in country_names:
             query = f"sourcecountry:{country_name} (protest OR violence OR conflict OR crisis)"
-            attempts = 2  # Reducido a 2 intentos
+            attempts = 2
             for attempt in range(attempts):
                 try:
-                    url = self.sources['gdelt'].base_url.format(query=query)  # maxrecords=100 ya está en la URL base
+                    url = self.sources['gdelt'].base_url.format(query=query, maxrecords=maxrecords)
                     logging.debug(f"GDELT query URL for {country_code} ({country_name}): {url}")
-                    response = requests.get(url, timeout=15, headers=headers)  # Timeout reducido
+                    response = requests.get(url, timeout=15, headers=headers)
                     response.raise_for_status()
                     if 'application/json' not in response.headers.get('Content-Type', ''):
                         logging.warning(f"Non-JSON response from GDELT for {country_code} ({country_name}): {response.text[:200]}")
@@ -443,10 +465,11 @@ class CliodynamicDataProcessor:
                     articles = data.get('articles', [])
                     logging.info(f"GDELT data retrieved for {country_code} ({country_name}): {len(articles)} articles")
                     total_events = len(articles)
-                    shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0  # Ajustar umbrales
-                    with self.cache_lock:  # Synchronize cache write
-                        self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
-                        self.save_cache()
+                    shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
+                    with self.cache_lock:
+                        logging.debug(f"Updating temp cache for {cache_key} in {time.time() - start_time:.2f} seconds")
+                        self.temp_cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
+                    logging.debug(f"GDELT fetch for {country_code} completed in {time.time() - start_time:.2f} seconds")
                     return shock_factor
                 except requests.exceptions.RequestException as e:
                     if 'response' in locals() and response.status_code == 429:
@@ -461,15 +484,18 @@ class CliodynamicDataProcessor:
         
         logging.warning(f"Failed to fetch GDELT data for {country_code}, using default shock factor")
         with self.cache_lock:
-            self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
-            self.save_cache()
+            logging.debug(f"Updating temp cache for {cache_key} with default value in {time.time() - start_time:.2f} seconds")
+            self.temp_cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
         return shock_factor
 
     def fetch_latest_fsi(self):
         cache_key = 'fsi_data'
-        with self.cache_lock:  # Synchronize cache read
+        start_time = time.time()
+        logging.debug(f"Fetching FSI data")
+        with self.cache_lock:
             if cache_key in self.cache:
                 if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 30:
+                    logging.debug(f"Using cache for FSI data in {time.time() - start_time:.2f} seconds")
                     return self.cache[cache_key]['data']
         
         headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
@@ -497,9 +523,10 @@ class CliodynamicDataProcessor:
                         except ValueError:
                             pass
             result = updated_dict or self.high_risk_countries
-            with self.cache_lock:  # Synchronize cache write
-                self.cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
-                self.save_cache()
+            with self.cache_lock:
+                logging.debug(f"Updating temp cache for FSI data in {time.time() - start_time:.2f} seconds")
+                self.temp_cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
+            logging.debug(f"FSI fetch completed in {time.time() - start_time:.2f} seconds")
             return result
         except Exception as e:
             logging.warning(f"Error fetching FSI: {e}. Using fallback.")
@@ -717,6 +744,7 @@ class CliodynamicDataProcessor:
         }
 
     def process_country(self, country_code: str, year: int) -> Optional[Dict]:
+        start_time = time.time()
         logging.info(f"Processing country: {country_code}")
         all_indicators = {'country_code': country_code, 'year': year}
         deltas = {}
@@ -777,9 +805,12 @@ class CliodynamicDataProcessor:
             'deltas': deltas,
             'forecasts': forecasts
         }
+        logging.debug(f"Country {country_code} processed in {time.time() - start_time:.2f} seconds")
         return result
 
     def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
+        start_time = time.time()
+        logging.debug(f"Saving results to {filename}")
         try:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             output = {
@@ -790,20 +821,22 @@ class CliodynamicDataProcessor:
             }
             with open(filename, 'w') as f:
                 json.dump(output, f, indent=2)
-            logging.info(f"Saved data to {filename}")
+            logging.debug(f"Results saved to {filename} in {time.time() - start_time:.2f} seconds")
         except Exception as e:
             logging.error(f"Error saving to JSON: {e}")
 
     def main(self, test_mode: bool = False):
+        start_time = time.time()
         import os
         test_mode = test_mode or os.getenv('TEST_MODE', 'false').lower() == 'true'
         year = datetime.now().year
         results = []
+        #countries = ['USA'] if test_mode else self.country_codes  # Descomentar para probar solo USA
         countries = self.country_codes[:10] if test_mode else self.country_codes
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:  # Aumentar workers
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country, country, year): country for country in countries}
-            for future in concurrent.futures.as_completed(future_to_country, timeout=600):  # Timeout de 10 minutos por país
+            for future in concurrent.futures.as_completed(future_to_country, timeout=600):
                 country = future_to_country[future]
                 try:
                     result = future.result()
@@ -815,9 +848,14 @@ class CliodynamicDataProcessor:
                 except Exception as e:
                     logging.error(f"Error processing {country}: {e}", exc_info=True)
 
+        # Sincronizar temp_cache con cache principal y guardar
+        with self.cache_lock:
+            self.cache.update(self.temp_cache)
+            self.save_cache()
         self.save_to_json(results)
+        logging.info(f"Main process completed in {time.time() - start_time:.2f} seconds")
 
 if __name__ == "__main__":
-    os.makedirs('data', exist_ok=True)  # Ensure data directory exists
+    os.makedirs('data', exist_ok=True)
     processor = CliodynamicDataProcessor()
     processor.main(test_mode=False)
