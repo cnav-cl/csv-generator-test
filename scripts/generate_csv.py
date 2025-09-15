@@ -37,7 +37,7 @@ class CliodynamicDataProcessor:
             ),
             'gdelt': DataSource(
                 name="GDELT Monitoring",
-                base_url="http://api.gdeltproject.org/api/v2/gkg/gkg?query={query}&timespan=30d&mode=artlist&format=json&maxrecords=250",
+                base_url="https://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=artlist&format=json&maxrecords=250",
                 rate_limit=0.5
             )
         }
@@ -162,7 +162,7 @@ class CliodynamicDataProcessor:
         
         try:
             model = ARIMA(series, order=(1,1,0), enforce_stationarity=False, enforce_invertibility=False)
-            fit = model.fit(maxiter=100, method='yulewalker')
+            fit = model.fit(method='yulewalker')  # Removed maxiter
             forecast = fit.forecast(steps=steps)
             return float(forecast.iloc[-1])
         except Exception as e:
@@ -183,11 +183,15 @@ class CliodynamicDataProcessor:
                 url = self.sources['gdelt'].base_url.format(query=query)
                 response = requests.get(url, timeout=30, headers=headers)
                 response.raise_for_status()
-                data = response.json()
-                logging.debug(f"GDELT response for {country_code}: {response.text[:200]}")
-                # Filtrar eventos con EventBaseCode 1, 2, 3, 4
-                total_events = sum(1 for item in data if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
-                shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
+                if 'application/json' not in response.headers.get('Content-Type', ''):
+                    logging.warning(f"Non-JSON response from GDELT for {country_code}: {response.text[:200]}")
+                    shock_factor = 1.0
+                else:
+                    data = response.json()
+                    logging.debug(f"GDELT response for {country_code}: {response.text[:200]}")
+                    # Filtrar eventos con EventBaseCode 1, 2, 3, 4 (si disponible en artlist)
+                    total_events = sum(1 for item in data if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
+                    shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
                 self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
                 self.save_cache()
                 return shock_factor
@@ -405,6 +409,7 @@ class CliodynamicDataProcessor:
             delta = deltas.get(ind)
             if delta is not None and isinstance(delta, (int, float)) and delta > 0:
                 delta_penalty += delta * 0.1
+        systemic_risk_score += delta_penalty
 
         forecast_penalty = 0.0
         for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
@@ -413,7 +418,7 @@ class CliodynamicDataProcessor:
                 forecast_val = forecasts.get(ind, value)
                 if isinstance(forecast_val, (int, float)):
                     forecast_penalty += max(0, forecast_val - value) * 0.05
-        systemic_risk_score += delta_penalty + forecast_penalty
+        systemic_risk_score += forecast_penalty
 
         systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
         systemic_multiplier = max(0.5, min(1.5, systemic_multiplier))
@@ -507,4 +512,4 @@ class CliodynamicDataProcessor:
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
-    processor.main(test_mode=False)
+    processor.main(test_mode=True)
