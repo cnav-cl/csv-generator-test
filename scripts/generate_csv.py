@@ -205,18 +205,29 @@ class CliodynamicDataProcessor:
             logging.warning(f"Invalid value for conversion: {value}, using default {default}")
             return default
 
+    def safe_int(self, value, default):
+        """Convert value to int, return default if conversion fails."""
+        try:
+            return int(value) if value is not None else default
+        except (ValueError, TypeError):
+            logging.warning(f"Invalid value for conversion to int: {value}, using default {default}")
+            return default
+
     def load_cache(self) -> Dict:
         try:
             if os.path.exists(self.cache_file):
                 with open(self.cache_file, 'r') as f:
                     cache = json.load(f)
-                # Validate cache data to ensure numerical values
+                # Validate cache data to ensure numerical values and integer keys
                 for key, entry in cache.items():
                     if key.startswith('gdelt_') or key == 'fsi_data':
                         continue
                     data = entry.get('data', {})
                     historical = data.get('historical', {})
                     for year, value in historical.items():
+                        if not isinstance(year, int):
+                            logging.warning(f"Invalid cached year key for {key}: {year}, clearing cache")
+                            return {}
                         if not isinstance(value, (int, float)):
                             logging.warning(f"Invalid cached value for {key} in year {year}: {value}, clearing cache")
                             return {}
@@ -267,12 +278,13 @@ class CliodynamicDataProcessor:
                 historical = {}
                 if data and len(data) > 1 and data[1]:
                     for item in data[1]:
-                        if item['date'].isdigit() and item['value'] is not None:
+                        if item.get('date') and item['date'].isdigit() and item['value'] is not None:
+                            year = self.safe_int(item['date'], None)
                             value = self.safe_float(item['value'], None)
-                            if value is not None:
-                                historical[int(item['date'])] = value
+                            if year is not None and value is not None:
+                                historical[year] = value
                             else:
-                                logging.warning(f"Invalid value for {country_code}-{indicator_code} in {item['date']}: {item['value']}")
+                                logging.warning(f"Invalid data for {country_code}-{indicator_code} in {item['date']}: value={item['value']}")
                                 continue
                 
                 if historical:
@@ -311,6 +323,13 @@ class CliodynamicDataProcessor:
             return list(historical.values())[-1] if historical else 0.0
         
         years = sorted(historical.keys())
+        logging.debug(f"Historical data for {country_code}-{indicator}: {historical}")
+        
+        # Validate year keys
+        if not all(isinstance(year, int) for year in years):
+            logging.error(f"Non-integer year keys in historical data for {country_code}-{indicator}: {years}")
+            return list(historical.values())[-1] if historical else 0.0
+        
         values = [historical[year] for year in years]
         
         # Check for data gaps or outliers
@@ -325,9 +344,6 @@ class CliodynamicDataProcessor:
         if np.var(values) < 1e-4:
             logging.debug(f"Low variance in data for {country_code}-{indicator}: {values}")
             return values[-1]
-        
-        # Log historical data for debugging
-        logging.debug(f"Historical data for {country_code}-{indicator}: {historical}")
         
         # Apply log-transformation to stabilize variance
         values = [np.log1p(max(0, v)) for v in values]
@@ -522,7 +538,7 @@ class CliodynamicDataProcessor:
             value = indicators.get(indicator)
             if value is not None:
                 try:
-                    value = float(value)
+                    value = self.safe_float(value, 0.0)
                     if indicator == 'elite_overproduction':
                         norm_value = min(1.0, value / 0.15)
                     elif indicator == 'wealth_concentration':
@@ -540,10 +556,11 @@ class CliodynamicDataProcessor:
         forecast_adjust = 0.0
         for ind in weights:
             value = indicators.get(ind)
-            if value is not None and isinstance(value, (int, float)):
+            if value is not None:
+                value = self.safe_float(value, 0.0)
                 forecast_val = forecasts.get(ind, value)
-                if isinstance(forecast_val, (int, float)):
-                    forecast_adjust += max(0, forecast_val - value) * 0.05
+                forecast_val = self.safe_float(forecast_val, value)
+                forecast_adjust += max(0, forecast_val - value) * 0.05
         instability_score += delta_adjust + forecast_adjust
         final_score = round(min(1.0, max(0.0, instability_score)), 2)
         
@@ -562,17 +579,14 @@ class CliodynamicDataProcessor:
             default_value = self.default_indicator_values.get(indicator, {}).get(country_code, 
                 self.default_indicator_values.get(indicator, {}).get('default', 0.5))
             value = indicators.get(indicator, default_value)
+            value = self.safe_float(value, default_value)
             try:
-                if value is not None:
-                    value = self.safe_float(value, default_value)
-                    if indicator in ['gini_coefficient', 'neet_ratio', 'youth_unemployment', 'inflation_annual', 'suicide_rate']:
-                        normalized_values[indicator] = value / 100
-                    elif indicator in ['social_polarization', 'institutional_distrust', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
-                        normalized_values[indicator] = value
-                    else:
-                        normalized_values[indicator] = value / 10000
+                if indicator in ['gini_coefficient', 'neet_ratio', 'youth_unemployment', 'inflation_annual', 'suicide_rate']:
+                    normalized_values[indicator] = value / 100
+                elif indicator in ['social_polarization', 'institutional_distrust', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
+                    normalized_values[indicator] = value
                 else:
-                    normalized_values[indicator] = 0.5
+                    normalized_values[indicator] = value / 10000
             except (ValueError, TypeError):
                 logging.warning(f"Invalid value for {indicator} in Jiang calculation for {country_code}: {value}, using default 0.5")
                 normalized_values[indicator] = 0.5
@@ -587,20 +601,20 @@ class CliodynamicDataProcessor:
         base_score = 6.0
         gdppc = indicators.get('gdppc', self.default_indicator_values['gdppc'].get(country_code, 
             self.default_indicator_values['gdppc']['default']))
-        if gdppc is not None:
-            try:
-                base_score += min(4.0, np.log1p(self.safe_float(gdppc, self.default_indicator_values['gdppc']['default'])) / 10)
-            except (ValueError, TypeError):
-                logging.warning(f"Invalid gdppc for {country_code}: {gdppc}")
+        gdppc = self.safe_float(gdppc, self.default_indicator_values['gdppc']['default'])
+        try:
+            base_score += min(4.0, np.log1p(gdppc) / 10)
+        except (ValueError, TypeError):
+            logging.warning(f"Invalid gdppc for {country_code}: {gdppc}")
         gov_effectiveness = indicators.get('government_effectiveness', 
             self.default_indicator_values['government_effectiveness'].get(country_code, 
             self.default_indicator_values['government_effectiveness']['default']))
-        if gov_effectiveness is not None:
-            try:
-                base_score += self.safe_float(gov_effectiveness, 
-                    self.default_indicator_values['government_effectiveness']['default']) * 0.5
-            except (ValueError, TypeError):
-                logging.warning(f"Invalid government_effectiveness for {country_code}: {gov_effectiveness}")
+        gov_effectiveness = self.safe_float(gov_effectiveness, 
+            self.default_indicator_values['government_effectiveness']['default'])
+        try:
+            base_score += gov_effectiveness * 0.5
+        except (ValueError, TypeError):
+            logging.warning(f"Invalid government_effectiveness for {country_code}: {gov_effectiveness}")
         base_score = min(10.0, max(1.0, base_score))
 
         systemic_risk_score = 0.0
