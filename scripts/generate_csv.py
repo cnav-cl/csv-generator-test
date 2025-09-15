@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import os
 import time
@@ -24,6 +24,12 @@ class CliodynamicDataProcessor:
                 name="World Bank",
                 base_url="https://api.worldbank.org/v2/country/{}/indicator/{}?format=json&per_page=100&date=2015:2024",
                 rate_limit=0.2
+            ),
+            'gdelt': DataSource(
+                name="GDELT Project",
+                # La consulta ahora incluye todos los eventos de conflicto (códigos 1 a 4).
+                base_url="https://api.gdeltproject.org/api/v2/query?query=sourcecountry:{country_code}%20eventcode:1*|2*|3*|4*&mode=TimelineVol&format=json&startdatetime={start_date}&enddatetime={end_date}",
+                rate_limit=0.5
             )
         }
 
@@ -37,7 +43,7 @@ class CliodynamicDataProcessor:
             'suicide_rate': [('world_bank', 'SH.STA.SUIC.P5')],
             'government_effectiveness': [('world_bank', 'GE.EST')]
         }
-        
+
         self.country_codes = self.load_all_countries()
         
         self.thresholds = {
@@ -104,6 +110,39 @@ class CliodynamicDataProcessor:
         except Exception as e:
             print(f"  -> Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
             return None
+    
+    def get_gdelt_shock_factor(self, country_code: str) -> float:
+        """
+        Calcula un factor de choque basado en el número de eventos de conflicto recientes en GDELT.
+        """
+        end_date = datetime.now().strftime('%Y%m%d%H%M%S')
+        start_date = (datetime.now() - timedelta(days=30)).strftime('%Y%m%d%H%M%S')
+
+        try:
+            url = self.sources['gdelt'].base_url.format(
+                country_code=country_code,
+                start_date=start_date,
+                end_date=end_date
+            )
+            
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            
+            event_counts = response.json().get('timeline', [{}])[0].get('data', [])
+            total_events = sum(item.get('value', 0) for item in event_counts)
+            
+            if total_events > 50:
+                print(f"Alerta: {country_code} con alta actividad de conflicto ({total_events} eventos). Factor de Choque = 2.5.")
+                return 2.5
+            elif total_events > 10:
+                print(f"Advertencia: {country_code} con actividad de conflicto moderada ({total_events} eventos). Factor de Choque = 1.8.")
+                return 1.8
+            else:
+                return 1.0
+                
+        except requests.exceptions.RequestException as e:
+            print(f"Error al obtener datos de GDELT para {country_code}: {e}")
+            return 1.0 # Devuelve 1.0 en caso de error para no afectar el cálculo.
 
     def convert_effectiveness_to_distrust(self, effectiveness: float) -> float:
         normalized_effectiveness = (effectiveness - (-2.5)) / (2.5 - (-2.5))
@@ -415,6 +454,31 @@ class CliodynamicDataProcessor:
                 'risk_indicators_status': jiang_metrics['risk_indicators_status']
             }
             
+            # Obtener el factor de choque dinámico
+            shock_factor = self.get_gdelt_shock_factor(country_code)
+
+            # Aplicar el factor de choque a los índices finales
+            result['risk_indicators_status']['estabilidad_jiang']['valor'] /= shock_factor
+            result['risk_indicators_status']['inestabilidad_turchin']['valor'] *= shock_factor
+            
+            # Vuelva a determinar el estado con el nuevo valor del factor de choque
+            final_jiang = result['risk_indicators_status']['estabilidad_jiang']['valor']
+            if final_jiang <= self.thresholds['estabilidad_jiang']['critical']:
+                result['risk_indicators_status']['estabilidad_jiang']['status'] = 'critical'
+            elif final_jiang <= self.thresholds['estabilidad_jiang']['alert']:
+                result['risk_indicators_status']['estabilidad_jiang']['status'] = 'alert'
+            else:
+                result['risk_indicators_status']['estabilidad_jiang']['status'] = 'stable'
+
+            final_turchin = result['risk_indicators_status']['inestabilidad_turchin']['valor']
+            if final_turchin >= self.thresholds['inestabilidad_turchin']['critical']:
+                result['risk_indicators_status']['inestabilidad_turchin']['status'] = 'critical'
+            elif final_turchin >= self.thresholds['inestabilidad_turchin']['alert']:
+                result['risk_indicators_status']['inestabilidad_turchin']['status'] = 'alert'
+            else:
+                result['risk_indicators_status']['inestabilidad_turchin']['status'] = 'stable'
+
+
             print(f"  -> Finished processing {country_code}. Result: {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('valor')}, {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('status')}")
             return result
         except Exception as e:
