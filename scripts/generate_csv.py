@@ -49,11 +49,9 @@ class CliodynamicDataProcessor:
             'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
             'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
             'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
-            ### CAMBIOS AQUÍ: Umbrales ajustados a la nueva escala de 0 a 1 ###
             'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
             'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
             'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}}
-            ### FIN CAMBIOS ###
         }
     
     def load_all_countries(self) -> List[str]:
@@ -71,16 +69,16 @@ class CliodynamicDataProcessor:
         except Exception as e:
             print(f"Error loading countries: {e}")
             return ['USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'FRA',
-                   'ITA', 'CAN', 'AUS', 'ESP', 'MEX', 'IDN', 'TUR', 'SAU', 'CHE',
-                   'NLD', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ARE',
-                   'ISR', 'ZAF', 'DNK', 'SGP', 'FIN', 'COL', 'MYS', 'IRL', 'CHL',
-                   'EGY', 'PHL', 'PAK', 'GRC', 'PRT', 'CZE', 'ROU', 'NZL', 'PER',
-                   'HUN', 'QAT', 'UKR', 'DZA', 'KWT', 'MAR', 'BGD', 'VEN', 'OMN',
-                   'SVK', 'HRV', 'LBN', 'LKA', 'BGR', 'TUN', 'DOM', 'PRI', 'EST',
-                   'LTU', 'PAN', 'SRB', 'AZE', 'SLV', 'URY', 'KEN', 'LVA', 'CYP',
-                   'GTM', 'ETH', 'CRI', 'JOR', 'BHR', 'NPL', 'BOL', 'TZA', 'HND',
-                   'UGA', 'SEN', 'GEO', 'ZWE', 'MMR', 'KAZ', 'CMR', 'CIV', 'SDN',
-                   'AGO', 'NGA', 'MOZ', 'GHA', 'MDG', 'COD', 'TCD', 'YEM', 'AFG']
+                    'ITA', 'CAN', 'AUS', 'ESP', 'MEX', 'IDN', 'TUR', 'SAU', 'CHE',
+                    'NLD', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ARE',
+                    'ISR', 'ZAF', 'DNK', 'SGP', 'FIN', 'COL', 'MYS', 'IRL', 'CHL',
+                    'EGY', 'PHL', 'PAK', 'GRC', 'PRT', 'CZE', 'ROU', 'NZL', 'PER',
+                    'HUN', 'QAT', 'UKR', 'DZA', 'KWT', 'MAR', 'BGD', 'VEN', 'OMN',
+                    'SVK', 'HRV', 'LBN', 'LKA', 'BGR', 'TUN', 'DOM', 'PRI', 'EST',
+                    'LTU', 'PAN', 'SRB', 'AZE', 'SLV', 'URY', 'KEN', 'LVA', 'CYP',
+                    'GTM', 'ETH', 'CRI', 'JOR', 'BHR', 'NPL', 'BOL', 'TZA', 'HND',
+                    'UGA', 'SEN', 'GEO', 'ZWE', 'MMR', 'KAZ', 'CMR', 'CIV', 'SDN',
+                    'AGO', 'NGA', 'MOZ', 'GHA', 'MDG', 'COD', 'TCD', 'YEM', 'AFG']
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str) -> Optional[float]:
         try:
@@ -112,13 +110,10 @@ class CliodynamicDataProcessor:
         distrust = 1.0 - normalized_effectiveness
         return round(max(0.1, min(0.9, distrust)), 2)
     
-    ### CAMBIOS AQUÍ: Funciones de cálculo que usan proxies normalizados ###
     def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
         """Calcula los valores de los nuevos indicadores usando proxies normalizados."""
-        # Se usa Gini normalizado como proxy para la concentración de riqueza
-        wealth_concentration = all_indicators.get('gini_coefficient', 40.0) / 100 
+        wealth_concentration = all_indicators.get('gini_coefficient', 40.0) / 100
         
-        # Se usan datos de educación y desempleo normalizados para la brecha y sobreproducción
         tertiary_education = all_indicators.get('tertiary_education', 18.0) / 100
         youth_unemployment = all_indicators.get('youth_unemployment', 20.0) / 100
         
@@ -126,7 +121,6 @@ class CliodynamicDataProcessor:
         elite_overproduction = tertiary_education * youth_unemployment
 
         return wealth_concentration, education_gap, elite_overproduction
-    ### FIN CAMBIOS ###
 
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
         """Calcula la polarización social y la desconfianza institucional"""
@@ -139,11 +133,9 @@ class CliodynamicDataProcessor:
                 institutional_distrust = 0.5
                 print("  Government Effectiveness data not available, using default value for distrust.")
 
-            # ### CORRECCIÓN AQUÍ: Usar Gini normalizado para la polarización ###
             gini_normalized = all_indicators.get('gini_coefficient', 40.0) / 100
             neet_ratio = all_indicators.get('neet_ratio', 15.0)
 
-            # La fórmula original estaba mal. Ajuste a una fórmula más equilibrada.
             polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio / 100 * 0.2)
             polarization = min(0.9, max(0.3, polarization))
             
@@ -184,31 +176,30 @@ class CliodynamicDataProcessor:
             if value is not None:
                 thresholds = self.thresholds.get(key)
                 if thresholds:
-                    # Normalizar los valores antes de la comparación si corresponde
-                    if key in ['gini_coefficient', 'youth_unemployment', 'tertiary_education', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
+                    if key in ['gini_coefficient', 'youth_unemployment', 'tertiary_education', 'wealth_concentration', 'education_gap', 'elite_overproduction', 'social_polarization', 'institutional_distrust']:
                         normalized_value = value
                         if key in ['gini_coefficient', 'youth_unemployment']:
                             normalized_value = value / 100
                         
                         if normalized_value >= thresholds['critical']:
                             stability_score += thresholds.get('points', {}).get('critical', -2.0)
-                            risk_indicators_status[key] = 'critical'
+                            risk_indicators_status[key] = {'status': 'critical', 'valor': value}
                         elif normalized_value >= thresholds['alert']:
                             stability_score += thresholds.get('points', {}).get('alert', -1.0)
-                            risk_indicators_status[key] = 'alert'
+                            risk_indicators_status[key] = {'status': 'alert', 'valor': value}
                         else:
-                            risk_indicators_status[key] = 'stable'
+                            risk_indicators_status[key] = {'status': 'stable', 'valor': value}
                     else:
                         if value >= thresholds['critical']:
                             stability_score += thresholds.get('points', {}).get('critical', -2.0)
-                            risk_indicators_status[key] = 'critical'
+                            risk_indicators_status[key] = {'status': 'critical', 'valor': value}
                         elif value >= thresholds['alert']:
                             stability_score += thresholds.get('points', {}).get('alert', -1.0)
-                            risk_indicators_status[key] = 'alert'
+                            risk_indicators_status[key] = {'status': 'alert', 'valor': value}
                         else:
-                            risk_indicators_status[key] = 'stable'
+                            risk_indicators_status[key] = {'status': 'stable', 'valor': value}
             else:
-                risk_indicators_status[key] = 'not_available'
+                risk_indicators_status[key] = {'status': 'not_available', 'valor': None}
         
         if stability_score <= 4.9:
             stability_level = 'critical'
@@ -270,7 +261,9 @@ class CliodynamicDataProcessor:
             
             result = {
                 **all_indicators,
-                **jiang_metrics
+                'estabilidad_jiang': jiang_metrics['estabilidad_jiang'],
+                'stability_level': jiang_metrics['stability_level'],
+                'risk_indicators_status': jiang_metrics['risk_indicators_status']
             }
             
             return result
@@ -279,30 +272,18 @@ class CliodynamicDataProcessor:
             print(f"Error processing {country_code}: {e}")
             return None
 
-    def save_to_csv(self, data: List[Dict], filename: str = 'data/combined_analysis_results.csv'):
-        """Guardar los datos procesados en un archivo CSV."""
+    def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
+        """Guardar los datos procesados en un archivo JSON, con cada objeto en una nueva línea."""
         if not data:
             print("No data to save.")
             return
-    
-        keys = ['country_code', 'year', 'gini_coefficient', 'youth_unemployment', 'inflation_annual', 'neet_ratio',
-                 'tertiary_education', 'gdppc', 'suicide_rate', 'government_effectiveness', 'wealth_concentration',
-                 'education_gap', 'elite_overproduction', 'social_polarization', 'institutional_distrust',
-                 'estabilidad_jiang', 'stability_level', 'risk_indicators_status']
-        
-        clean_data = []
-        for row in data:
-            new_row = {k: row[k] for k in keys if k in row}
-            new_row['risk_indicators_status'] = json.dumps(new_row['risk_indicators_status'])
-            clean_data.append(new_row)
-    
+
         if not os.path.exists('data'):
             os.makedirs('data')
-    
-        with open(filename, 'w', newline='', encoding='utf-8') as output_file:
-            dict_writer = csv.DictWriter(output_file, fieldnames=keys, quoting=csv.QUOTE_ALL)
-            dict_writer.writeheader()
-            dict_writer.writerows(clean_data)
+        
+        with open(filename, 'w', encoding='utf-8') as output_file:
+            for row in data:
+                output_file.write(json.dumps(row) + '\n')
         print(f"Data successfully saved to {filename}")
 
     def main(self, test_mode: bool = False):
@@ -323,9 +304,9 @@ class CliodynamicDataProcessor:
                 all_data.append(data)
             time.sleep(self.sources['world_bank'].rate_limit)
 
-        self.save_to_csv(all_data)
+        self.save_to_json(all_data)
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
     
-    processor.main(test_mode=False)
+    processor.main(test_mode=True)
