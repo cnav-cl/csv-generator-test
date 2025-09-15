@@ -280,30 +280,31 @@ class CliodynamicDataProcessor:
             return None
 
     def save_to_csv(self, data: List[Dict], filename: str = 'data/combined_analysis_results.csv'):
-        """Guardar los datos procesados en un archivo CSV."""
-        if not data:
-            print("No data to save.")
-            return
-
-        keys = ['country_code', 'year', 'gini_coefficient', 'youth_unemployment', 'inflation_annual', 'neet_ratio',
-                'tertiary_education', 'gdppc', 'suicide_rate', 'government_effectiveness', 'wealth_concentration',
-                'education_gap', 'elite_overproduction', 'social_polarization', 'institutional_distrust',
-                'estabilidad_jiang', 'stability_level', 'risk_indicators_status']
-        
-        clean_data = []
-        for row in data:
-            new_row = {k: row[k] for k in keys if k in row}
-            new_row['risk_indicators_status'] = json.dumps(new_row['risk_indicators_status'])
-            clean_data.append(new_row)
-
-        if not os.path.exists('data'):
-            os.makedirs('data')
-
-        with open(filename, 'w', newline='', encoding='utf-8') as output_file:
-            dict_writer = csv.DictWriter(output_file, fieldnames=keys)
-            dict_writer.writeheader()
-            dict_writer.writerows(clean_data)
-        print(f"Data successfully saved to {filename}")
+        """Guardar los datos procesados en un archivo CSV."""
+        if not data:
+            print("No data to save.")
+            return
+    
+        keys = ['country_code', 'year', 'gini_coefficient', 'youth_unemployment', 'inflation_annual', 'neet_ratio',
+                  'tertiary_education', 'gdppc', 'suicide_rate', 'government_effectiveness', 'wealth_concentration',
+                  'education_gap', 'elite_overproduction', 'social_polarization', 'institutional_distrust',
+                  'estabilidad_jiang', 'stability_level', 'risk_indicators_status']
+         
+        clean_data = []
+        for row in data:
+            new_row = {k: row[k] for k in keys if k in row}
+            new_row['risk_indicators_status'] = json.dumps(new_row['risk_indicators_status'])
+            clean_data.append(new_row)
+    
+        if not os.path.exists('data'):
+            os.makedirs('data')
+    
+        with open(filename, 'w', newline='', encoding='utf-8') as output_file:
+            # Línea corregida: Se añade quoting=csv.QUOTE_ALL
+            dict_writer = csv.DictWriter(output_file, fieldnames=keys, quoting=csv.QUOTE_ALL)
+            dict_writer.writeheader()
+            dict_writer.writerows(clean_data)
+        print(f"Data successfully saved to {filename}")
 
     def main(self, test_mode: bool = False):
         """Función principal con modo de prueba"""
