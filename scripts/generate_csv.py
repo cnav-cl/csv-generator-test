@@ -31,107 +31,107 @@ class CliodynamicDataProcessor:
         self.cache_file = cache_file
         self.cache = self.load_cache()
 
-        # Define GDELT country mapping with alternative names
+        # Updated GDELT country mapping with GDELT-compatible codes
         self.gdelt_country_mapping = {
-            'USA': ['United States', 'USA', 'United_States'],
-            'CHN': ['China', 'People\'s Republic of China'],
-            'IND': ['India'],
-            'BRA': ['Brazil'],
-            'RUS': ['Russia', 'Russian Federation'],
-            'JPN': ['Japan'],
-            'DEU': ['Germany'],
-            'GBR': ['United Kingdom', 'UK'],
-            'FRA': ['France'],
-            'ITA': ['Italy'],
-            'CAN': ['Canada'],
-            'AUS': ['Australia'],
-            'ESP': ['Spain'],
-            'MEX': ['Mexico'],
-            'IDN': ['Indonesia'],
-            'TUR': ['Turkey'],
-            'SAU': ['Saudi Arabia'],
-            'CHE': ['Switzerland'],
-            'NLD': ['Netherlands'],
-            'POL': ['Poland'],
-            'SWE': ['Sweden'],
-            'BEL': ['Belgium'],
-            'ARG': ['Argentina'],
-            'NOR': ['Norway'],
-            'AUT': ['Austria'],
-            'THA': ['Thailand'],
-            'ARE': ['United Arab Emirates', 'UAE'],
-            'ISR': ['Israel'],
-            'ZAF': ['South Africa'],
-            'DNK': ['Denmark'],
-            'SGP': ['Singapore'],
-            'FIN': ['Finland'],
-            'COL': ['Colombia'],
-            'MYS': ['Malaysia'],
-            'IRL': ['Ireland'],
-            'CHL': ['Chile'],
-            'EGY': ['Egypt'],
-            'PHL': ['Philippines'],
-            'PAK': ['Pakistan'],
-            'GRC': ['Greece'],
-            'PRT': ['Portugal'],
-            'CZE': ['Czech Republic'],
-            'ROU': ['Romania'],
-            'NZL': ['New Zealand'],
-            'PER': ['Peru'],
-            'HUN': ['Hungary'],
-            'QAT': ['Qatar'],
-            'UKR': ['Ukraine'],
-            'DZA': ['Algeria'],
-            'KWT': ['Kuwait'],
-            'MAR': ['Morocco'],
-            'BGD': ['Bangladesh'],
-            'VEN': ['Venezuela'],
-            'OMN': ['Oman'],
-            'SVK': ['Slovakia'],
-            'HRV': ['Croatia'],
-            'LBN': ['Lebanon'],
-            'LKA': ['Sri Lanka'],
-            'BGR': ['Bulgaria'],
-            'TUN': ['Tunisia'],
-            'DOM': ['Dominican Republic'],
-            'PRI': ['Puerto Rico'],
-            'EST': ['Estonia'],
-            'LTU': ['Lithuania'],
-            'PAN': ['Panama'],
-            'SRB': ['Serbia'],
-            'AZE': ['Azerbaijan'],
-            'SLV': ['El Salvador'],
-            'URY': ['Uruguay'],
-            'KEN': ['Kenya'],
-            'LVA': ['Latvia'],
-            'CYP': ['Cyprus'],
-            'GTM': ['Guatemala'],
-            'ETH': ['Ethiopia'],
-            'CRI': ['Costa Rica'],
-            'JOR': ['Jordan'],
-            'BHR': ['Bahrain'],
-            'NPL': ['Nepal'],
-            'BOL': ['Bolivia'],
-            'TZA': ['Tanzania'],
-            'HND': ['Honduras'],
-            'UGA': ['Uganda'],
-            'SEN': ['Senegal'],
-            'GEO': ['Georgia'],
-            'ZWE': ['Zimbabwe'],
-            'MMR': ['Myanmar'],
-            'KAZ': ['Kazakhstan'],
-            'CMR': ['Cameroon'],
-            'CIV': ['Ivory Coast'],
-            'SDN': ['Sudan'],
-            'AGO': ['Angola'],
-            'NGA': ['Nigeria'],
-            'MOZ': ['Mozambique'],
-            'GHA': ['Ghana'],
-            'MDG': ['Madagascar'],
-            'COD': ['Democratic Republic of Congo'],
-            'TCD': ['Chad'],
-            'YEM': ['Yemen'],
-            'AFG': ['Afghanistan']
+            'USA': ['United States', 'USA', 'US'],
+            'CHN': ['China', 'CN'],
+            'IND': ['India', 'IN'],
+            'BRA': ['Brazil', 'BR'],
+            'RUS': ['Russia', 'Russian Federation', 'RU'],
+            'JPN': ['Japan', 'JP'],
+            'DEU': ['Germany', 'DE'],
+            'GBR': ['United Kingdom', 'UK', 'GB'],  # Added 'GB' for GDELT compatibility
+            'FRA': ['France', 'FR'],
+            'ITA': ['Italy', 'IT'],
+            'CAN': ['Canada', 'CA'],
+            'AUS': ['Australia', 'AU'],
+            'ESP': ['Spain', 'ES'],
+            'MEX': ['Mexico', 'MX'],
+            'IDN': ['Indonesia', 'ID'],
+            'TUR': ['Turkey', 'TR'],
+            'SAU': ['Saudi Arabia', 'SA'],
+            'CHE': ['Switzerland', 'CH'],
+            'NLD': ['Netherlands', 'NL'],
+            'POL': ['Poland', 'PL'],
+            'SWE': ['Sweden', 'SE'],
+            'BEL': ['Belgium', 'BE'],
+            'ARG': ['Argentina', 'AR'],
+            'NOR': ['Norway', 'NO'],
+            'AUT': ['Austria', 'AT'],
+            'THA': ['Thailand', 'TH'],
+            'ARE': ['United Arab Emirates', 'UAE', 'AE'],
+            'ISR': ['Israel', 'IL'],
+            'ZAF': ['South Africa', 'ZA'],
+            'DNK': ['Denmark', 'DK'],
+            'SGP': ['Singapore', 'SG'],
+            'FIN': ['Finland', 'FI'],
+            'COL': ['Colombia', 'CO'],
+            'MYS': ['Malaysia', 'MY'],
+            'IRL': ['Ireland', 'IE'],
+            'CHL': ['Chile', 'CL'],
+            'EGY': ['Egypt', 'EG'],
+            'PHL': ['Philippines', 'PH'],
+            'PAK': ['Pakistan', 'PK'],
+            'GRC': ['Greece', 'GR'],
+            'PRT': ['Portugal', 'PT'],
+            'CZE': ['Czech Republic', 'CZ'],
+            'ROU': ['Romania', 'RO'],
+            'NZL': ['New Zealand', 'NZ'],
+            'PER': ['Peru', 'PE'],
+            'HUN': ['Hungary', 'HU'],
+            'QAT': ['Qatar', 'QA'],
+            'UKR': ['Ukraine', 'UA'],
+            'DZA': ['Algeria', 'DZ'],
+            'KWT': ['Kuwait', 'KW'],
+            'MAR': ['Morocco', 'MA'],
+            'BGD': ['Bangladesh', 'BD'],
+            'VEN': ['Venezuela', 'VE'],
+            'OMN': ['Oman', 'OM'],
+            'SVK': ['Slovakia', 'SK'],
+            'HRV': ['Croatia', 'HR'],
+            'LBN': ['Lebanon', 'LB'],
+            'LKA': ['Sri Lanka', 'LK'],
+            'BGR': ['Bulgaria', 'BG'],
+            'TUN': ['Tunisia', 'TN'],
+            'DOM': ['Dominican Republic', 'DO'],
+            'PRI': ['Puerto Rico', 'PR'],
+            'EST': ['Estonia', 'EE'],
+            'LTU': ['Lithuania', 'LT'],
+            'PAN': ['Panama', 'PA'],
+            'SRB': ['Serbia', 'RS'],
+            'AZE': ['Azerbaijan', 'AZ'],
+            'SLV': ['El Salvador', 'SV'],
+            'URY': ['Uruguay', 'UY'],
+            'KEN': ['Kenya', 'KE'],
+            'LVA': ['Latvia', 'LV'],
+            'CYP': ['Cyprus', 'CY'],
+            'GTM': ['Guatemala', 'GT'],
+            'ETH': ['Ethiopia', 'ET'],
+            'CRI': ['Costa Rica', 'CR'],
+            'JOR': ['Jordan', 'JO'],
+            'BHR': ['Bahrain', 'BH'],
+            'NPL': ['Nepal', 'NP'],
+            'BOL': ['Bolivia', 'BO'],
+            'TZA': ['Tanzania', 'TZ'],
+            'HND': ['Honduras', 'HN'],
+            'UGA': ['Uganda', 'UG'],
+            'SEN': ['Senegal', 'SN'],
+            'GEO': ['Georgia', 'GE'],
+            'ZWE': ['Zimbabwe', 'ZW'],
+            'MMR': ['Myanmar', 'MM'],
+            'KAZ': ['Kazakhstan', 'KZ'],
+            'CMR': ['Cameroon', 'CM'],
+            'CIV': ['Ivory Coast', 'CI'],
+            'SDN': ['Sudan', 'SD'],
+            'AGO': ['Angola', 'AO'],
+            'NGA': ['Nigeria', 'NG'],
+            'MOZ': ['Mozambique', 'MZ'],
+            'GHA': ['Ghana', 'GH'],
+            'MDG': ['Madagascar', 'MG'],
+            'COD': ['Democratic Republic of Congo', 'CD'],
+            'TCD': ['Chad', 'TD'],
+            'YEM': ['Yemen', 'YE'],
+            'AFG': ['Afghanistan', 'AF']
         }
 
         self.sources = {
@@ -158,7 +158,6 @@ class CliodynamicDataProcessor:
             'government_effectiveness': [('world_bank', 'GE.EST')]
         }
 
-        # Default values for missing indicators with regional adjustments
         self.default_indicator_values = {
             'gini_coefficient': {'default': 40.0, 'CHN': 38.0, 'RUS': 36.0},
             'youth_unemployment': {'default': 20.0, 'CHN': 15.0, 'RUS': 16.0},
@@ -271,6 +270,7 @@ class CliodynamicDataProcessor:
         for attempt in range(attempts):
             try:
                 url = self.sources['world_bank'].base_url.format(country_code, indicator_code, start_year, end_year)
+                logging.debug(f"Fetching World Bank data for {country_code}-{indicator_code}: {url}")
                 response = requests.get(url, timeout=30, headers=headers)
                 response.raise_for_status()
                 data = response.json()
@@ -318,7 +318,7 @@ class CliodynamicDataProcessor:
         return {'historical': {}, 'current': default_value, 'delta': 0.0, 'variance': 0.0}
 
     def forecast_indicator(self, historical: Dict[int, float], steps=2, country_code: str = "", indicator: str = "") -> float:
-        if len(historical) < 5:  # Require at least 5 data points
+        if len(historical) < 6:  # Increased to 6 for more robust ARIMA fitting
             logging.debug(f"Insufficient data for forecast: {len(historical)} points for {country_code}-{indicator}")
             return list(historical.values())[-1] if historical else 0.0
         
@@ -340,16 +340,16 @@ class CliodynamicDataProcessor:
             logging.debug(f"Outliers detected in data for {country_code}-{indicator}: {values}")
             return values[-1]
         
-        # Check for low variance to avoid ARIMA on near-constant series
-        if np.var(values) < 1e-4:
-            logging.debug(f"Low variance in data for {country_code}-{indicator}: {values}")
+        # Check for low variance or near-constant series to avoid ARIMA convergence issues
+        if np.var(values) < 1e-4 or np.std(values) < 1e-3:
+            logging.debug(f"Low variance or near-constant series for {country_code}-{indicator}: {values}")
             return values[-1]
         
         # Apply log-transformation to stabilize variance
         values = [np.log1p(max(0, v)) for v in values]
         
         # Skip differencing for short series to preserve data
-        if len(values) < 6:
+        if len(values) < 7:
             series = pd.Series(values, index=pd.PeriodIndex([f"{year}-01-01" for year in years], freq='Y'))
         else:
             # Apply first-order differencing
@@ -369,8 +369,8 @@ class CliodynamicDataProcessor:
                 forecast_diff = fit.forecast(steps=steps)
                 # Reverse differencing and log-transformation
                 last_value = values[-1]
-                if len(values) < 6:  # No differencing applied
-                    forecast = forecast_diff[-1]
+                if len(values) < 7:  # No differencing applied
+                    forecast = forecast_diff.iloc[-1]  # Use iloc for positional indexing
                 else:
                     forecast = np.cumsum([last_value] + list(forecast_diff))[-1]
                 return float(np.expm1(forecast))
@@ -383,7 +383,7 @@ class CliodynamicDataProcessor:
             model = SimpleExpSmoothing(values)
             fit = model.fit()
             forecast = fit.forecast(steps=steps)
-            return float(np.expm1(forecast[-1]))
+            return float(np.expm1(forecast.iloc[-1]))  # Use iloc for positional indexing
         except Exception as e:
             logging.warning(f"Exponential smoothing failed for {country_code}-{indicator}: {e}")
         
@@ -412,7 +412,7 @@ class CliodynamicDataProcessor:
             for attempt in range(attempts):
                 try:
                     url = self.sources['gdelt'].base_url.format(query=query)
-                    logging.debug(f"GDELT query URL for {country_code}: {url}")
+                    logging.debug(f"GDELT query URL for {country_code} ({country_name}): {url}")
                     response = requests.get(url, timeout=30, headers=headers)
                     response.raise_for_status()
                     if 'application/json' not in response.headers.get('Content-Type', ''):
