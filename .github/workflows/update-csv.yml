@@ -26,10 +26,16 @@ jobs:
       run: |        
         pip install pandas numpy requests beautifulsoup4 lxml
 
-    - name: Generate CSV data
+    - name: Genera data para JSON
       run: |
         mkdir -p data
         python scripts/generate_csv.py
+
+    - name: Upload analysis results
+      uses: actions/upload-artifact@v3
+      with:
+        name: analysis-results
+        path: data/combined_analysis_results.json
 
     - name: Commit and push changes
       run: |
@@ -37,7 +43,7 @@ jobs:
         git config --local user.name "GitHub Action"
         
         # Verificar si hay cambios reales
-        git add data/combined_analysis_results.csv
+        git add data/combined_analysis_results.json
         if git diff --staged --quiet; then
           echo "No changes to commit"
         else
