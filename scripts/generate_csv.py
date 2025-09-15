@@ -31,32 +31,107 @@ class CliodynamicDataProcessor:
         self.cache_file = cache_file
         self.cache = self.load_cache()
 
-        # Define GDELT country mapping
+        # Define GDELT country mapping with alternative names
         self.gdelt_country_mapping = {
-            'USA': 'United States', 'CHN': 'China', 'IND': 'India', 'BRA': 'Brazil', 'RUS': 'Russia',
-            'JPN': 'Japan', 'DEU': 'Germany', 'GBR': 'United Kingdom', 'FRA': 'France', 'ITA': 'Italy',
-            'CAN': 'Canada', 'AUS': 'Australia', 'ESP': 'Spain', 'MEX': 'Mexico', 'IDN': 'Indonesia',
-            'TUR': 'Turkey', 'SAU': 'Saudi Arabia', 'CHE': 'Switzerland', 'NLD': 'Netherlands',
-            'POL': 'Poland', 'SWE': 'Sweden', 'BEL': 'Belgium', 'ARG': 'Argentina', 'NOR': 'Norway',
-            'AUT': 'Austria', 'THA': 'Thailand', 'ARE': 'United Arab Emirates', 'ISR': 'Israel',
-            'ZAF': 'South Africa', 'DNK': 'Denmark', 'SGP': 'Singapore', 'FIN': 'Finland',
-            'COL': 'Colombia', 'MYS': 'Malaysia', 'IRL': 'Ireland', 'CHL': 'Chile', 'EGY': 'Egypt',
-            'PHL': 'Philippines', 'PAK': 'Pakistan', 'GRC': 'Greece', 'PRT': 'Portugal',
-            'CZE': 'Czech Republic', 'ROU': 'Romania', 'NZL': 'New Zealand', 'PER': 'Peru',
-            'HUN': 'Hungary', 'QAT': 'Qatar', 'UKR': 'Ukraine', 'DZA': 'Algeria', 'KWT': 'Kuwait',
-            'MAR': 'Morocco', 'BGD': 'Bangladesh', 'VEN': 'Venezuela', 'OMN': 'Oman',
-            'SVK': 'Slovakia', 'HRV': 'Croatia', 'LBN': 'Lebanon', 'LKA': 'Sri Lanka',
-            'BGR': 'Bulgaria', 'TUN': 'Tunisia', 'DOM': 'Dominican Republic', 'PRI': 'Puerto Rico',
-            'EST': 'Estonia', 'LTU': 'Lithuania', 'PAN': 'Panama', 'SRB': 'Serbia',
-            'AZE': 'Azerbaijan', 'SLV': 'El Salvador', 'URY': 'Uruguay', 'KEN': 'Kenya',
-            'LVA': 'Latvia', 'CYP': 'Cyprus', 'GTM': 'Guatemala', 'ETH': 'Ethiopia',
-            'CRI': 'Costa Rica', 'JOR': 'Jordan', 'BHR': 'Bahrain', 'NPL': 'Nepal',
-            'BOL': 'Bolivia', 'TZA': 'Tanzania', 'HND': 'Honduras', 'UGA': 'Uganda',
-            'SEN': 'Senegal', 'GEO': 'Georgia', 'ZWE': 'Zimbabwe', 'MMR': 'Myanmar',
-            'KAZ': 'Kazakhstan', 'CMR': 'Cameroon', 'CIV': 'Ivory Coast', 'SDN': 'Sudan',
-            'AGO': 'Angola', 'NGA': 'Nigeria', 'MOZ': 'Mozambique', 'GHA': 'Ghana',
-            'MDG': 'Madagascar', 'COD': 'Democratic Republic of Congo', 'TCD': 'Chad',
-            'YEM': 'Yemen', 'AFG': 'Afghanistan'
+            'USA': ['United States', 'USA', 'United_States'],
+            'CHN': ['China', 'People\'s Republic of China'],
+            'IND': ['India'],
+            'BRA': ['Brazil'],
+            'RUS': ['Russia', 'Russian Federation'],
+            'JPN': ['Japan'],
+            'DEU': ['Germany'],
+            'GBR': ['United Kingdom', 'UK'],
+            'FRA': ['France'],
+            'ITA': ['Italy'],
+            'CAN': ['Canada'],
+            'AUS': ['Australia'],
+            'ESP': ['Spain'],
+            'MEX': ['Mexico'],
+            'IDN': ['Indonesia'],
+            'TUR': ['Turkey'],
+            'SAU': ['Saudi Arabia'],
+            'CHE': ['Switzerland'],
+            'NLD': ['Netherlands'],
+            'POL': ['Poland'],
+            'SWE': ['Sweden'],
+            'BEL': ['Belgium'],
+            'ARG': ['Argentina'],
+            'NOR': ['Norway'],
+            'AUT': ['Austria'],
+            'THA': ['Thailand'],
+            'ARE': ['United Arab Emirates', 'UAE'],
+            'ISR': ['Israel'],
+            'ZAF': ['South Africa'],
+            'DNK': ['Denmark'],
+            'SGP': ['Singapore'],
+            'FIN': ['Finland'],
+            'COL': ['Colombia'],
+            'MYS': ['Malaysia'],
+            'IRL': ['Ireland'],
+            'CHL': ['Chile'],
+            'EGY': ['Egypt'],
+            'PHL': ['Philippines'],
+            'PAK': ['Pakistan'],
+            'GRC': ['Greece'],
+            'PRT': ['Portugal'],
+            'CZE': ['Czech Republic'],
+            'ROU': ['Romania'],
+            'NZL': ['New Zealand'],
+            'PER': ['Peru'],
+            'HUN': ['Hungary'],
+            'QAT': ['Qatar'],
+            'UKR': ['Ukraine'],
+            'DZA': ['Algeria'],
+            'KWT': ['Kuwait'],
+            'MAR': ['Morocco'],
+            'BGD': ['Bangladesh'],
+            'VEN': ['Venezuela'],
+            'OMN': ['Oman'],
+            'SVK': ['Slovakia'],
+            'HRV': ['Croatia'],
+            'LBN': ['Lebanon'],
+            'LKA': ['Sri Lanka'],
+            'BGR': ['Bulgaria'],
+            'TUN': ['Tunisia'],
+            'DOM': ['Dominican Republic'],
+            'PRI': ['Puerto Rico'],
+            'EST': ['Estonia'],
+            'LTU': ['Lithuania'],
+            'PAN': ['Panama'],
+            'SRB': ['Serbia'],
+            'AZE': ['Azerbaijan'],
+            'SLV': ['El Salvador'],
+            'URY': ['Uruguay'],
+            'KEN': ['Kenya'],
+            'LVA': ['Latvia'],
+            'CYP': ['Cyprus'],
+            'GTM': ['Guatemala'],
+            'ETH': ['Ethiopia'],
+            'CRI': ['Costa Rica'],
+            'JOR': ['Jordan'],
+            'BHR': ['Bahrain'],
+            'NPL': ['Nepal'],
+            'BOL': ['Bolivia'],
+            'TZA': ['Tanzania'],
+            'HND': ['Honduras'],
+            'UGA': ['Uganda'],
+            'SEN': ['Senegal'],
+            'GEO': ['Georgia'],
+            'ZWE': ['Zimbabwe'],
+            'MMR': ['Myanmar'],
+            'KAZ': ['Kazakhstan'],
+            'CMR': ['Cameroon'],
+            'CIV': ['Ivory Coast'],
+            'SDN': ['Sudan'],
+            'AGO': ['Angola'],
+            'NGA': ['Nigeria'],
+            'MOZ': ['Mozambique'],
+            'GHA': ['Ghana'],
+            'MDG': ['Madagascar'],
+            'COD': ['Democratic Republic of Congo'],
+            'TCD': ['Chad'],
+            'YEM': ['Yemen'],
+            'AFG': ['Afghanistan']
         }
 
         self.sources = {
@@ -83,16 +158,16 @@ class CliodynamicDataProcessor:
             'government_effectiveness': [('world_bank', 'GE.EST')]
         }
 
-        # Default values for missing indicators (refined for regional averages)
+        # Default values for missing indicators with regional adjustments
         self.default_indicator_values = {
-            'gini_coefficient': 40.0,  # Global average
-            'youth_unemployment': 20.0,  # Global average
-            'inflation_annual': 5.0,  # Global average
-            'neet_ratio': 12.0,  # Adjusted for East Asia & Pacific (for CHN)
-            'tertiary_education': 18.0,  # Global average
-            'gdppc': 1000.0,  # Low-income country average
-            'suicide_rate': 10.0,  # Global average
-            'government_effectiveness': 0.0  # Neutral value
+            'gini_coefficient': {'default': 40.0, 'CHN': 38.0},  # Adjusted for China
+            'youth_unemployment': {'default': 20.0, 'CHN': 15.0},
+            'inflation_annual': {'default': 5.0, 'CHN': 2.5},
+            'neet_ratio': {'default': 12.0, 'CHN': 10.0},  # Adjusted for East Asia
+            'tertiary_education': {'default': 18.0, 'CHN': 25.0},
+            'gdppc': {'default': 1000.0, 'CHN': 12500.0},
+            'suicide_rate': {'default': 10.0, 'CHN': 8.0},
+            'government_effectiveness': {'default': 0.0, 'CHN': 0.5}
         }
 
         self.country_codes = self.load_all_countries()
@@ -190,7 +265,8 @@ class CliodynamicDataProcessor:
                     return result
                 
                 logging.warning(f"No valid data for {country_code}-{indicator_code}, using default value")
-                default_value = self.default_indicator_values.get(indicator_code.split('.')[-1], 0.0)
+                default_value = self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get(country_code, 
+                    self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get('default', 0.0))
                 return {'historical': {}, 'current': default_value, 'delta': 0.0, 'variance': 0.0}
             except requests.exceptions.RequestException as e:
                 if 'response' in locals() and response.status_code == 429:
@@ -200,20 +276,24 @@ class CliodynamicDataProcessor:
                     logging.error(f"Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
                     break
         logging.warning(f"Failed to fetch data for {country_code}-{indicator_code}, using default value")
-        default_value = self.default_indicator_values.get(indicator_code.split('.')[-1], 0.0)
+        default_value = self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get(country_code, 
+            self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get('default', 0.0))
         return {'historical': {}, 'current': default_value, 'delta': 0.0, 'variance': 0.0}
 
     def forecast_indicator(self, historical: Dict[int, float], steps=2, country_code: str = "", indicator: str = "") -> float:
-        if len(historical) < 3:
+        if len(historical) < 5:  # Require at least 5 data points
             logging.debug(f"Insufficient data for forecast: {len(historical)} points for {country_code}-{indicator}")
             return list(historical.values())[-1] if historical else 0.0
         
         years = sorted(historical.keys())
         values = [historical[year] for year in years]
         # Check for low variance to avoid ARIMA on near-constant series
-        if np.var(values) < 1e-6:
-            logging.debug(f"Low variance in data for {country_code}-{indicator}, using last value")
+        if np.var(values) < 1e-4:  # Tightened threshold
+            logging.debug(f"Low variance in data for {country_code}-{indicator}: {values}")
             return values[-1]
+        
+        # Log historical data for debugging
+        logging.debug(f"Historical data for {country_code}-{indicator}: {historical}")
         
         # Apply log-transformation to stabilize variance (avoid log(0) or negative values)
         values = [np.log1p(max(0, v)) for v in values]
@@ -226,7 +306,7 @@ class CliodynamicDataProcessor:
         series = pd.Series(values_diff, index=pd.PeriodIndex(dates, freq='Y'))
         
         # Try ARIMA
-        orders = [(1, 0, 0), (0, 1, 0), (0, 0, 1)]
+        orders = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (0, 0, 0)]  # Added mean-only model
         for order in orders:
             try:
                 model = ARIMA(series, order=order, enforce_stationarity=False, enforce_invertibility=False)
@@ -264,39 +344,45 @@ class CliodynamicDataProcessor:
                 logging.info(f"Using cached GDELT shock factor for {country_code}: {self.cache[cache_key]['data']}")
                 return self.cache[cache_key]['data']
         
-        country_name = self.gdelt_country_mapping.get(country_code, country_code)
-        query = f"sourcecountry:{country_name}"
-        attempts = 3
+        country_names = self.gdelt_country_mapping.get(country_code, [country_code])
+        shock_factor = 1.0
         headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
-        for attempt in range(attempts):
-            try:
-                url = self.sources['gdelt'].base_url.format(query=query)
-                response = requests.get(url, timeout=30, headers=headers)
-                response.raise_for_status()
-                if 'application/json' not in response.headers.get('Content-Type', ''):
-                    logging.warning(f"Non-JSON response from GDELT for {country_code}: {response.text[:200]}")
-                    shock_factor = 1.0
-                else:
+        
+        for country_name in country_names:
+            query = f"sourcecountry:{country_name}"
+            attempts = 3
+            for attempt in range(attempts):
+                try:
+                    url = self.sources['gdelt'].base_url.format(query=query)
+                    logging.debug(f"GDELT query URL for {country_code}: {url}")
+                    response = requests.get(url, timeout=30, headers=headers)
+                    response.raise_for_status()
+                    if 'application/json' not in response.headers.get('Content-Type', ''):
+                        logging.warning(f"Non-JSON response from GDELT for {country_code} ({country_name}): {response.text[:200]}")
+                        continue
                     data = response.json()
                     articles = data.get('articles', [])
-                    logging.info(f"GDELT data retrieved for {country_code}: {len(articles)} articles")
+                    logging.info(f"GDELT data retrieved for {country_code} ({country_name}): {len(articles)} articles")
                     total_events = sum(1 for item in articles if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
                     shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
-                self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
-                self.save_cache()
-                return shock_factor
-            except requests.exceptions.RequestException as e:
-                if 'response' in locals() and response.status_code == 429:
-                    logging.warning(f"Rate limit hit for GDELT {country_code}, attempt {attempt+1}/{attempts}")
+                    self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
+                    self.save_cache()
+                    return shock_factor
+                except requests.exceptions.RequestException as e:
+                    if 'response' in locals() and response.status_code == 429:
+                        logging.warning(f"Rate limit hit for GDELT {country_code} ({country_name}), attempt {attempt+1}/{attempts}")
+                        time.sleep(2 ** attempt)
+                    else:
+                        logging.error(f"Error fetching GDELT for {country_code} ({country_name}): {e}")
+                        break
+                except json.JSONDecodeError as e:
+                    logging.error(f"GDELT JSON decode error for {country_code} ({country_name}): {e}. Response: {response.text[:200] if 'response' in locals() else 'No response'}")
                     time.sleep(2 ** attempt)
-                else:
-                    logging.error(f"Error fetching GDELT for {country_code}: {e}")
-                    break
-            except json.JSONDecodeError as e:
-                logging.error(f"GDELT JSON decode error for {country_code}: {e}. Response: {response.text[:200] if 'response' in locals() else 'No response'}")
-                time.sleep(2 ** attempt)
+        
         logging.warning(f"Failed to fetch GDELT data for {country_code}, using default shock factor")
-        return 1.0
+        self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
+        self.save_cache()
+        return shock_factor
 
     def fetch_latest_fsi(self):
         cache_key = 'fsi_data'
@@ -343,18 +429,39 @@ class CliodynamicDataProcessor:
         return round(max(0.1, min(0.9, distrust)), 2)
 
     def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
-        wealth_concentration = self.safe_float(all_indicators.get('gini_coefficient', self.default_indicator_values['gini_coefficient']), self.default_indicator_values['gini_coefficient']) / 100
-        tertiary_education = self.safe_float(all_indicators.get('tertiary_education', self.default_indicator_values['tertiary_education']), self.default_indicator_values['tertiary_education']) / 100
-        youth_unemployment = self.safe_float(all_indicators.get('youth_unemployment', self.default_indicator_values['youth_unemployment']), self.default_indicator_values['youth_unemployment']) / 100
+        wealth_concentration = self.safe_float(
+            all_indicators.get('gini_coefficient', self.default_indicator_values['gini_coefficient']['default']),
+            self.default_indicator_values['gini_coefficient']['default']
+        ) / 100
+        tertiary_education = self.safe_float(
+            all_indicators.get('tertiary_education', self.default_indicator_values['tertiary_education']['default']),
+            self.default_indicator_values['tertiary_education']['default']
+        ) / 100
+        youth_unemployment = self.safe_float(
+            all_indicators.get('youth_unemployment', self.default_indicator_values['youth_unemployment']['default']),
+            self.default_indicator_values['youth_unemployment']['default']
+        ) / 100
         education_gap = tertiary_education * youth_unemployment
         elite_overproduction = tertiary_education * youth_unemployment
         return wealth_concentration, education_gap, elite_overproduction
 
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
-        gov_effectiveness = all_indicators.get('government_effectiveness', self.default_indicator_values['government_effectiveness'])
+        gov_effectiveness = all_indicators.get('government_effectiveness', 
+            self.default_indicator_values['government_effectiveness'].get(country_code, 
+            self.default_indicator_values['government_effectiveness']['default']))
         institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness)
-        gini_normalized = self.safe_float(all_indicators.get('gini_coefficient', self.default_indicator_values['gini_coefficient']), self.default_indicator_values['gini_coefficient']) / 100
-        neet_ratio = self.safe_float(all_indicators.get('neet_ratio', self.default_indicator_values['neet_ratio']), self.default_indicator_values['neet_ratio']) / 100
+        gini_normalized = self.safe_float(
+            all_indicators.get('gini_coefficient', self.default_indicator_values['gini_coefficient'].get(country_code, 
+            self.default_indicator_values['gini_coefficient']['default'])),
+            self.default_indicator_values['gini_coefficient'].get(country_code, 
+            self.default_indicator_values['gini_coefficient']['default'])
+        ) / 100
+        neet_ratio = self.safe_float(
+            all_indicators.get('neet_ratio', self.default_indicator_values['neet_ratio'].get(country_code, 
+            self.default_indicator_values['neet_ratio']['default'])),
+            self.default_indicator_values['neet_ratio'].get(country_code, 
+            self.default_indicator_values['neet_ratio']['default'])
+        ) / 100
         polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio * 0.2)
         polarization = min(0.9, max(0.3, polarization))
         return round(polarization, 2), institutional_distrust
@@ -410,7 +517,9 @@ class CliodynamicDataProcessor:
         normalized_values = {}
         numeric_keys = [k for k in indicators if k not in ['country_code', 'year']]
         for indicator in numeric_keys:
-            value = indicators.get(indicator, self.default_indicator_values.get(indicator, 0.5))
+            default_value = self.default_indicator_values.get(indicator, {}).get(country_code, 
+                self.default_indicator_values.get(indicator, {}).get('default', 0.5))
+            value = indicators.get(indicator, default_value)
             try:
                 if value is not None:
                     value = float(value)
@@ -434,16 +543,20 @@ class CliodynamicDataProcessor:
         weights = {'economic': 0.4, 'social': 0.35, 'demographic': 0.25}
 
         base_score = 6.0
-        gdppc = indicators.get('gdppc', self.default_indicator_values['gdppc'])
+        gdppc = indicators.get('gdppc', self.default_indicator_values['gdppc'].get(country_code, 
+            self.default_indicator_values['gdppc']['default']))
         if gdppc is not None:
             try:
-                base_score += min(4.0, np.log1p(self.safe_float(gdppc, self.default_indicator_values['gdppc'])) / 10)
+                base_score += min(4.0, np.log1p(self.safe_float(gdppc, self.default_indicator_values['gdppc']['default'])) / 10)
             except (ValueError, TypeError):
                 logging.warning(f"Invalid gdppc for {country_code}: {gdppc}")
-        gov_effectiveness = indicators.get('government_effectiveness', self.default_indicator_values['government_effectiveness'])
+        gov_effectiveness = indicators.get('government_effectiveness', 
+            self.default_indicator_values['government_effectiveness'].get(country_code, 
+            self.default_indicator_values['government_effectiveness']['default']))
         if gov_effectiveness is not None:
             try:
-                base_score += self.safe_float(gov_effectiveness, self.default_indicator_values['government_effectiveness']) * 0.5
+                base_score += self.safe_float(gov_effectiveness, 
+                    self.default_indicator_values['government_effectiveness']['default']) * 0.5
             except (ValueError, TypeError):
                 logging.warning(f"Invalid government_effectiveness for {country_code}: {gov_effectiveness}")
         base_score = min(10.0, max(1.0, base_score))
@@ -469,7 +582,7 @@ class CliodynamicDataProcessor:
             group_scores[group] = round(group_score, 2)
             systemic_risk_score += group_score * weights[group]
 
-        shock_factor = self.get_gdelt_shock_factor(country_code, force_refresh=True)  # Force refresh in test mode
+        shock_factor = self.get_gdelt_shock_factor(country_code, force_refresh=True)
         systemic_risk_score *= shock_factor
 
         high_risk = self.fetch_latest_fsi()
@@ -543,9 +656,11 @@ class CliodynamicDataProcessor:
             logging.warning(f"No valid historical data for {country_code}, using default values")
             for indicator in self.indicator_sources:
                 if indicator not in all_indicators or all_indicators[indicator] is None:
-                    all_indicators[indicator] = self.default_indicator_values.get(indicator, 0.0)
+                    all_indicators[indicator] = self.default_indicator_values.get(indicator, {}).get(country_code, 
+                        self.default_indicator_values.get(indicator, {}).get('default', 0.0))
                     deltas[indicator] = 0.0
-                    forecasts[indicator] = self.default_indicator_values.get(indicator, 0.0)
+                    forecasts[indicator] = self.default_indicator_values.get(indicator, {}).get(country_code, 
+                        self.default_indicator_values.get(indicator, {}).get('default', 0.0))
 
         wealth_concentration, education_gap, elite_overproduction = self.calculate_proxies(all_indicators)
         all_indicators['wealth_concentration'] = wealth_concentration
