@@ -8,7 +8,7 @@ on:
 jobs:
   generate-data:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     
     steps:
     - name: Checkout repository
@@ -23,24 +23,42 @@ jobs:
 
     - name: Install dependencies
       run: |
-        echo "$REQUIREMENTS" > requirements.txt
         pip install -r requirements.txt
-      env:
-        REQUIREMENTS: |
-          pandas==2.2.3
-          numpy==2.1.2
-          requests==2.32.3
-          beautifulsoup4==4.12.3
-          lxml==5.3.0
-          statsmodels==0.14.4
+      # Asume requirements.txt en el repositorio
+      # Si usas REQUIREMENTS inline, reemplaza con:
+      # echo "$REQUIREMENTS" > requirements.txt
+      # pip install -r requirements.txt
+      # env:
+      #   REQUIREMENTS: |
+      #     pandas==2.2.3
+      #     numpy==2.1.2
+      #     requests==2.32.3
+      #     beautifulsoup4==4.12.3
+      #     lxml==5.3.0
+      #     statsmodels==0.14.4
 
     - name: Generate data for JSON
       run: |
         mkdir -p data
         python scripts/generar_json.py
       env:
-        TEST_MODE: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}  # Test mode for manual runs
+        TEST_MODE: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
+        PYTHONUNBUFFERED: 1
       continue-on-error: false
+
+    - name: Debug logs on failure
+      if: failure()
+      run: |
+        echo "Workflow failed, printing logs and files"
+        ls -lh data/
+        cat data/combined_analysis_results.json || echo "No results file generated"
+        cat data/cache.json || echo "No cache file generated"
+        du -shデータを確認するために以下のコマンドを実行してください:
+```bash
+wc -l data/cache.json
+```
+        echo "Last 20 lines of cache.json:"
+        tail -n 20 data/cache.json
 
     - name: Upload analysis results
       uses: actions/upload-artifact@v4
