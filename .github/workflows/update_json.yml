@@ -40,25 +40,26 @@ jobs:
     - name: Generate data for JSON
       run: |
         mkdir -p data
-        python scripts/generar_json.py
+        python generar_json.py
       env:
         TEST_MODE: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
         PYTHONUNBUFFERED: 1
       continue-on-error: false
 
-    - name: Debug logs on failure
-      if: failure()
+    - name: Check generated files
       run: |
-        echo "Workflow failed, printing logs and files"
-        ls -lh data/
-        echo "Size of cache.json:"
-        du -sh data/cache.json || echo "No cache file generated"
+        echo "Contents of data directory:"
+        ls -la data
+        echo "Line count of combined_analysis_results.json:"
+        wc -l data/combined_analysis_results.json || echo "No results file generated"
         echo "Line count of cache.json:"
         wc -l data/cache.json || echo "No cache file to count"
+        echo "Last 20 lines of combined_analysis_results.json:"
+        tail -n 20 data/combined_analysis_results.json || echo "No results file generated"
         echo "Last 20 lines of cache.json:"
-        tail -n 20 data/cache.json || echo "No cache file to display"
-        echo "Contents of combined_analysis_results.json:"
-        cat data/combined_analysis_results.json || echo "No results file generated"
+        tail -n 20 data/cache.json || echo "No cache file to count"
+        echo "Contents of combined_analysis_results.json: (first 20 lines)"
+        head -n 20 data/combined_analysis_results.json || echo "No results file generated"
         echo "Contents of .gitignore:"
         cat .gitignore || echo "No .gitignore file found"
         echo "Git status:"
