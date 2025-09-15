@@ -29,6 +29,35 @@ class CliodynamicDataProcessor:
     def __init__(self, cache_file: str = 'data/cache.json'):
         self.cache_file = cache_file
         self.cache = self.load_cache()
+
+        # Define GDELT country mapping first
+        self.gdelt_country_mapping = {
+            'USA': 'United States', 'CHN': 'China', 'IND': 'India', 'BRA': 'Brazil', 'RUS': 'Russia',
+            'JPN': 'Japan', 'DEU': 'Germany', 'GBR': 'United Kingdom', 'FRA': 'France', 'ITA': 'Italy',
+            'CAN': 'Canada', 'AUS': 'Australia', 'ESP': 'Spain', 'MEX': 'Mexico', 'IDN': 'Indonesia',
+            'TUR': 'Turkey', 'SAU': 'Saudi Arabia', 'CHE': 'Switzerland', 'NLD': 'Netherlands',
+            'POL': 'Poland', 'SWE': 'Sweden', 'BEL': 'Belgium', 'ARG': 'Argentina', 'NOR': 'Norway',
+            'AUT': 'Austria', 'THA': 'Thailand', 'ARE': 'United Arab Emirates', 'ISR': 'Israel',
+            'ZAF': 'South Africa', 'DNK': 'Denmark', 'SGP': 'Singapore', 'FIN': 'Finland',
+            'COL': 'Colombia', 'MYS': 'Malaysia', 'IRL': 'Ireland', 'CHL': 'Chile', 'EGY': 'Egypt',
+            'PHL': 'Philippines', 'PAK': 'Pakistan', 'GRC': 'Greece', 'PRT': 'Portugal',
+            'CZE': 'Czech Republic', 'ROU': 'Romania', 'NZL': 'New Zealand', 'PER': 'Peru',
+            'HUN': 'Hungary', 'QAT': 'Qatar', 'UKR': 'Ukraine', 'DZA': 'Algeria', 'KWT': 'Kuwait',
+            'MAR': 'Morocco', 'BGD': 'Bangladesh', 'VEN': 'Venezuela', 'OMN': 'Oman',
+            'SVK': 'Slovakia', 'HRV': 'Croatia', 'LBN': 'Lebanon', 'LKA': 'Sri Lanka',
+            'BGR': 'Bulgaria', 'TUN': 'Tunisia', 'DOM': 'Dominican Republic', 'PRI': 'Puerto Rico',
+            'EST': 'Estonia', 'LTU': 'Lithuania', 'PAN': 'Panama', 'SRB': 'Serbia',
+            'AZE': 'Azerbaijan', 'SLV': 'El Salvador', 'URY': 'Uruguay', 'KEN': 'Kenya',
+            'LVA': 'Latvia', 'CYP': 'Cyprus', 'GTM': 'Guatemala', 'ETH': 'Ethiopia',
+            'CRI': 'Costa Rica', 'JOR': 'Jordan', 'BHR': 'Bahrain', 'NPL': 'Nepal',
+            'BOL': 'Bolivia', 'TZA': 'Tanzania', 'HND': 'Honduras', 'UGA': 'Uganda',
+            'SEN': 'Senegal', 'GEO': 'Georgia', 'ZWE': 'Zimbabwe', 'MMR': 'Myanmar',
+            'KAZ': 'Kazakhstan', 'CMR': 'Cameroon', 'CIV': 'Ivory Coast', 'SDN': 'Sudan',
+            'AGO': 'Angola', 'NGA': 'Nigeria', 'MOZ': 'Mozambique', 'GHA': 'Ghana',
+            'MDG': 'Madagascar', 'COD': 'Democratic Republic of Congo', 'TCD': 'Chad',
+            'YEM': 'Yemen', 'AFG': 'Afghanistan'
+        }
+
         self.sources = {
             'world_bank': DataSource(
                 name="World Bank",
@@ -79,34 +108,6 @@ class CliodynamicDataProcessor:
         }
 
         self.crisis_forecasts = {'SDN': 0.4, 'MMR': 0.3, 'YEM': 0.35, 'SYR': 0.3, 'UKR': 0.25, 'HTI': 0.2, 'LBN': 0.25}
-
-        # Mapping of ISO country codes to GDELT country names
-        self.gdelt_country_mapping = {
-            'USA': 'United States', 'CHN': 'China', 'IND': 'India', 'BRA': 'Brazil', 'RUS': 'Russia',
-            'JPN': 'Japan', 'DEU': 'Germany', 'GBR': 'United Kingdom', 'FRA': 'France', 'ITA': 'Italy',
-            'CAN': 'Canada', 'AUS': 'Australia', 'ESP': 'Spain', 'MEX': 'Mexico', 'IDN': 'Indonesia',
-            'TUR': 'Turkey', 'SAU': 'Saudi Arabia', 'CHE': 'Switzerland', 'NLD': 'Netherlands',
-            'POL': 'Poland', 'SWE': 'Sweden', 'BEL': 'Belgium', 'ARG': 'Argentina', 'NOR': 'Norway',
-            'AUT': 'Austria', 'THA': 'Thailand', 'ARE': 'United Arab Emirates', 'ISR': 'Israel',
-            'ZAF': 'South Africa', 'DNK': 'Denmark', 'SGP': 'Singapore', 'FIN': 'Finland',
-            'COL': 'Colombia', 'MYS': 'Malaysia', 'IRL': 'Ireland', 'CHL': 'Chile', 'EGY': 'Egypt',
-            'PHL': 'Philippines', 'PAK': 'Pakistan', 'GRC': 'Greece', 'PRT': 'Portugal',
-            'CZE': 'Czech Republic', 'ROU': 'Romania', 'NZL': 'New Zealand', 'PER': 'Peru',
-            'HUN': 'Hungary', 'QAT': 'Qatar', 'UKR': 'Ukraine', 'DZA': 'Algeria', 'KWT': 'Kuwait',
-            'MAR': 'Morocco', 'BGD': 'Bangladesh', 'VEN': 'Venezuela', 'OMN': 'Oman',
-            'SVK': 'Slovakia', 'HRV': 'Croatia', 'LBN': 'Lebanon', 'LKA': 'Sri Lanka',
-            'BGR': 'Bulgaria', 'TUN': 'Tunisia', 'DOM': 'Dominican Republic', 'PRI': 'Puerto Rico',
-            'EST': 'Estonia', 'LTU': 'Lithuania', 'PAN': 'Panama', 'SRB': 'Serbia',
-            'AZE': 'Azerbaijan', 'SLV': 'El Salvador', 'URY': 'Uruguay', 'KEN': 'Kenya',
-            'LVA': 'Latvia', 'CYP': 'Cyprus', 'GTM': 'Guatemala', 'ETH': 'Ethiopia',
-            'CRI': 'Costa Rica', 'JOR': 'Jordan', 'BHR': 'Bahrain', 'NPL': 'Nepal',
-            'BOL': 'Bolivia', 'TZA': 'Tanzania', 'HND': 'Honduras', 'UGA': 'Uganda',
-            'SEN': 'Senegal', 'GEO': 'Georgia', 'ZWE': 'Zimbabwe', 'MMR': 'Myanmar',
-            'KAZ': 'Kazakhstan', 'CMR': 'Cameroon', 'CIV': 'Ivory Coast', 'SDN': 'Sudan',
-            'AGO': 'Angola', 'NGA': 'Nigeria', 'MOZ': 'Mozambique', 'GHA': 'Ghana',
-            'MDG': 'Madagascar', 'COD': 'Democratic Republic of Congo', 'TCD': 'Chad',
-            'YEM': 'Yemen', 'AFG': 'Afghanistan'
-        }
 
     def safe_float(self, value, default):
         """Convert value to float, return default if conversion fails."""
@@ -196,7 +197,6 @@ class CliodynamicDataProcessor:
         dates = pd.to_datetime([f"{year}-01-01" for year in years])
         series = pd.Series(values, index=pd.PeriodIndex(dates, freq='Y'))
         
-        # Try different ARIMA orders to improve convergence
         orders = [(1, 1, 0), (1, 0, 0), (0, 1, 1)]
         for order in orders:
             try:
@@ -216,7 +216,6 @@ class CliodynamicDataProcessor:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
                 return self.cache[cache_key]['data']
         
-        # Convert ISO country code to GDELT country name
         country_name = self.gdelt_country_mapping.get(country_code, country_code)
         query = f"sourcecountry:{country_name}"
         attempts = 3
