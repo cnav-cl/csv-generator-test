@@ -138,14 +138,13 @@ class CliodynamicDataProcessor:
         with open(self.cache_file, 'w') as f:
             json.dump(self.cache, f)
 
-    # --- INICIO DE CORRECCIONES ---
     def get_default_key(self, indicator_code: str) -> Optional[str]:
         """
         Busca la clave de valor por defecto correcta para un código de indicador,
         manejando códigos complejos como 'SL.UEM.1524.ZS'.
         """
         parts = indicator_code.split('.')
-        for i in range(1, 4):  # Prueba las últimas 1, 2, o 3 partes
+        for i in range(1, 4):
             key = '.'.join(parts[-i:])
             if key in self.default_indicator_values:
                 return key
@@ -158,54 +157,47 @@ class CliodynamicDataProcessor:
         """
         api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={start_year}:{end_year}&format=json"
         
-        # Agregamos User-Agent para evitar ser bloqueados
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
 
         try:
             response = requests.get(api_url, headers=headers)
             response.raise_for_status()
             data = response.json()
-            time.sleep(1) # Retraso para evitar ser bloqueado
+            time.sleep(1)
             
             if len(data) > 1 and data[1]:
                 return {item['date']: item['value'] for item in data[1] if 'date' in item and 'value' in item}
             else:
                 logging.warning(f"No data found for {indicator_code} in {country_code} for years {start_year}-{end_year}. Using default value.")
                 
-                # Nueva lógica para obtener el valor por defecto
                 default_key = self.get_default_key(indicator_code)
                 if default_key:
                     defaults = self.default_indicator_values[default_key]
                     default_value = defaults.get(country_code, defaults.get('default', 0.0))
                 else:
-                    default_value = 0.0 # Último fallback
+                    default_value = 0.0
                 
                 return {str(end_year): default_value}
         except requests.exceptions.RequestException as e:
             logging.error(f"Error fetching data from World Bank for {indicator_code} in {country_code}: {e}")
             
-            # Nueva lógica para obtener el valor por defecto
             default_key = self.get_default_key(indicator_code)
             if default_key:
                 defaults = self.default_indicator_values[default_key]
                 default_value = defaults.get(country_code, defaults.get('default', 0.0))
             else:
-                default_value = 0.0 # Último fallback
+                default_value = 0.0
             
             return {str(end_year): default_value}
         except (json.JSONDecodeError, IndexError) as e:
             logging.error(f"Failed to parse JSON for {indicator_code} in {country_code}: {e}")
             return None
 
-    # --- FIN DE CORRECCIONES ---
-
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
         """Calculates indicators for a given country and year."""
         indicators = {}
-        # World Bank data
-        # Ajustamos el rango de años para el fetch
-        end_year = datetime.now().year - 1 # Busca hasta 2024
-        start_year = end_year - 5 # Rango de 5 años para datos recientes
+        end_year = datetime.now().year - 1
+        start_year = end_year - 5
         
         for name, code in self.indicators.items():
             cache_key = f"{country_code}_{code}_{end_year}"
@@ -221,20 +213,15 @@ class CliodynamicDataProcessor:
                 value = data[str(end_year)]
                 indicators[name] = value
                 
-                # Update temporary cache
                 with self.cache_lock:
                     self.temp_cache[cache_key] = {
                         'value': value,
                         'retrieved_on': str(datetime.now().date())
                     }
             else:
-                # Si el fetch falla, ya la función fetch_world_bank_data() se encarga de dar el valor por defecto
                 pass
 
-        # GDELT data (placeholder for now)
         for name, code in self.gdelt_indicators.items():
-            # Placeholder for GDELT data; assuming a placeholder function returns a value
-            # Esto debería ser reemplazado por un fetch real de GDELT en el futuro
             indicators[name] = random.uniform(0.1, 0.9)
 
         return indicators
@@ -250,21 +237,24 @@ class CliodynamicDataProcessor:
             'country_code': country_code,
             'year': year,
             'indicators': indicators,
-            # Placeholder for Jiang's stability and Turchin's instability calculations
             'estabilidad_jiang': {'status': 'stable', 'valor': 7.05},
             'inestabilidad_turchin': {'status': 'stable', 'valor': 0.26}
         }
         return result
 
     def save_to_json(self, data: List[Dict]):
-        """Saves the final data structure to a JSON file."""
+        """
+        Saves the final data structure to a JSON file.
+        He cambiado el nombre del archivo de salida.
+        """
         final_output = {
             'timestamp': datetime.now().isoformat(),
             'version': '1.0',
             'countries_processed': len(data),
             'results': data
         }
-        with open('data/combined_analysis_results.json', 'w') as f:
+        # Nuevo nombre del archivo
+        with open('data/data_paises.json', 'w') as f:
             json.dump(final_output, f, indent=2)
 
     def main(self, test_mode: bool = False):
@@ -272,8 +262,7 @@ class CliodynamicDataProcessor:
         start_time = time.time()
         logging.info("Starting main data processing")
         
-        # Ajustamos el rango de años para el fetch
-        end_year = datetime.now().year - 1 # Busca hasta 2024
+        end_year = datetime.now().year - 1
         
         results = []
         countries = ['USA'] if test_mode else self.country_codes
