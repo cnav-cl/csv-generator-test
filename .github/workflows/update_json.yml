@@ -40,7 +40,7 @@ jobs:
     - name: Generate data for JSON
       run: |
         mkdir -p data
-        python generar_json.py
+        python scripts/generar_json.py
       env:
         TEST_MODE: ${{ github.event_name == 'workflow_dispatch' && 'true' || 'false' }}
         PYTHONUNBUFFERED: 1
@@ -71,7 +71,7 @@ jobs:
       with:
         name: analysis-results
         path: |
-          data/combined_analysis_results.json
+          data/data_paises.json
           data/cache.json
         retention-days: 7
       continue-on-error: true
@@ -80,7 +80,7 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add data/combined_analysis_results.json data/cache.json
+        git add data/data_paises.json data/cache.json
         echo "Files staged for commit:"
         git diff --staged --name-only
         if git diff --staged --quiet; then
