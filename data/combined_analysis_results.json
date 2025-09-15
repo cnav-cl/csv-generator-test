@@ -1,6 +1,6 @@
 {
     "metadata": {
-        "creation_date": "2025-09-15T02:55:42.771462",
+        "creation_date": "2025-09-15T03:25:40.069573",
         "test_mode": true
     },
     "country_data": {
@@ -67,9 +67,12 @@
                 "estabilidad_jiang": {
                     "status": "alert",
                     "valor": 7.0
+                },
+                "inestabilidad_turchin": {
+                    "status": "alert",
+                    "valor": 0.47
                 }
-            },
-            "inestabilidad_turchin": 0.47
+            }
         },
         "AUT": {
             "year": 2025,
@@ -134,9 +137,12 @@
                 "estabilidad_jiang": {
                     "status": "stable",
                     "valor": 9.0
+                },
+                "inestabilidad_turchin": {
+                    "status": "stable",
+                    "valor": 0.31
                 }
-            },
-            "inestabilidad_turchin": 0.31
+            }
         },
         "AUS": {
             "year": 2025,
@@ -201,9 +207,12 @@
                 "estabilidad_jiang": {
                     "status": "stable",
                     "valor": 7.5
+                },
+                "inestabilidad_turchin": {
+                    "status": "stable",
+                    "valor": 0.33
                 }
-            },
-            "inestabilidad_turchin": 0.33
+            }
         },
         "BEL": {
             "year": 2025,
@@ -268,9 +277,12 @@
                 "estabilidad_jiang": {
                     "status": "alert",
                     "valor": 5.5
+                },
+                "inestabilidad_turchin": {
+                    "status": "stable",
+                    "valor": 0.38
                 }
-            },
-            "inestabilidad_turchin": 0.38
+            }
         },
         "USA": {
             "year": 2025,
@@ -335,9 +347,12 @@
                 "estabilidad_jiang": {
                     "status": "alert",
                     "valor": 6.5
+                },
+                "inestabilidad_turchin": {
+                    "status": "stable",
+                    "valor": 0.37
                 }
-            },
-            "inestabilidad_turchin": 0.37
+            }
         }
     }
 }
