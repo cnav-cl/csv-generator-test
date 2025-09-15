@@ -209,9 +209,29 @@ class CliodynamicDataProcessor:
         try:
             if os.path.exists(self.cache_file):
                 with open(self.cache_file, 'r') as f:
-                    return json.load(f)
+                    cache = json.load(f)
+                # Validate cache data to ensure numerical values
+                for key, entry in cache.items():
+                    if key.startswith('gdelt_') or key == 'fsi_data':
+                        continue
+                    data = entry.get('data', {})
+                    historical = data.get('historical', {})
+                    for year, value in historical.items():
+                        if not isinstance(value, (int, float)):
+                            logging.warning(f"Invalid cached value for {key} in year {year}: {value}, clearing cache")
+                            return {}
+                    if not isinstance(data.get('current', 0.0), (int, float)):
+                        logging.warning(f"Invalid cached current value for {key}: {data.get('current')}, clearing cache")
+                        return {}
+                    if not isinstance(data.get('delta', 0.0), (int, float)):
+                        logging.warning(f"Invalid cached delta value for {key}: {data.get('delta')}, clearing cache")
+                        return {}
+                    if not isinstance(data.get('variance', 0.0), (int, float)):
+                        logging.warning(f"Invalid cached variance value for {key}: {data.get('variance')}, clearing cache")
+                        return {}
+                return cache
         except Exception as e:
-            logging.warning(f"Error loading cache: {e}")
+            logging.warning(f"Error loading cache: {e}, clearing cache")
         return {}
 
     def save_cache(self):
@@ -230,6 +250,7 @@ class CliodynamicDataProcessor:
         cache_key = f"{country_code}_{indicator_code}"
         if cache_key in self.cache:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 7:
+                logging.debug(f"Using cached data for {country_code}-{indicator_code}")
                 return self.cache[cache_key]['data']
         
         end_year = datetime.now().year
@@ -247,21 +268,25 @@ class CliodynamicDataProcessor:
                 if data and len(data) > 1 and data[1]:
                     for item in data[1]:
                         if item['date'].isdigit() and item['value'] is not None:
-                            try:
-                                value = float(item['value'])
+                            value = self.safe_float(item['value'], None)
+                            if value is not None:
                                 historical[int(item['date'])] = value
-                            except (ValueError, TypeError):
+                            else:
                                 logging.warning(f"Invalid value for {country_code}-{indicator_code} in {item['date']}: {item['value']}")
                                 continue
                 
                 if historical:
                     years = sorted(historical.keys())
                     current = historical[years[-1]]
-                    delta = (current - historical[years[0]]) / len(years) if len(years) > 1 else 0
+                    delta = self.safe_float(
+                        (current - historical[years[0]]) / len(years) if len(years) > 1 else 0,
+                        0.0
+                    )
                     variance = np.var(list(historical.values()))
                     result = {'historical': historical, 'current': current, 'delta': delta, 'variance': variance}
                     self.cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
                     self.save_cache()
+                    logging.debug(f"Fetched data for {country_code}-{indicator_code}: {result}")
                     return result
                 
                 logging.warning(f"No valid data for {country_code}-{indicator_code}, using default value")
@@ -511,7 +536,7 @@ class CliodynamicDataProcessor:
                     logging.warning(f"Invalid value for {indicator} in Turchin calculation: {value}")
                     continue
         
-        delta_adjust = sum(deltas.get(ind, 0) for ind in weights if deltas.get(ind, 0) > 0) * 0.1
+        delta_adjust = sum(self.safe_float(deltas.get(ind, 0), 0.0) for ind in weights if self.safe_float(deltas.get(ind, 0), 0.0) > 0) * 0.1
         forecast_adjust = 0.0
         for ind in weights:
             value = indicators.get(ind)
@@ -539,7 +564,7 @@ class CliodynamicDataProcessor:
             value = indicators.get(indicator, default_value)
             try:
                 if value is not None:
-                    value = float(value)
+                    value = self.safe_float(value, default_value)
                     if indicator in ['gini_coefficient', 'neet_ratio', 'youth_unemployment', 'inflation_annual', 'suicide_rate']:
                         normalized_values[indicator] = value / 100
                     elif indicator in ['social_polarization', 'institutional_distrust', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
@@ -614,17 +639,20 @@ class CliodynamicDataProcessor:
         delta_penalty = 0.0
         for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
             delta = deltas.get(ind)
-            if delta is not None and isinstance(delta, (int, float)) and delta > 0:
-                delta_penalty += delta * 0.1
+            if delta is not None:
+                delta = self.safe_float(delta, 0.0)
+                if delta > 0:
+                    delta_penalty += delta * 0.1
         systemic_risk_score += delta_penalty
 
         forecast_penalty = 0.0
         for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
             value = indicators.get(ind)
-            if value is not None and isinstance(value, (int, float)):
+            if value is not None:
+                value = self.safe_float(value, 0.0)
                 forecast_val = forecasts.get(ind, value)
-                if isinstance(forecast_val, (int, float)):
-                    forecast_penalty += max(0, forecast_val - value) * 0.05
+                forecast_val = self.safe_float(forecast_val, value)
+                forecast_penalty += max(0, forecast_val - value) * 0.05
         systemic_risk_score += forecast_penalty
 
         systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
@@ -726,7 +754,7 @@ class CliodynamicDataProcessor:
                         results.append(result)
                     logging.info(f"Completed processing for {country}")
                 except Exception as e:
-                    logging.error(f"Error processing {country}: {e}")
+                    logging.error(f"Error processing {country}: {e}", exc_info=True)
 
         self.save_to_json(results)
 
