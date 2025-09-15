@@ -51,8 +51,8 @@ class CliodynamicDataProcessor:
             'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
             'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
             'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'estabilidad_jiang': {'alert': 4.9, 'critical': 7.4, 'points': {'alert': 0.0, 'critical': 0.0}},
-            'inestabilidad_turchin': {'alert': 0.4, 'critical': 0.6, 'points': {'alert': 0.0, 'critical': 0.0}} # Nuevo umbral para Turchin
+            'estabilidad_jiang': {'alert': 5.5, 'critical': 4.0, 'points': {'alert': 0.0, 'critical': 0.0}},
+            'inestabilidad_turchin': {'alert': 0.4, 'critical': 0.6, 'points': {'alert': 0.0, 'critical': 0.0}}
         }
 
     
@@ -143,7 +143,7 @@ class CliodynamicDataProcessor:
             print(f"  -> Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
 
-    def calculate_turchin_instability(self, indicators: Dict) -> Dict: # Modificado para devolver un diccionario
+    def calculate_turchin_instability(self, indicators: Dict) -> Dict:
         """Calcular índice de inestabilidad de Turchin basado en los trabajos originales"""
         try:
             weights = {
@@ -185,80 +185,178 @@ class CliodynamicDataProcessor:
             else:
                 status = 'stable'
             
-            return {'status': status, 'valor': final_score} # Retorna un diccionario
+            return {'status': status, 'valor': final_score}
             
         except Exception as e:
             print(f"Error calculating Turchin instability: {e}")
             return {'status': 'not_available', 'valor': None}
 
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
-        stability_score = 10.0
-        risk_indicators_status = {}
-        
-        social_media_penalty = 0.0
-        if indicators.get('institutional_distrust', 0.0) >= 0.5:
-            social_media_penalty = -0.5
-            print(f"  Significant social media influence detected. Applying {social_media_penalty} penalty.")
-        
-        stability_score += social_media_penalty
+        """
+        Calcular el Índice de Estabilidad de Jiang utilizando un modelo ponderado
+        que refleja las interacciones sistémicas descritas en la teoría cliodinámica.
+        """
+        try:
+            # 1. Normalizar todos los valores entre 0-1 para análisis comparativo
+            normalized_values = {}
+            
+            # Normalización específica para cada indicador
+            normalization_rules = {
+                'gini_coefficient': lambda x: x / 100,
+                'youth_unemployment': lambda x: x / 100,
+                'inflation_annual': lambda x: min(1.0, x / 50),
+                'neet_ratio': lambda x: x / 100,
+                'tertiary_education': lambda x: x / 100,
+                'suicide_rate': lambda x: min(1.0, x / 30),
+                'government_effectiveness': lambda x: (x - (-2.5)) / (2.5 - (-2.5)),
+                'social_polarization': lambda x: x,
+                'institutional_distrust': lambda x: x,
+                'wealth_concentration': lambda x: x,
+                'education_gap': lambda x: min(1.0, x / 0.2),
+                'elite_overproduction': lambda x: min(1.0, x / 0.2),
+                'gdppc': lambda x: min(1.0, x / 80000)
+            }
+            
+            for indicator, value in indicators.items():
+                if indicator in normalization_rules and value is not None:
+                    normalized_values[indicator] = normalization_rules[indicator](value)
+                elif value is not None:
+                    normalized_values[indicator] = min(1.0, max(0.0, value / 100 if isinstance(value, (int, float)) else 0.5))
 
-        risk_factors = {
-            'neet_ratio': indicators.get('neet_ratio'),
-            'gini_coefficient': indicators.get('gini_coefficient'),
-            'youth_unemployment': indicators.get('youth_unemployment'),
-            'inflation_annual': indicators.get('inflation_annual'),
-            'social_polarization': indicators.get('social_polarization'),
-            'institutional_distrust': indicators.get('institutional_distrust'),
-            'suicide_rate': indicators.get('suicide_rate'),
-            'wealth_concentration': indicators.get('wealth_concentration'),
-            'education_gap': indicators.get('education_gap'),
-            'elite_overproduction': indicators.get('elite_overproduction')
-        }
+            # 2. Definir Grupos Sistémicos y sus Ponderaciones
+            systemic_weights = {
+                'cohesion_group': 0.40,
+                'strain_group': 0.35,
+                'elite_group': 0.25
+            }
 
-        for key, value in risk_factors.items():
-            if value is not None:
-                thresholds = self.thresholds.get(key)
-                if thresholds:
-                    if key in ['gini_coefficient', 'youth_unemployment', 'tertiary_education', 'wealth_concentration', 'education_gap', 'elite_overproduction', 'social_polarization', 'institutional_distrust']:
-                        normalized_value = value
-                        if key in ['gini_coefficient', 'youth_unemployment']:
-                            normalized_value = value / 100
+            indicator_groups = {
+                'cohesion_group': [
+                    'institutional_distrust',
+                    'social_polarization',
+                    'government_effectiveness'
+                ],
+                'strain_group': [
+                    'youth_unemployment',
+                    'neet_ratio',
+                    'suicide_rate',
+                    'inflation_annual'
+                ],
+                'elite_group': [
+                    'elite_overproduction',
+                    'wealth_concentration',
+                    'gini_coefficient',
+                    'education_gap'
+                ]
+            }
+
+            # 3. Calcular la Puntuación Base (Factores de Fortaleza Estructural)
+            base_score = 6.0
+            
+            # Factores positivos (aumentan la base)
+            gdppc = indicators.get('gdppc', 0)
+            gov_effectiveness = indicators.get('government_effectiveness', -2.5)
+            tertiary_edu = indicators.get('tertiary_education', 0)
+            
+            if gdppc > 20000:
+                base_score += 1.5
+            elif gdppc > 10000:
+                base_score += 0.5
+            elif gdppc < 3000:
+                base_score -= 1.0
+                
+            if gov_effectiveness > 0.5:
+                base_score += 1.0
+            elif gov_effectiveness < -1.0:
+                base_score -= 1.0
+                
+            if tertiary_edu > 30:
+                base_score += 0.5
+                
+            base_score = max(3.0, min(8.0, base_score))
+
+            # 4. Calcular el Multiplicador de Riesgo Sistémico
+            systemic_risk_score = 0.0
+            risk_indicators_status = {}
+
+            for group_name, weight in systemic_weights.items():
+                group_indicators = indicator_groups[group_name]
+                group_risk = 0.0
+                count = 0
+
+                for indicator in group_indicators:
+                    norm_value = normalized_values.get(indicator)
+                    if norm_value is not None:
+                        if indicator in ['government_effectiveness']:
+                            group_risk += (1 - norm_value)
+                        else:
+                            group_risk += norm_value
+                        count += 1
                         
-                        if normalized_value >= thresholds['critical']:
-                            stability_score += thresholds.get('points', {}).get('critical', -2.0)
-                            risk_indicators_status[key] = {'status': 'critical', 'valor': value}
-                        elif normalized_value >= thresholds['alert']:
-                            stability_score += thresholds.get('points', {}).get('alert', -1.0)
-                            risk_indicators_status[key] = {'status': 'alert', 'valor': value}
-                        else:
-                            risk_indicators_status[key] = {'status': 'stable', 'valor': value}
-                    else:
-                        if value >= thresholds['critical']:
-                            stability_score += thresholds.get('points', {}).get('critical', -2.0)
-                            risk_indicators_status[key] = {'status': 'critical', 'valor': value}
-                        elif value >= thresholds['alert']:
-                            stability_score += thresholds.get('points', {}).get('alert', -1.0)
-                            risk_indicators_status[key] = {'status': 'alert', 'valor': value}
-                        else:
-                            risk_indicators_status[key] = {'status': 'stable', 'valor': value}
+                        # Determinar estado individual del indicador
+                        raw_value = indicators.get(indicator)
+                        if raw_value is not None:
+                            thresholds = self.thresholds.get(indicator)
+                            if thresholds:
+                                if indicator in ['gini_coefficient', 'wealth_concentration', 
+                                               'social_polarization', 'institutional_distrust',
+                                               'education_gap', 'elite_overproduction']:
+                                    if raw_value >= thresholds['critical']:
+                                        risk_indicators_status[indicator] = {'status': 'critical', 'valor': raw_value}
+                                    elif raw_value >= thresholds['alert']:
+                                        risk_indicators_status[indicator] = {'status': 'alert', 'valor': raw_value}
+                                    else:
+                                        risk_indicators_status[indicator] = {'status': 'stable', 'valor': raw_value}
+                                else:
+                                    if raw_value >= thresholds['critical']:
+                                        risk_indicators_status[indicator] = {'status': 'critical', 'valor': raw_value}
+                                    elif raw_value >= thresholds['alert']:
+                                        risk_indicators_status[indicator] = {'status': 'alert', 'valor': raw_value}
+                                    else:
+                                        risk_indicators_status[indicator] = {'status': 'stable', 'valor': raw_value}
+                            else:
+                                risk_indicators_status[indicator] = {'status': 'not_available', 'valor': raw_value}
+
+                if count > 0:
+                    group_avg_risk = group_risk / count
+                    systemic_risk_score += group_avg_risk * weight
+
+            # Convertir el riesgo sistémico a multiplicador
+            systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
+            systemic_multiplier = max(0.5, min(1.5, systemic_multiplier))
+
+            # 5. Calcular Puntuación Final
+            final_score = base_score * systemic_multiplier
+            final_score = round(max(1.0, min(10.0, final_score)), 2)
+
+            # 6. Determinar el nivel de estabilidad
+            if final_score <= self.thresholds['estabilidad_jiang']['critical']:
+                stability_level = 'critical'
+            elif final_score <= self.thresholds['estabilidad_jiang']['alert']:
+                stability_level = 'alert'
             else:
-                risk_indicators_status[key] = {'status': 'not_available', 'valor': None}
-        
-        # Determine the status for the Jiang Stability Score
-        if stability_score <= self.thresholds['estabilidad_jiang']['alert']: # Actualizado para usar los umbrales
-            stability_level = 'critical'
-        elif stability_score <= self.thresholds['estabilidad_jiang']['critical']:
-            stability_level = 'alert'
-        else:
-            stability_level = 'stable'
+                stability_level = 'stable'
 
-        final_score = round(max(1.0, min(10.0, stability_score)), 2)
+            risk_indicators_status['estabilidad_jiang'] = {'status': stability_level, 'valor': final_score}
+            
+            # 7. Log para diagnóstico
+            print(f"  Jiang Stability Calculation:")
+            print(f"    Base Score: {base_score}")
+            print(f"    Systemic Risk: {systemic_risk_score:.2f}")
+            print(f"    Multiplier: {systemic_multiplier:.2f}")
+            print(f"    Final Score: {final_score} ({stability_level})")
 
-        risk_indicators_status['estabilidad_jiang'] = {'status': stability_level, 'valor': final_score}
-        
-        return {
-            'risk_indicators_status': risk_indicators_status
-        }
+            return {
+                'risk_indicators_status': risk_indicators_status
+            }
+            
+        except Exception as e:
+            print(f"Error in calculate_jiang_stability: {e}")
+            return {
+                'risk_indicators_status': {
+                    'estabilidad_jiang': {'status': 'not_available', 'valor': None}
+                }
+            }
     
     def process_country(self, country_code: str, year: int) -> Dict:
         """Procesar datos para un país específico"""
@@ -348,7 +446,7 @@ class CliodynamicDataProcessor:
         formatted_data = {
             "metadata": {
                 "creation_date": datetime.now().isoformat(),
-                "test_mode": True # Ajusta esto según el modo
+                "test_mode": True
             },
             "country_data": {}
         }
