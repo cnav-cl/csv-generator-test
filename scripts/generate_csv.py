@@ -232,11 +232,14 @@ class CliodynamicDataProcessor:
             data = response.json()
             time.sleep(1)
             
-            if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
-                return {item['date']: item['value'] for item in data[1] if 'date' in item and 'value' in item}
-            else:
-                logging.warning(f"No valid data found for {indicator_code} in {country_code}. Using default value.")
-                return {str(end_year): default_value}
+            if len(data) > 1 and data[1]:
+                # Check if the specific value is None
+                if data[1][0]['value'] is not None:
+                    return {item['date']: item['value'] for item in data[1] if 'date' in item and 'value' in item and item['value'] is not None}
+            
+            # If data is empty, or value is None, return default
+            logging.warning(f"No valid data found for {indicator_code} in {country_code}. Using default value.")
+            return {str(end_year): default_value}
         except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
             logging.error(f"Failed to fetch or parse data for {indicator_code} in {country_code}: {e}")
             return {str(end_year): default_value}
@@ -252,9 +255,10 @@ class CliodynamicDataProcessor:
             with self.cache_lock:
                 if cache_key in self.cache and self.cache[cache_key]['retrieved_on'] == str(datetime.now().date()):
                     value = self.cache[cache_key]['value']
-                    indicators[name] = value if value is not None else self.get_default_value(code, country_code)
-                    logging.info(f"Using cached value for {name} ({country_code})")
-                    continue
+                    if value is not None:
+                        indicators[name] = value
+                        logging.info(f"Using cached value for {name} ({country_code})")
+                        continue
             
             data = self.fetch_world_bank_data(country_code, code, end_year - 5, end_year)
             value = data.get(str(end_year), self.get_default_value(code, country_code))
@@ -386,7 +390,7 @@ class CliodynamicDataProcessor:
         end_year = datetime.now().year - 1
         
         initial_results = {}
-        countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD'] if test_mode else self.country_codes
+        countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD', 'PER'] if test_mode else self.country_codes
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country_initial, country, end_year): country for country in countries}
