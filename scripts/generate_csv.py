@@ -70,16 +70,16 @@ class CliodynamicDataProcessor:
         except Exception as e:
             print(f"Error loading countries: {e}")
             return ['USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'FRA',
-                    'ITA', 'CAN', 'AUS', 'ESP', 'MEX', 'IDN', 'TUR', 'SAU', 'CHE',
-                    'NLD', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ARE',
-                    'ISR', 'ZAF', 'DNK', 'SGP', 'FIN', 'COL', 'MYS', 'IRL', 'CHL',
-                    'EGY', 'PHL', 'PAK', 'GRC', 'PRT', 'CZE', 'ROU', 'NZL', 'PER',
-                    'HUN', 'QAT', 'UKR', 'DZA', 'KWT', 'MAR', 'BGD', 'VEN', 'OMN',
-                    'SVK', 'HRV', 'LBN', 'LKA', 'BGR', 'TUN', 'DOM', 'PRI', 'EST',
-                    'LTU', 'PAN', 'SRB', 'AZE', 'SLV', 'URY', 'KEN', 'LVA', 'CYP',
-                    'GTM', 'ETH', 'CRI', 'JOR', 'BHR', 'NPL', 'BOL', 'TZA', 'HND',
-                    'UGA', 'SEN', 'GEO', 'ZWE', 'MMR', 'KAZ', 'CMR', 'CIV', 'SDN',
-                    'AGO', 'NGA', 'MOZ', 'GHA', 'MDG', 'COD', 'TCD', 'YEM', 'AFG']
+                     'ITA', 'CAN', 'AUS', 'ESP', 'MEX', 'IDN', 'TUR', 'SAU', 'CHE',
+                     'NLD', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ARE',
+                     'ISR', 'ZAF', 'DNK', 'SGP', 'FIN', 'COL', 'MYS', 'IRL', 'CHL',
+                     'EGY', 'PHL', 'PAK', 'GRC', 'PRT', 'CZE', 'ROU', 'NZL', 'PER',
+                     'HUN', 'QAT', 'UKR', 'DZA', 'KWT', 'MAR', 'BGD', 'VEN', 'OMN',
+                     'SVK', 'HRV', 'LBN', 'LKA', 'BGR', 'TUN', 'DOM', 'PRI', 'EST',
+                     'LTU', 'PAN', 'SRB', 'AZE', 'SLV', 'URY', 'KEN', 'LVA', 'CYP',
+                     'GTM', 'ETH', 'CRI', 'JOR', 'BHR', 'NPL', 'BOL', 'TZA', 'HND',
+                     'UGA', 'SEN', 'GEO', 'ZWE', 'MMR', 'KAZ', 'CMR', 'CIV', 'SDN',
+                     'AGO', 'NGA', 'MOZ', 'GHA', 'MDG', 'COD', 'TCD', 'YEM', 'AFG']
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str) -> Optional[float]:
         try:
@@ -184,7 +184,7 @@ class CliodynamicDataProcessor:
         except Exception as e:
             print(f"Error calculating Turchin instability: {e}")
             return 0.3  # Valor promedio
-    
+
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         stability_score = 10.0
         risk_indicators_status = {}
@@ -308,5 +308,73 @@ class CliodynamicDataProcessor:
                 'inestabilidad_turchin': turchin_instability
             }
             
-            print(f"  -> Finished processing {country_code}. Jiang: {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('valor')}, Turchin: {turchin_instability}")
+            print(f"  -> Finished processing {country_code}. Result: {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('valor')}, {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('status')}")
+            return result
+        except Exception as e:
+            # En caso de un fallo inesperado, se retornan los datos parciales
+            print(f"  -> Error processing {country_code}: {e}. Returning partial data.")
+            # Añade los campos esperados con valores nulos para no romper el JSON
+            all_indicators['wealth_concentration'] = None
+            all_indicators['education_gap'] = None
+            all_indicators['elite_overproduction'] = None
+            all_indicators['social_polarization'] = None
+            all_indicators['institutional_distrust'] = None
+            
+            result = {
+                'country_code': country_code,
+                'year': year,
+                'indicators': all_indicators,
+                'risk_indicators_status': {},
+                'inestabilidad_turchin': None
+            }
+            
+            return result
+
+    def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
+        """Guardar los datos procesados en un archivo JSON, con cada objeto en una nueva línea."""
+        if not data:
+            print("No data to save.")
             return
+
+        if not os.path.exists('data'):
+            os.makedirs('data')
+        
+        # Acomoda la salida en un formato más usable para el frontend
+        formatted_data = {
+            "metadata": {
+                "creation_date": datetime.now().isoformat(),
+                "test_mode": True # Ajusta esto según el modo
+            },
+            "country_data": {}
+        }
+        for item in data:
+            country_code = item.pop('country_code')
+            formatted_data['country_data'][country_code] = item
+        
+        with open(filename, 'w', encoding='utf-8') as output_file:
+            json.dump(formatted_data, output_file, indent=4, ensure_ascii=False)
+        print(f"Data successfully saved to {filename}")
+
+    def main(self, test_mode: bool = False):
+        """Función principal con modo de prueba"""
+        print(f"Starting cliodynamic data generation. Test Mode: {test_mode}")
+        
+        all_data = []
+        current_year = datetime.now().year
+        
+        if test_mode:
+            country_list = ['CHL', 'AUT', 'AUS', 'BEL', 'USA']
+        else:
+            country_list = self.country_codes
+        
+        for country_code in country_list:
+            data = self.process_country(country_code, current_year)
+            all_data.append(data)
+            time.sleep(self.sources['world_bank'].rate_limit)
+        
+        self.save_to_json(all_data)
+
+if __name__ == "__main__":
+    processor = CliodynamicDataProcessor()
+    
+    processor.main(test_mode=True)
