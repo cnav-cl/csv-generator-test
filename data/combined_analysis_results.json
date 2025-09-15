@@ -1,5 +1,568 @@
-{"country_code": "CHL", "year": 2025, "gini_coefficient": 43.0, "youth_unemployment": 22.3, "inflation_annual": 4.29763891572524, "neet_ratio": 15.321, "tertiary_education": 21.5449905395508, "gdppc": 16709.8893972307, "suicide_rate": 7.69, "government_effectiveness": 0.71755576133728, "wealth_concentration": 0.43, "education_gap": 0.04804532890319828, "elite_overproduction": 0.04804532890319828, "social_polarization": 0.35, "institutional_distrust": 0.36, "estabilidad_jiang": 7.0, "stability_level": "alert", "risk_indicators_status": {"neet_ratio": {"status": "stable", "valor": 15.321}, "gini_coefficient": {"status": "alert", "valor": 43.0}, "youth_unemployment": {"status": "stable", "valor": 22.3}, "inflation_annual": {"status": "stable", "valor": 4.29763891572524}, "social_polarization": {"status": "stable", "valor": 0.35}, "institutional_distrust": {"status": "alert", "valor": 0.36}, "suicide_rate": {"status": "stable", "valor": 7.69}, "wealth_concentration": {"status": "stable", "valor": 0.43}, "education_gap": {"status": "stable", "valor": 0.04804532890319828}, "elite_overproduction": {"status": "stable", "valor": 0.04804532890319828}}}
-{"country_code": "AUT", "year": 2025, "gini_coefficient": 30.9, "youth_unemployment": 11.694, "inflation_annual": 2.93791574279383, "neet_ratio": 13.118, "tertiary_education": 16.605094909668, "gdppc": 56833.1960472053, "suicide_rate": 14.51, "government_effectiveness": 1.32668149471283, "wealth_concentration": 0.309, "education_gap": 0.019417997987365758, "elite_overproduction": 0.019417997987365758, "social_polarization": 0.3, "institutional_distrust": 0.23, "estabilidad_jiang": 9.0, "stability_level": "stable", "risk_indicators_status": {"neet_ratio": {"status": "stable", "valor": 13.118}, "gini_coefficient": {"status": "stable", "valor": 30.9}, "youth_unemployment": {"status": "stable", "valor": 11.694}, "inflation_annual": {"status": "stable", "valor": 2.93791574279383}, "social_polarization": {"status": "stable", "valor": 0.3}, "institutional_distrust": {"status": "stable", "valor": 0.23}, "suicide_rate": {"status": "alert", "valor": 14.51}, "wealth_concentration": {"status": "stable", "valor": 0.309}, "education_gap": {"status": "stable", "valor": 0.019417997987365758}, "elite_overproduction": {"status": "stable", "valor": 0.019417997987365758}}}
-{"country_code": "AUS", "year": 2025, "gini_coefficient": 40.0, "youth_unemployment": 9.471, "inflation_annual": 3.1616142830575, "neet_ratio": 7.913, "tertiary_education": 35.764835357666, "gdppc": 64407.484256932, "suicide_rate": 13.08, "government_effectiveness": 1.58987963199615, "wealth_concentration": 0.4, "education_gap": 0.03387287556724547, "elite_overproduction": 0.03387287556724547, "social_polarization": 0.3, "institutional_distrust": 0.18, "estabilidad_jiang": 7.5, "stability_level": "stable", "risk_indicators_status": {"neet_ratio": {"status": "stable", "valor": 7.913}, "gini_coefficient": {"status": "alert", "valor": 40.0}, "youth_unemployment": {"status": "stable", "valor": 9.471}, "inflation_annual": {"status": "stable", "valor": 3.1616142830575}, "social_polarization": {"status": "stable", "valor": 0.3}, "institutional_distrust": {"status": "stable", "valor": 0.18}, "suicide_rate": {"status": "alert", "valor": 13.08}, "wealth_concentration": {"status": "stable", "valor": 0.4}, "education_gap": {"status": "stable", "valor": 0.03387287556724547}, "elite_overproduction": {"status": "stable", "valor": 0.03387287556724547}}}
-{"country_code": "BEL", "year": 2025, "gini_coefficient": 26.4, "youth_unemployment": 16.752, "inflation_annual": 3.14349136500041, "neet_ratio": 6.699, "tertiary_education": 39.385196685791, "gdppc": 55954.6106261018, "suicide_rate": 18.36, "government_effectiveness": 1.03702199459076, "wealth_concentration": 0.264, "education_gap": 0.06597808148803709, "elite_overproduction": 0.06597808148803709, "social_polarization": 0.3, "institutional_distrust": 0.29, "estabilidad_jiang": 5.5, "stability_level": "alert", "risk_indicators_status": {"neet_ratio": {"status": "stable", "valor": 6.699}, "gini_coefficient": {"status": "stable", "valor": 26.4}, "youth_unemployment": {"status": "stable", "valor": 16.752}, "inflation_annual": {"status": "stable", "valor": 3.14349136500041}, "social_polarization": {"status": "stable", "valor": 0.3}, "institutional_distrust": {"status": "stable", "valor": 0.29}, "suicide_rate": {"status": "critical", "valor": 18.36}, "wealth_concentration": {"status": "stable", "valor": 0.264}, "education_gap": {"status": "alert", "valor": 0.06597808148803709}, "elite_overproduction": {"status": "alert", "valor": 0.06597808148803709}}}
-{"country_code": "USA", "year": 2025, "gini_coefficient": 41.8, "youth_unemployment": 9.389, "inflation_annual": 2.94952520485207, "neet_ratio": 11.191, "tertiary_education": 38.5680274963379, "gdppc": 85809.9003846356, "suicide_rate": 15.63, "government_effectiveness": 1.21720099449158, "wealth_concentration": 0.418, "education_gap": 0.03621152101631165, "elite_overproduction": 0.03621152101631165, "social_polarization": 0.3, "institutional_distrust": 0.26, "estabilidad_jiang": 6.5, "stability_level": "alert", "risk_indicators_status": {"neet_ratio": {"status": "stable", "valor": 11.191}, "gini_coefficient": {"status": "alert", "valor": 41.8}, "youth_unemployment": {"status": "stable", "valor": 9.389}, "inflation_annual": {"status": "stable", "valor": 2.94952520485207}, "social_polarization": {"status": "stable", "valor": 0.3}, "institutional_distrust": {"status": "stable", "valor": 0.26}, "suicide_rate": {"status": "critical", "valor": 15.63}, "wealth_concentration": {"status": "stable", "valor": 0.418}, "education_gap": {"status": "stable", "valor": 0.03621152101631165}, "elite_overproduction": {"status": "stable", "valor": 0.03621152101631165}}}
+{
+  "indicators_definitions": {
+    "gini_coefficient": {
+      "name": "Coeficiente de Gini",
+      "description": "Mide la desigualdad en la distribución de ingresos.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 39.9
+        },
+        "alert": {
+          "min": 40.0,
+          "max": 49.9
+        },
+        "critical": {
+          "min": 50.0,
+          "max": null
+        }
+      }
+    },
+    "youth_unemployment": {
+      "name": "Desempleo Juvenil",
+      "description": "Tasa de desempleo en la población entre 15 y 24 años.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 29.9
+        },
+        "alert": {
+          "min": 30.0,
+          "max": 39.9
+        },
+        "critical": {
+          "min": 40.0,
+          "max": null
+        }
+      }
+    },
+    "inflation_annual": {
+      "name": "Inflación Anual",
+      "description": "Variación porcentual de los precios en un año.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 5.0
+        },
+        "alert": {
+          "min": 5.1,
+          "max": 9.9
+        },
+        "critical": {
+          "min": 10.0,
+          "max": null
+        }
+      }
+    },
+    "neet_ratio": {
+      "name": "Tasa NEET (No estudia, No trabaja)",
+      "description": "Porcentaje de jóvenes que no trabajan ni estudian ni están en formación.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 19.9
+        },
+        "alert": {
+          "min": 20.0,
+          "max": 29.9
+        },
+        "critical": {
+          "min": 30.0,
+          "max": null
+        }
+      }
+    },
+    "tertiary_education": {
+      "name": "Educación Terciaria",
+      "description": "Porcentaje de la población con educación postsecundaria.",
+      "thresholds": {
+        "stable": {
+          "min": 20.0,
+          "max": null
+        },
+        "alert": {
+          "min": 10.0,
+          "max": 20.0
+        },
+        "critical": {
+          "min": null,
+          "max": 10.0
+        }
+      }
+    },
+    "gdppc": {
+      "name": "PIB per cápita",
+      "description": "Producto Interno Bruto por persona.",
+      "thresholds": {
+        "stable": {
+          "min": 15000.0,
+          "max": null
+        },
+        "alert": {
+          "min": 5000.0,
+          "max": 14999.0
+        },
+        "critical": {
+          "min": null,
+          "max": 5000.0
+        }
+      }
+    },
+    "suicide_rate": {
+      "name": "Tasa de Suicidio",
+      "description": "Número de suicidios por cada 100,000 habitantes.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 9.9
+        },
+        "alert": {
+          "min": 10.0,
+          "max": 14.9
+        },
+        "critical": {
+          "min": 15.0,
+          "max": null
+        }
+      }
+    },
+    "government_effectiveness": {
+      "name": "Efectividad Gubernamental",
+      "description": "Mide la calidad de la administración pública y el servicio civil.",
+      "thresholds": {
+        "stable": {
+          "min": 0.5,
+          "max": null
+        },
+        "alert": {
+          "min": 0.0,
+          "max": 0.49
+        },
+        "critical": {
+          "min": null,
+          "max": 0.0
+        }
+      }
+    },
+    "wealth_concentration": {
+      "name": "Concentración de Riqueza",
+      "description": "Evalúa el porcentaje de la riqueza total del país en manos del 1% más rico.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 0.5
+        },
+        "alert": {
+          "min": 0.51,
+          "max": 0.7
+        },
+        "critical": {
+          "min": 0.7,
+          "max": null
+        }
+      }
+    },
+    "education_gap": {
+      "name": "Brecha Educativa",
+      "description": "La diferencia en años de educación entre los niveles socioeconómicos.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 0.05
+        },
+        "alert": {
+          "min": 0.051,
+          "max": 0.1
+        },
+        "critical": {
+          "min": 0.1,
+          "max": null
+        }
+      }
+    },
+    "elite_overproduction": {
+      "name": "Sobreproducción de Élite",
+      "description": "Mide la proporción de la población educada en exceso de los empleos disponibles para ellos.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 0.05
+        },
+        "alert": {
+          "min": 0.051,
+          "max": 0.1
+        },
+        "critical": {
+          "min": 0.1,
+          "max": null
+        }
+      }
+    },
+    "social_polarization": {
+      "name": "Polarización Social",
+      "description": "Evalúa la división de la sociedad en grupos con opiniones extremas y opuestas.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 0.4
+        },
+        "alert": {
+          "min": 0.41,
+          "max": 0.6
+        },
+        "critical": {
+          "min": 0.6,
+          "max": null
+        }
+      }
+    },
+    "institutional_distrust": {
+      "name": "Desconfianza Institucional",
+      "description": "Evalúa el nivel de desconfianza de la población en las instituciones gubernamentales.",
+      "thresholds": {
+        "stable": {
+          "min": null,
+          "max": 0.35
+        },
+        "alert": {
+          "min": 0.36,
+          "max": 0.5
+        },
+        "critical": {
+          "min": 0.5,
+          "max": null
+        }
+      }
+    },
+    "estabilidad_jiang": {
+      "name": "Nivel de Estabilidad Jiang",
+      "description": "Una métrica agregada que evalúa la estabilidad social y económica.",
+      "thresholds": {
+        "stable": {
+          "min": 7.0,
+          "max": null
+        },
+        "alert": {
+          "min": 5.0,
+          "max": 6.9
+        },
+        "critical": {
+          "min": null,
+          "max": 5.0
+        }
+      }
+    }
+  },
+  "country_data": {
+    "CHL": {
+      "country_code": "CHL",
+      "year": 2025,
+      "estabilidad_jiang": {
+        "value": 7.0,
+        "status": "stable"
+      },
+      "indicators": {
+        "gini_coefficient": {
+          "value": 43.0,
+          "status": "alert"
+        },
+        "youth_unemployment": {
+          "value": 22.3,
+          "status": "stable"
+        },
+        "inflation_annual": {
+          "value": 4.29763891572524,
+          "status": "stable"
+        },
+        "neet_ratio": {
+          "value": 15.321,
+          "status": "stable"
+        },
+        "tertiary_education": {
+          "value": 21.5449905395508,
+          "status": "stable"
+        },
+        "gdppc": {
+          "value": 16709.8893972307,
+          "status": "stable"
+        },
+        "suicide_rate": {
+          "value": 7.69,
+          "status": "stable"
+        },
+        "government_effectiveness": {
+          "value": 0.71755576133728,
+          "status": "stable"
+        },
+        "wealth_concentration": {
+          "value": 0.43,
+          "status": "stable"
+        },
+        "education_gap": {
+          "value": 0.04804532890319828,
+          "status": "stable"
+        },
+        "elite_overproduction": {
+          "value": 0.04804532890319828,
+          "status": "stable"
+        },
+        "social_polarization": {
+          "value": 0.35,
+          "status": "stable"
+        },
+        "institutional_distrust": {
+          "value": 0.36,
+          "status": "alert"
+        }
+      }
+    },
+    "AUT": {
+      "country_code": "AUT",
+      "year": 2025,
+      "estabilidad_jiang": {
+        "value": 8.5,
+        "status": "stable"
+      },
+      "indicators": {
+        "gini_coefficient": {
+          "value": 30.9,
+          "status": "stable"
+        },
+        "youth_unemployment": {
+          "value": 11.694,
+          "status": "stable"
+        },
+        "inflation_annual": {
+          "value": 2.93791574279383,
+          "status": "stable"
+        },
+        "neet_ratio": {
+          "value": 13.118,
+          "status": "stable"
+        },
+        "tertiary_education": {
+          "value": 16.605094909668,
+          "status": "alert"
+        },
+        "gdppc": {
+          "value": 56833.1960472053,
+          "status": "stable"
+        },
+        "suicide_rate": {
+          "value": 14.51,
+          "status": "alert"
+        },
+        "government_effectiveness": {
+          "value": 1.32668149471283,
+          "status": "stable"
+        },
+        "wealth_concentration": {
+          "value": 0.309,
+          "status": "stable"
+        },
+        "education_gap": {
+          "value": 0.019417997987365758,
+          "status": "stable"
+        },
+        "elite_overproduction": {
+          "value": 0.019417997987365758,
+          "status": "stable"
+        },
+        "social_polarization": {
+          "value": 0.3,
+          "status": "stable"
+        },
+        "institutional_distrust": {
+          "value": 0.23,
+          "status": "stable"
+        }
+      }
+    },
+    "AUS": {
+      "country_code": "AUS",
+      "year": 2025,
+      "estabilidad_jiang": {
+        "value": 7.0,
+        "status": "stable"
+      },
+      "indicators": {
+        "gini_coefficient": {
+          "value": 40.0,
+          "status": "alert"
+        },
+        "youth_unemployment": {
+          "value": 9.471,
+          "status": "stable"
+        },
+        "inflation_annual": {
+          "value": 3.1616142830575,
+          "status": "stable"
+        },
+        "neet_ratio": {
+          "value": 7.913,
+          "status": "stable"
+        },
+        "tertiary_education": {
+          "value": 35.764835357666,
+          "status": "stable"
+        },
+        "gdppc": {
+          "value": 64407.484256932,
+          "status": "stable"
+        },
+        "suicide_rate": {
+          "value": 13.08,
+          "status": "alert"
+        },
+        "government_effectiveness": {
+          "value": 1.58987963199615,
+          "status": "stable"
+        },
+        "wealth_concentration": {
+          "value": 0.4,
+          "status": "stable"
+        },
+        "education_gap": {
+          "value": 0.03387287556724547,
+          "status": "stable"
+        },
+        "elite_overproduction": {
+          "value": 0.03387287556724547,
+          "status": "stable"
+        },
+        "social_polarization": {
+          "value": 0.3,
+          "status": "stable"
+        },
+        "institutional_distrust": {
+          "value": 0.18,
+          "status": "stable"
+        }
+      }
+    },
+    "BEL": {
+      "country_code": "BEL",
+      "year": 2025,
+      "estabilidad_jiang": {
+        "value": 4.0,
+        "status": "critical"
+      },
+      "indicators": {
+        "gini_coefficient": {
+          "value": 26.4,
+          "status": "stable"
+        },
+        "youth_unemployment": {
+          "value": 16.752,
+          "status": "stable"
+        },
+        "inflation_annual": {
+          "value": 3.14349136500041,
+          "status": "stable"
+        },
+        "neet_ratio": {
+          "value": 6.699,
+          "status": "stable"
+        },
+        "tertiary_education": {
+          "value": 39.385196685791,
+          "status": "stable"
+        },
+        "gdppc": {
+          "value": 55954.6106261018,
+          "status": "stable"
+        },
+        "suicide_rate": {
+          "value": 18.36,
+          "status": "critical"
+        },
+        "government_effectiveness": {
+          "value": 1.03702199459076,
+          "status": "stable"
+        },
+        "wealth_concentration": {
+          "value": 0.264,
+          "status": "stable"
+        },
+        "education_gap": {
+          "value": 0.06597808148803709,
+          "status": "alert"
+        },
+        "elite_overproduction": {
+          "value": 0.06597808148803709,
+          "status": "alert"
+        },
+        "social_polarization": {
+          "value": 0.3,
+          "status": "stable"
+        },
+        "institutional_distrust": {
+          "value": 0.29,
+          "status": "stable"
+        }
+      }
+    },
+    "USA": {
+      "country_code": "USA",
+      "year": 2025,
+      "estabilidad_jiang": {
+        "value": 5.5,
+        "status": "alert"
+      },
+      "indicators": {
+        "gini_coefficient": {
+          "value": 41.8,
+          "status": "alert"
+        },
+        "youth_unemployment": {
+          "value": 9.389,
+          "status": "stable"
+        },
+        "inflation_annual": {
+          "value": 2.94952520485207,
+          "status": "stable"
+        },
+        "neet_ratio": {
+          "value": 11.191,
+          "status": "stable"
+        },
+        "tertiary_education": {
+          "value": 38.5680274963379,
+          "status": "stable"
+        },
+        "gdppc": {
+          "value": 85809.9003846356,
+          "status": "stable"
+        },
+        "suicide_rate": {
+          "value": 15.63,
+          "status": "critical"
+        },
+        "government_effectiveness": {
+          "value": 1.21720099449158,
+          "status": "stable"
+        },
+        "wealth_concentration": {
+          "value": 0.418,
+          "status": "stable"
+        },
+        "education_gap": {
+          "value": 0.03621152101631165,
+          "status": "stable"
+        },
+        "elite_overproduction": {
+          "value": 0.03621152101631165,
+          "status": "stable"
+        },
+        "social_polarization": {
+          "value": 0.3,
+          "status": "stable"
+        },
+        "institutional_distrust": {
+          "value": 0.26,
+          "status": "stable"
+        }
+      }
+    }
+  }
+}
