@@ -125,6 +125,74 @@ class CliodynamicDataProcessor:
             'wealth_concentration': 'WEALTH_CONCENTRATION'
         }
         self.current_year = datetime.now().year
+        
+        # Diccionario para mapear países con sus vecinos
+        self.border_mapping = {
+            'USA': ['CAN', 'MEX'],
+            'CAN': ['USA'],
+            'MEX': ['USA', 'GTM', 'BLZ'],
+            'RUS': ['CHN', 'UKR', 'FIN', 'NOR', 'POL', 'LTU', 'LVA', 'EST', 'BLR', 'GEO', 'AZE', 'KAZ', 'MNG', 'PRK'],
+            'CHN': ['RUS', 'IND', 'KOR', 'VNM', 'MYS', 'PAK', 'IDN'],
+            'IND': ['CHN', 'PAK', 'NPL', 'BTN', 'MMR', 'BGD'],
+            'BRA': ['ARG', 'COL', 'VEN', 'PER', 'BOL', 'PRY', 'URY'],
+            'UKR': ['RUS', 'POL', 'ROU', 'SVK', 'HUN', 'MDA', 'BLR'],
+            'DEU': ['FRA', 'POL', 'CZE', 'AUT', 'CHE', 'LUX', 'BEL', 'NLD', 'DNK'],
+            'FRA': ['DEU', 'ESP', 'ITA', 'CHE', 'LUX', 'BEL'],
+            'ESP': ['FRA', 'PRT'],
+            'ITA': ['FRA', 'CHE', 'AUT', 'SVN', 'HRV'],
+            'GBR': ['IRL'],
+            'JPN': [],
+            'KOR': ['PRK', 'CHN'],
+            'TUR': ['SYR', 'IRQ', 'IRN', 'ARM', 'GEO', 'GRC', 'BGR'],
+            'IRN': ['TUR', 'IRQ', 'PAK', 'AFG', 'TKM', 'ARM', 'AZE'],
+            'IDN': ['MYS', 'TLS', 'PNG'],
+            'EGY': ['ISR', 'SDN', 'LBY'],
+            'NGA': ['BEN', 'NER', 'CMR', 'TCD'],
+            'PAK': ['IND', 'IRN', 'AFG', 'CHN'],
+            'VNM': ['CHN', 'LAO', 'KHM'],
+            'PHL': [],
+            'ARG': ['BRA', 'CHL', 'BOL', 'PRY', 'URY'],
+            'COL': ['BRA', 'VEN', 'ECU', 'PAN', 'PER'],
+            'POL': ['DEU', 'CZE', 'SVK', 'UKR', 'BLR', 'RUS', 'LTU'],
+            'ZAF': ['NAM', 'BWA', 'ZWE', 'MOZ', 'SWZ', 'LSO'],
+            'THA': ['LAO', 'MMR', 'KHM', 'MYS'],
+            'VEN': ['BRA', 'COL', 'GUY'],
+            'CHL': ['ARG', 'BOL', 'PER'],
+            'PER': ['BRA', 'COL', 'ECU', 'BOL', 'CHL'],
+            'MYS': ['THA', 'IDN', 'SGP'],
+            'ROU': ['BGR', 'SRB', 'HUN', 'UKR', 'MDA'],
+            'SWE': ['NOR', 'FIN'],
+            'BEL': ['FRA', 'DEU', 'NLD', 'LUX'],
+            'NLD': ['BEL', 'DEU'],
+            'GRC': ['ALB', 'MKD', 'BGR', 'TUR'],
+            'CZE': ['DEU', 'POL', 'AUT', 'SVK'],
+            'PRT': ['ESP'],
+            'DNK': ['DEU'],
+            'FIN': ['SWE', 'NOR', 'RUS'],
+            'NOR': ['SWE', 'FIN', 'RUS'],
+            'SGP': ['MYS'],
+            'AUT': ['DEU', 'CHE', 'ITA', 'SVN', 'HRV', 'HUN', 'SVK', 'CZE'],
+            'CHE': ['DEU', 'FRA', 'ITA', 'AUT'],
+            'IRL': ['GBR'],
+            'NZL': [],
+            'HKG': ['CHN'],
+            'ISR': ['EGY', 'JOR', 'LBN', 'SYR'],
+            'ARE': ['SAU', 'OMN'],
+            'COL': ['BRA', 'VEN', 'ECU', 'PAN', 'PER'],
+            'KAZ': ['RUS', 'CHN', 'KGZ', 'UZB', 'TKM'],
+            'BLR': ['POL', 'LTU', 'LVA', 'RUS', 'UKR'],
+            'GEO': ['RUS', 'TUR', 'ARM', 'AZE'],
+            'AZE': ['RUS', 'GEO', 'IRN', 'TUR'],
+            'URY': ['BRA', 'ARG'],
+            'IDN': ['MYS', 'TLS', 'PNG'],
+            'PAK': ['IND', 'AFG', 'IRN', 'CHN'],
+            'UKR': ['POL', 'SVK', 'HUN', 'ROU', 'MDA', 'BLR', 'RUS'],
+            'THA': ['LAO', 'MMR', 'KHM', 'MYS'],
+            'VEN': ['BRA', 'COL', 'GUY'],
+            'CHL': ['PER', 'BOL', 'ARG'],
+            'PER': ['ECU', 'COL', 'BRA', 'BOL', 'CHL'],
+            'MYS': ['THA', 'IDN', 'SGP']
+        }
 
     def load_cache(self) -> Dict:
         """Loads cache from a JSON file."""
@@ -139,10 +207,7 @@ class CliodynamicDataProcessor:
             json.dump(self.cache, f)
 
     def get_default_key(self, indicator_code: str) -> Optional[str]:
-        """
-        Busca la clave de valor por defecto correcta para un código de indicador,
-        manejando códigos complejos como 'SL.UEM.1524.ZS'.
-        """
+        """Busca la clave de valor por defecto correcta para un código de indicador."""
         parts = indicator_code.split('.')
         for i in range(1, 4):
             key = '.'.join(parts[-i:])
@@ -151,10 +216,7 @@ class CliodynamicDataProcessor:
         return None
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Optional[Dict]:
-        """
-        Fetches World Bank data for a specific country and indicator, with retries.
-        Ajustado para usar un User-Agent y manejar mejor los fallos.
-        """
+        """Fetches World Bank data for a specific country and indicator, with retries."""
         api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={start_year}:{end_year}&format=json"
         
         headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
@@ -226,26 +288,44 @@ class CliodynamicDataProcessor:
 
         return indicators
     
-    # --- INICIO DE NUEVA LÓGICA DE CÁLCULO DE PSICOHISTORIA ---
-    def calculate_turchin_instability(self, indicators: Dict) -> Dict:
+    def calculate_border_pressure(self, country_code: str, all_results: Dict) -> float:
+        """
+        Calcula la presión fronteriza basada en la inestabilidad de los países vecinos.
+        Retorna un puntaje promedio de inestabilidad de 0 a 1.
+        """
+        neighbors = self.border_mapping.get(country_code, [])
+        if not neighbors:
+            return 0.0
+        
+        neighbor_instabilities = []
+        for neighbor_code in neighbors:
+            if neighbor_code in all_results:
+                neighbor_instabilities.append(all_results[neighbor_code]['inestabilidad_turchin']['valor'])
+        
+        if not neighbor_instabilities:
+            return 0.0
+        
+        # El puntaje de presión fronteriza es el promedio de la inestabilidad de los vecinos.
+        # Esto significa que un vecino con una inestabilidad de 0.8 tendrá más impacto que uno con 0.2.
+        return sum(neighbor_instabilities) / len(neighbor_instabilities)
+        
+    def calculate_turchin_instability(self, indicators: Dict, border_pressure: float = 0.0) -> Dict:
         """
         Calcula la inestabilidad según un modelo simplificado de Turchin,
-        basado en la sobreproducción de élites, empobrecimiento de las masas
-        y debilidad del estado. Los valores se normalizan de 0 a 1.
+        incluyendo la presión fronteriza.
         """
-        # Suponemos un rango de valores para normalizar, basándonos en datos históricos
-        # Cuanto más alto el valor, mayor la inestabilidad.
         wealth_norm = (indicators.get('wealth_concentration', 0.5) - 0.1) / 0.8
         unemployment_norm = min(1.0, max(0.0, (indicators.get('youth_unemployment', 20.0) - 5.0) / 25.0))
         inflation_norm = min(1.0, max(0.0, (indicators.get('inflation_annual', 3.0) - 1.0) / 10.0))
         social_pol_norm = indicators.get('social_polarization', 0.5)
         
-        # Modelo simplificado con pesos
+        # Se añade la presión fronteriza como un factor en el cálculo
         instability_score = (
-            (wealth_norm * 0.35) + 
-            (unemployment_norm * 0.3) +
-            (inflation_norm * 0.2) +
-            (social_pol_norm * 0.15)
+            (wealth_norm * 0.3) + 
+            (unemployment_norm * 0.25) +
+            (inflation_norm * 0.15) +
+            (social_pol_norm * 0.1) +
+            (border_pressure * 0.2)
         )
         
         status = 'stable'
@@ -257,21 +337,17 @@ class CliodynamicDataProcessor:
         return {
             "status": status,
             "valor": round(instability_score, 2),
-            "comment": "Calculado basado en indicadores económicos y sociales."
+            "comment": "Calculado basado en indicadores internos y presión fronteriza."
         }
 
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         """
-        Calcula la estabilidad institucional según un modelo simplificado de Jiang,
-        basado en la efectividad del gobierno y el estado de derecho.
+        Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        # Los indicadores de gobernanza ya están en un rango de -2.5 a +2.5.
-        # Un valor más alto significa mayor estabilidad.
         gov_eff_norm = (indicators.get('government_effectiveness', 0.0) + 2.5) / 5.0
         pol_stab_norm = (indicators.get('political_stability', 0.0) + 2.5) / 5.0
         rule_of_law_norm = (indicators.get('rule_of_law', 0.0) + 2.5) / 5.0
 
-        # Promedio ponderado para el puntaje de estabilidad
         stability_score = (
             (gov_eff_norm * 0.4) +
             (pol_stab_norm * 0.4) +
@@ -287,16 +363,16 @@ class CliodynamicDataProcessor:
             "valor": round(stability_score, 2),
             "comment": "Calculado basado en indicadores de gobernanza."
         }
-    # --- FIN DE NUEVA LÓGICA DE CÁLCULO ---
 
-    def process_country(self, country_code: str, year: int) -> Optional[Dict]:
-        """Main processing logic for a single country."""
+    def process_country_initial(self, country_code: str, year: int) -> Optional[Dict]:
+        """
+        Primera pasada: solo calcula los indicadores y la inestabilidad interna.
+        """
         indicators = self.calculate_indicators(country_code, year)
         if not indicators:
             logging.warning(f"Skipping {country_code} due to missing data.")
             return None
 
-        # Llamamos a las nuevas funciones para calcular la estabilidad y la inestabilidad
         instability_turchin = self.calculate_turchin_instability(indicators)
         estabilidad_jiang = self.calculate_jiang_stability(indicators)
 
@@ -323,33 +399,48 @@ class CliodynamicDataProcessor:
     def main(self, test_mode: bool = False):
         """Main method to run the data processing."""
         start_time = time.time()
-        logging.info("Starting main data processing")
+        logging.info("Starting main data processing - First Pass (Internal Instability)")
         
         end_year = datetime.now().year - 1
         
-        results = []
-        countries = ['USA', 'RUS', 'CHN'] if test_mode else self.country_codes
+        initial_results = {}
+        countries = ['USA', 'RUS', 'CHN', 'UKR'] if test_mode else self.country_codes
         
+        # Primera pasada: calcular indicadores e inestabilidad interna
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            future_to_country = {executor.submit(self.process_country, country, end_year): country for country in countries}
-            
+            future_to_country = {executor.submit(self.process_country_initial, country, end_year): country for country in countries}
             for future in concurrent.futures.as_completed(future_to_country, timeout=600):
                 country = future_to_country[future]
                 try:
                     result = future.result()
                     if result:
-                        results.append(result)
-                    logging.info(f"Completed processing for {country}")
+                        initial_results[country] = result
+                    logging.info(f"Completed initial processing for {country}")
                 except concurrent.futures.TimeoutError:
                     logging.error(f"Timeout processing {country}, skipping")
                 except Exception as e:
                     logging.error(f"Error processing {country}: {e}", exc_info=True)
 
+        logging.info("Starting second pass - Calculating Border Pressure and Final Instability")
+        
+        final_results = []
+        for country_code in countries:
+            if country_code in initial_results:
+                result = initial_results[country_code]
+                border_pressure = self.calculate_border_pressure(country_code, initial_results)
+                
+                # Recalcular la inestabilidad con la presión fronteriza
+                final_instability = self.calculate_turchin_instability(result['indicators'], border_pressure)
+                result['inestabilidad_turchin'] = final_instability
+                result['border_pressure'] = round(border_pressure, 2)
+                final_results.append(result)
+                logging.info(f"Final instability for {country_code} calculated with border pressure: {final_instability['valor']}")
+        
         with self.cache_lock:
             self.cache.update(self.temp_cache)
             self.save_cache()
         
-        self.save_to_json(results)
+        self.save_to_json(final_results)
         logging.info(f"Main process completed in {time.time() - start_time:.2f} seconds")
 
 if __name__ == "__main__":
