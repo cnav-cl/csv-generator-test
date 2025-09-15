@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-      # Si no usas requirements.txt, descomenta lo siguiente y usa REQUIREMENTS inline:
+      # Si no usas requirements.txt, descomenta lo siguiente:
       # env:
       #   REQUIREMENTS: |
       #     pandas==2.2.3
@@ -59,27 +59,16 @@ jobs:
         tail -n 20 data/cache.json || echo "No cache file to display"
         echo "Contents of combined_analysis_results.json:"
         cat data/combined_analysis_results.json || echo "No results file generated"
+        echo "Contents of .gitignore:"
+        cat .gitignore || echo "No .gitignore file found"
       continue-on-error: true
 
     - name: Upload analysis results
       uses: actions/upload-artifact@v4
       with:
         name: analysis-results
-        path: data/combined_analysis_results.json
+        path: |
+          data/combined_analysis_results.json
+          data/cache.json
         retention-days: 7
-      continue-on-error: true
-
-    - name: Commit and push changes
-      run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
-        git add data/combined_analysis_results.json data/cache.json
-        if git diff --staged --quiet; then
-          echo "No changes to commit"
-        else
-          git commit -m "Auto-update: Cliodynamic JSON data $(date +'%Y-%m-%d') [skip ci]"
-          git push origin main || echo "Failed to push changes, continuing"
-        fi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
