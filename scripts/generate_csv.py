@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 from statsmodels.tsa.arima.model import ARIMA
 import concurrent.futures
 import logging
+import copy
 
 # Configuración de logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -35,8 +36,8 @@ class CliodynamicDataProcessor:
                 rate_limit=0.2
             ),
             'gdelt': DataSource(
-                name="GDELT Project",
-                base_url="https://api.gdeltproject.org/api/v2/query?query=sourcecountry:{country_code}%20eventcode:1*|2*|3*|4*&mode=TimelineVol&format=json&startdatetime={start_date}&enddatetime={end_date}",
+                name="GDELT Monitoring",
+                base_url="http://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=EventsTab&format=json",  # Cambiado a Monitoring API
                 rate_limit=0.5
             )
         }
@@ -91,8 +92,9 @@ class CliodynamicDataProcessor:
     def save_cache(self):
         try:
             os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
+            cache_copy = copy.deepcopy(self.cache)  # Copia para evitar modificación durante iteración
             with open(self.cache_file, 'w') as f:
-                json.dump(self.cache, f)
+                json.dump(cache_copy, f)
         except Exception as e:
             logging.warning(f"Error saving cache: {e}")
 
@@ -138,7 +140,7 @@ class CliodynamicDataProcessor:
                 
                 return None
             except requests.exceptions.RequestException as e:
-                if response.status_code == 429:
+                if 'response' in locals() and response.status_code == 429:
                     logging.warning(f"Rate limit hit for {country_code}-{indicator_code}, attempt {attempt+1}/{attempts}")
                     time.sleep(2 ** attempt)
                 else:
@@ -154,10 +156,10 @@ class CliodynamicDataProcessor:
         years = sorted(historical.keys())
         values = [historical[year] for year in years]
         dates = pd.to_datetime([f"{year}-01-01" for year in years])
-        series = pd.Series(values, index=pd.PeriodIndex(dates, freq='Y'))  # Cambiado de 'A' a 'Y'
+        series = pd.Series(values, index=pd.PeriodIndex(dates, freq='Y'))
         
         try:
-            model = ARIMA(series, order=(1,1,0))
+            model = ARIMA(series, order=(1,1,0), enforce_stationarity=False, enforce_invertibility=False)
             fit = model.fit()
             forecast = fit.forecast(steps=steps)
             return float(forecast.iloc[-1])
@@ -171,22 +173,23 @@ class CliodynamicDataProcessor:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
                 return self.cache[cache_key]['data']
         
-        end_date = datetime.now().strftime('%Y%m%d%H%M%S')
-        start_date = (datetime.now() - timedelta(days=30)).strftime('%Y%m%d%H%M%S')
+        # Query para Monitoring API: eventos de conflicto (códigos 1-4) en sourcecountry
+        query = f"sourcecountry:{country_code} eventbasecode:1,2,3,4"
         attempts = 3
         for attempt in range(attempts):
             try:
-                url = self.sources['gdelt'].base_url.format(country_code=country_code, start_date=start_date, end_date=end_date)
+                url = self.sources['gdelt'].base_url.format(query=query)
                 response = requests.get(url, timeout=30)
                 response.raise_for_status()
-                event_counts = response.json().get('timeline', [{}])[0].get('data', [])
-                total_events = sum(item.get('value', 0) for item in event_counts)
+                data = response.json()
+                # En EventsTab, contar número de eventos
+                total_events = len(data) if isinstance(data, list) else 0
                 shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
                 self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
                 self.save_cache()
                 return shock_factor
             except requests.exceptions.RequestException as e:
-                if response.status_code == 429:
+                if 'response' in locals() and response.status_code == 429:
                     logging.warning(f"Rate limit hit for GDELT {country_code}, attempt {attempt+1}/{attempts}")
                     time.sleep(2 ** attempt)
                 else:
@@ -200,12 +203,15 @@ class CliodynamicDataProcessor:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 30:
                 return self.cache[cache_key]['data']
         
+        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com; https://github.com/cnav-cl/csv-generator-test)'}
         try:
             url = 'https://en.wikipedia.org/wiki/List_of_countries_by_Fragile_States_Index'
-            response = requests.get(url, timeout=30)
+            response = requests.get(url, timeout=30, headers=headers)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             table = soup.find('table', {'class': 'wikitable'})
+            if not table:
+                raise ValueError("No table found")
             rows = table.find_all('tr')[1:]
             updated_dict = {}
             for row in rows[:30]:
@@ -229,6 +235,8 @@ class CliodynamicDataProcessor:
             return self.high_risk_countries
 
     def convert_effectiveness_to_distrust(self, effectiveness: float) -> float:
+        if effectiveness is None:
+            return 0.5
         normalized_effectiveness = (effectiveness - (-2.5)) / (2.5 - (-2.5))
         distrust = 1.0 - normalized_effectiveness
         return round(max(0.1, min(0.9, distrust)), 2)
@@ -250,7 +258,7 @@ class CliodynamicDataProcessor:
 
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
         gov_effectiveness = all_indicators.get('government_effectiveness')
-        institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness) if gov_effectiveness is not None else 0.5
+        institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness)
         gini_normalized = all_indicators.get('gini_coefficient', 40.0) / 100
         neet_ratio = all_indicators.get('neet_ratio', 15.0) / 100
         polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio * 0.2)
@@ -286,7 +294,13 @@ class CliodynamicDataProcessor:
                     continue
         
         delta_adjust = sum(deltas.get(ind, 0) for ind in weights if deltas.get(ind, 0) > 0) * 0.1
-        forecast_adjust = sum(max(0, forecasts.get(ind, value) - value) for ind, value in indicators.items() if ind in weights and isinstance(value, (int, float))) * 0.05
+        forecast_adjust = 0.0
+        for ind in weights:
+            value = indicators.get(ind)
+            if value is not None and isinstance(value, (int, float)):
+                forecast_val = forecasts.get(ind, value)
+                if isinstance(forecast_val, (int, float)):
+                    forecast_adjust += max(0, forecast_val - value) * 0.05
         instability_score += delta_adjust + forecast_adjust
         final_score = round(min(1.0, max(0.0, instability_score)), 2)
         
@@ -300,7 +314,10 @@ class CliodynamicDataProcessor:
 
     def calculate_jiang_stability(self, indicators: Dict, deltas: Dict, forecasts: Dict, country_code: str) -> Dict:
         normalized_values = {}
-        for indicator, value in indicators.items():
+        # Excluir keys no numéricas como 'country_code' y 'year'
+        numeric_keys = [k for k in indicators if k not in ['country_code', 'year']]
+        for indicator in numeric_keys:
+            value = indicators.get(indicator)
             try:
                 if value is not None:
                     value = float(value)
@@ -313,7 +330,7 @@ class CliodynamicDataProcessor:
                 else:
                     normalized_values[indicator] = 0.5
             except (ValueError, TypeError):
-                logging.warning(f"Invalid value for {indicator} in Jiang calculation: {value}, using default 0.5")
+                logging.warning(f"Invalid value for {indicator} in Jiang calculation for {country_code}: {value}, using default 0.5")
                 normalized_values[indicator] = 0.5
 
         groups = {
@@ -371,9 +388,21 @@ class CliodynamicDataProcessor:
             geo_risk = min(0.7, geo_risk)
         systemic_risk_score += geo_risk * 0.15
 
-        delta_penalty = sum(deltas.get(ind, 0) for ind in indicators if deltas.get(ind, 0) > 0 and ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']) * 0.1
-        forecast_penalty = sum(max(0, forecasts.get(ind, val) - val) for ind, val in indicators.items() if ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual'] and isinstance(val, (int, float))) * 0.05
-        systemic_risk_score += delta_penalty + forecast_penalty
+        delta_penalty = 0.0
+        for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
+            delta = deltas.get(ind, 0)
+            if delta > 0:
+                delta_penalty += delta * 0.1
+        systemic_risk_score += delta_penalty
+
+        forecast_penalty = 0.0
+        for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
+            value = indicators.get(ind)
+            if value is not None and isinstance(value, (int, float)):
+                forecast_val = forecasts.get(ind, value)
+                if isinstance(forecast_val, (int, float)):
+                    forecast_penalty += max(0, forecast_val - value) * 0.05
+        systemic_risk_score += forecast_penalty
 
         systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
         systemic_multiplier = max(0.5, min(1.5, systemic_multiplier))
@@ -460,4 +489,4 @@ class CliodynamicDataProcessor:
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
-    processor.main(test_mode=False)
+    processor.main(test_mode=True)
