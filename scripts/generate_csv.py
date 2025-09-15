@@ -80,6 +80,34 @@ class CliodynamicDataProcessor:
 
         self.crisis_forecasts = {'SDN': 0.4, 'MMR': 0.3, 'YEM': 0.35, 'SYR': 0.3, 'UKR': 0.25, 'HTI': 0.2, 'LBN': 0.25}
 
+        # Mapping of ISO country codes to GDELT country names
+        self.gdelt_country_mapping = {
+            'USA': 'United States', 'CHN': 'China', 'IND': 'India', 'BRA': 'Brazil', 'RUS': 'Russia',
+            'JPN': 'Japan', 'DEU': 'Germany', 'GBR': 'United Kingdom', 'FRA': 'France', 'ITA': 'Italy',
+            'CAN': 'Canada', 'AUS': 'Australia', 'ESP': 'Spain', 'MEX': 'Mexico', 'IDN': 'Indonesia',
+            'TUR': 'Turkey', 'SAU': 'Saudi Arabia', 'CHE': 'Switzerland', 'NLD': 'Netherlands',
+            'POL': 'Poland', 'SWE': 'Sweden', 'BEL': 'Belgium', 'ARG': 'Argentina', 'NOR': 'Norway',
+            'AUT': 'Austria', 'THA': 'Thailand', 'ARE': 'United Arab Emirates', 'ISR': 'Israel',
+            'ZAF': 'South Africa', 'DNK': 'Denmark', 'SGP': 'Singapore', 'FIN': 'Finland',
+            'COL': 'Colombia', 'MYS': 'Malaysia', 'IRL': 'Ireland', 'CHL': 'Chile', 'EGY': 'Egypt',
+            'PHL': 'Philippines', 'PAK': 'Pakistan', 'GRC': 'Greece', 'PRT': 'Portugal',
+            'CZE': 'Czech Republic', 'ROU': 'Romania', 'NZL': 'New Zealand', 'PER': 'Peru',
+            'HUN': 'Hungary', 'QAT': 'Qatar', 'UKR': 'Ukraine', 'DZA': 'Algeria', 'KWT': 'Kuwait',
+            'MAR': 'Morocco', 'BGD': 'Bangladesh', 'VEN': 'Venezuela', 'OMN': 'Oman',
+            'SVK': 'Slovakia', 'HRV': 'Croatia', 'LBN': 'Lebanon', 'LKA': 'Sri Lanka',
+            'BGR': 'Bulgaria', 'TUN': 'Tunisia', 'DOM': 'Dominican Republic', 'PRI': 'Puerto Rico',
+            'EST': 'Estonia', 'LTU': 'Lithuania', 'PAN': 'Panama', 'SRB': 'Serbia',
+            'AZE': 'Azerbaijan', 'SLV': 'El Salvador', 'URY': 'Uruguay', 'KEN': 'Kenya',
+            'LVA': 'Latvia', 'CYP': 'Cyprus', 'GTM': 'Guatemala', 'ETH': 'Ethiopia',
+            'CRI': 'Costa Rica', 'JOR': 'Jordan', 'BHR': 'Bahrain', 'NPL': 'Nepal',
+            'BOL': 'Bolivia', 'TZA': 'Tanzania', 'HND': 'Honduras', 'UGA': 'Uganda',
+            'SEN': 'Senegal', 'GEO': 'Georgia', 'ZWE': 'Zimbabwe', 'MMR': 'Myanmar',
+            'KAZ': 'Kazakhstan', 'CMR': 'Cameroon', 'CIV': 'Ivory Coast', 'SDN': 'Sudan',
+            'AGO': 'Angola', 'NGA': 'Nigeria', 'MOZ': 'Mozambique', 'GHA': 'Ghana',
+            'MDG': 'Madagascar', 'COD': 'Democratic Republic of Congo', 'TCD': 'Chad',
+            'YEM': 'Yemen', 'AFG': 'Afghanistan'
+        }
+
     def safe_float(self, value, default):
         """Convert value to float, return default if conversion fails."""
         try:
@@ -107,7 +135,7 @@ class CliodynamicDataProcessor:
             logging.warning(f"Error saving cache: {e}")
 
     def load_all_countries(self) -> List[str]:
-        return ['USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'FRA', 'ITA', 'CAN', 'AUS', 'ESP', 'MEX', 'IDN', 'TUR', 'SAU', 'CHE', 'NLD', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ARE', 'ISR', 'ZAF', 'DNK', 'SGP', 'FIN', 'COL', 'MYS', 'IRL', 'CHL', 'EGY', 'PHL', 'PAK', 'GRC', 'PRT', 'CZE', 'ROU', 'NZL', 'PER', 'HUN', 'QAT', 'UKR', 'DZA', 'KWT', 'MAR', 'BGD', 'VEN', 'OMN', 'SVK', 'HRV', 'LBN', 'LKA', 'BGR', 'TUN', 'DOM', 'PRI', 'EST', 'LTU', 'PAN', 'SRB', 'AZE', 'SLV', 'URY', 'KEN', 'LVA', 'CYP', 'GTM', 'ETH', 'CRI', 'JOR', 'BHR', 'NPL', 'BOL', 'TZA', 'HND', 'UGA', 'SEN', 'GEO', 'ZWE', 'MMR', 'KAZ', 'CMR', 'CIV', 'SDN', 'AGO', 'NGA', 'MOZ', 'GHA', 'MDG', 'COD', 'TCD', 'YEM', 'AFG']
+        return list(self.gdelt_country_mapping.keys())
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str, years_back=10) -> Optional[Dict]:
         cache_key = f"{country_code}_{indicator_code}"
@@ -168,14 +196,19 @@ class CliodynamicDataProcessor:
         dates = pd.to_datetime([f"{year}-01-01" for year in years])
         series = pd.Series(values, index=pd.PeriodIndex(dates, freq='Y'))
         
-        try:
-            model = ARIMA(series, order=(1,1,0), enforce_stationarity=False, enforce_invertibility=False)
-            fit = model.fit()  # Removed method='yulewalker'
-            forecast = fit.forecast(steps=steps)
-            return float(forecast.iloc[-1])
-        except Exception as e:
-            logging.warning(f"ARIMA error: {e}")
-            return series.iloc[-1]
+        # Try different ARIMA orders to improve convergence
+        orders = [(1, 1, 0), (1, 0, 0), (0, 1, 1)]
+        for order in orders:
+            try:
+                model = ARIMA(series, order=order, enforce_stationarity=False, enforce_invertibility=False)
+                fit = model.fit()
+                forecast = fit.forecast(steps=steps)
+                return float(forecast.iloc[-1])
+            except Exception as e:
+                logging.warning(f"ARIMA failed with order {order}: {e}")
+                continue
+        logging.warning(f"All ARIMA orders failed, returning last value")
+        return series.iloc[-1]
 
     def get_gdelt_shock_factor(self, country_code: str) -> float:
         cache_key = f"gdelt_{country_code}"
@@ -183,7 +216,9 @@ class CliodynamicDataProcessor:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
                 return self.cache[cache_key]['data']
         
-        query = f"sourcecountry:{country_code}"
+        # Convert ISO country code to GDELT country name
+        country_name = self.gdelt_country_mapping.get(country_code, country_code)
+        query = f"sourcecountry:{country_name}"
         attempts = 3
         headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
         for attempt in range(attempts):
@@ -197,7 +232,7 @@ class CliodynamicDataProcessor:
                 else:
                     data = response.json()
                     logging.debug(f"GDELT response for {country_code}: {response.text[:200]}")
-                    total_events = sum(1 for item in data if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
+                    total_events = sum(1 for item in data.get('articles', []) if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
                     shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
                 self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
                 self.save_cache()
