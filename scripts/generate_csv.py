@@ -37,7 +37,7 @@ class CliodynamicDataProcessor:
             ),
             'gdelt': DataSource(
                 name="GDELT Monitoring",
-                base_url="http://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=EventsTab&format=json",  # Cambiado a Monitoring API
+                base_url="http://api.gdeltproject.org/api/v2/gkg/gkg?query={query}&timespan=30d&mode=artlist&format=json&maxrecords=250",
                 rate_limit=0.5
             )
         }
@@ -92,7 +92,7 @@ class CliodynamicDataProcessor:
     def save_cache(self):
         try:
             os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
-            cache_copy = copy.deepcopy(self.cache)  # Copia para evitar modificación durante iteración
+            cache_copy = copy.deepcopy(self.cache)
             with open(self.cache_file, 'w') as f:
                 json.dump(cache_copy, f)
         except Exception as e:
@@ -110,10 +110,11 @@ class CliodynamicDataProcessor:
         end_year = datetime.now().year
         start_year = end_year - years_back
         attempts = 3
+        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
         for attempt in range(attempts):
             try:
                 url = self.sources['world_bank'].base_url.format(country_code, indicator_code, start_year, end_year)
-                response = requests.get(url, timeout=30)
+                response = requests.get(url, timeout=30, headers=headers)
                 response.raise_for_status()
                 data = response.json()
                 
@@ -138,6 +139,7 @@ class CliodynamicDataProcessor:
                     self.save_cache()
                     return result
                 
+                logging.warning(f"No valid data for {country_code}-{indicator_code}")
                 return None
             except requests.exceptions.RequestException as e:
                 if 'response' in locals() and response.status_code == 429:
@@ -160,7 +162,7 @@ class CliodynamicDataProcessor:
         
         try:
             model = ARIMA(series, order=(1,1,0), enforce_stationarity=False, enforce_invertibility=False)
-            fit = model.fit()
+            fit = model.fit(maxiter=100, method='yulewalker')
             forecast = fit.forecast(steps=steps)
             return float(forecast.iloc[-1])
         except Exception as e:
@@ -173,17 +175,18 @@ class CliodynamicDataProcessor:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
                 return self.cache[cache_key]['data']
         
-        # Query para Monitoring API: eventos de conflicto (códigos 1-4) en sourcecountry
-        query = f"sourcecountry:{country_code} eventbasecode:1,2,3,4"
+        query = f"sourcecountry:{country_code}"
         attempts = 3
+        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
         for attempt in range(attempts):
             try:
                 url = self.sources['gdelt'].base_url.format(query=query)
-                response = requests.get(url, timeout=30)
+                response = requests.get(url, timeout=30, headers=headers)
                 response.raise_for_status()
                 data = response.json()
-                # En EventsTab, contar número de eventos
-                total_events = len(data) if isinstance(data, list) else 0
+                logging.debug(f"GDELT response for {country_code}: {response.text[:200]}")
+                # Filtrar eventos con EventBaseCode 1, 2, 3, 4
+                total_events = sum(1 for item in data if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
                 shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
                 self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
                 self.save_cache()
@@ -195,6 +198,9 @@ class CliodynamicDataProcessor:
                 else:
                     logging.error(f"Error fetching GDELT for {country_code}: {e}")
                     break
+            except json.JSONDecodeError as e:
+                logging.error(f"GDELT JSON decode error for {country_code}: {e}. Response: {response.text[:200] if 'response' in locals() else 'No response'}")
+                time.sleep(2 ** attempt)
         return 1.0
 
     def fetch_latest_fsi(self):
@@ -203,7 +209,7 @@ class CliodynamicDataProcessor:
             if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 30:
                 return self.cache[cache_key]['data']
         
-        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com; https://github.com/cnav-cl/csv-generator-test)'}
+        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
         try:
             url = 'https://en.wikipedia.org/wiki/List_of_countries_by_Fragile_States_Index'
             response = requests.get(url, timeout=30, headers=headers)
@@ -259,8 +265,8 @@ class CliodynamicDataProcessor:
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
         gov_effectiveness = all_indicators.get('government_effectiveness')
         institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness)
-        gini_normalized = all_indicators.get('gini_coefficient', 40.0) / 100
-        neet_ratio = all_indicators.get('neet_ratio', 15.0) / 100
+        gini_normalized = safe_float(all_indicators.get('gini_coefficient', 40.0), 40.0) / 100
+        neet_ratio = safe_float(all_indicators.get('neet_ratio', 15.0), 15.0) / 100
         polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio * 0.2)
         polarization = min(0.9, max(0.3, polarization))
         return round(polarization, 2), institutional_distrust
@@ -313,8 +319,14 @@ class CliodynamicDataProcessor:
         return {'status': status, 'valor': final_score}
 
     def calculate_jiang_stability(self, indicators: Dict, deltas: Dict, forecasts: Dict, country_code: str) -> Dict:
+        def safe_float(value, default):
+            try:
+                return float(value) if value is not None else default
+            except (ValueError, TypeError):
+                logging.warning(f"Invalid value for {indicator} in Jiang calculation for {country_code}: {value}, using default {default}")
+                return default
+
         normalized_values = {}
-        # Excluir keys no numéricas como 'country_code' y 'year'
         numeric_keys = [k for k in indicators if k not in ['country_code', 'year']]
         for indicator in numeric_keys:
             value = indicators.get(indicator)
@@ -344,13 +356,13 @@ class CliodynamicDataProcessor:
         gdppc = indicators.get('gdppc')
         if gdppc is not None:
             try:
-                base_score += min(4.0, np.log1p(float(gdppc)) / 10)
+                base_score += min(4.0, np.log1p(safe_float(gdppc, 1000.0)) / 10)
             except (ValueError, TypeError):
                 logging.warning(f"Invalid gdppc for {country_code}: {gdppc}")
         gov_effectiveness = indicators.get('government_effectiveness')
         if gov_effectiveness is not None:
             try:
-                base_score += float(gov_effectiveness) * 0.5
+                base_score += safe_float(gov_effectiveness, 0.0) * 0.5
             except (ValueError, TypeError):
                 logging.warning(f"Invalid government_effectiveness for {country_code}: {gov_effectiveness}")
         base_score = min(10.0, max(1.0, base_score))
@@ -390,10 +402,9 @@ class CliodynamicDataProcessor:
 
         delta_penalty = 0.0
         for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
-            delta = deltas.get(ind, 0)
-            if delta > 0:
+            delta = deltas.get(ind)
+            if delta is not None and isinstance(delta, (int, float)) and delta > 0:
                 delta_penalty += delta * 0.1
-        systemic_risk_score += delta_penalty
 
         forecast_penalty = 0.0
         for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
@@ -402,7 +413,7 @@ class CliodynamicDataProcessor:
                 forecast_val = forecasts.get(ind, value)
                 if isinstance(forecast_val, (int, float)):
                     forecast_penalty += max(0, forecast_val - value) * 0.05
-        systemic_risk_score += forecast_penalty
+        systemic_risk_score += delta_penalty + forecast_penalty
 
         systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
         systemic_multiplier = max(0.5, min(1.5, systemic_multiplier))
@@ -424,20 +435,26 @@ class CliodynamicDataProcessor:
             'groups': group_scores
         }
 
-    def process_country(self, country_code: str, year: int) -> Dict:
+    def process_country(self, country_code: str, year: int) -> Optional[Dict]:
         logging.info(f"Processing country: {country_code}")
         all_indicators = {'country_code': country_code, 'year': year}
         deltas = {}
         forecasts = {}
 
+        valid_data = False
         for indicator, wb_code in self.indicator_sources.items():
             hist_data = self.fetch_world_bank_data(country_code, wb_code[0][1], years_back=10)
             if hist_data:
+                valid_data = True
                 all_indicators[indicator] = hist_data['current']
                 deltas[indicator] = hist_data['delta']
                 forecasts[indicator] = self.forecast_indicator(hist_data['historical'])
             else:
                 all_indicators[indicator] = None
+
+        if not valid_data:
+            logging.warning(f"No valid data for {country_code}, skipping")
+            return None
 
         wealth_concentration, education_gap, elite_overproduction = self.calculate_proxies(all_indicators)
         all_indicators['wealth_concentration'] = wealth_concentration
@@ -464,7 +481,7 @@ class CliodynamicDataProcessor:
         try:
             os.makedirs(os.path.dirname(filename), exist_ok=True)
             with open(filename, 'w') as f:
-                json.dump(data, f, indent=2)
+                json.dump([d for d in data if d is not None], f, indent=2)
             logging.info(f"Saved data to {filename}")
         except Exception as e:
             logging.error(f"Error saving to JSON: {e}")
@@ -480,7 +497,8 @@ class CliodynamicDataProcessor:
                 country = future_to_country[future]
                 try:
                     result = future.result()
-                    results.append(result)
+                    if result:
+                        results.append(result)
                     logging.info(f"Completed processing for {country}")
                 except Exception as e:
                     logging.error(f"Error processing {country}: {e}")
@@ -489,4 +507,4 @@ class CliodynamicDataProcessor:
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
-    processor.main(test_mode=True)
+    processor.main(test_mode=False)
