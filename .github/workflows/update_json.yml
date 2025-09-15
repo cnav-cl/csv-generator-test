@@ -61,6 +61,8 @@ jobs:
         cat data/combined_analysis_results.json || echo "No results file generated"
         echo "Contents of .gitignore:"
         cat .gitignore || echo "No .gitignore file found"
+        echo "Git status:"
+        git status
       continue-on-error: true
 
     - name: Upload analysis results
@@ -71,4 +73,21 @@ jobs:
           data/combined_analysis_results.json
           data/cache.json
         retention-days: 7
+      continue-on-error: true
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add data/combined_analysis_results.json data/cache.json
+        echo "Files staged for commit:"
+        git diff --staged --name-only
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Auto-update: Cliodynamic JSON data $(date +'%Y-%m-%d') [skip ci]"
+          git push origin main || echo "Failed to push changes, continuing"
+        fi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
