@@ -301,10 +301,16 @@ class CliodynamicDataProcessor:
         Calcula la inestabilidad según un modelo simplificado de Turchin,
         incluyendo la presión fronteriza.
         """
-        wealth_norm = (indicators.get('wealth_concentration', 0.5) - 0.1) / 0.8
-        unemployment_norm = min(1.0, max(0.0, (indicators.get('youth_unemployment', 20.0) - 5.0) / 25.0))
-        inflation_norm = min(1.0, max(0.0, (indicators.get('inflation_annual', 3.0) - 1.0) / 10.0))
-        social_pol_norm = indicators.get('social_polarization', 0.5)
+        # Aseguramos que los valores no sean None
+        wealth_concentration = indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default'))
+        youth_unemployment = indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default'))
+        inflation_annual = indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default'))
+        social_polarization = indicators.get('social_polarization', self.get_default_value('CIVIL_WAR_RISK', 'default'))
+
+        wealth_norm = (wealth_concentration - 0.1) / 0.8
+        unemployment_norm = min(1.0, max(0.0, (youth_unemployment - 5.0) / 25.0))
+        inflation_norm = min(1.0, max(0.0, (inflation_annual - 1.0) / 10.0))
+        social_pol_norm = social_polarization
         
         instability_score = (
             (wealth_norm * 0.3) + 
@@ -330,9 +336,15 @@ class CliodynamicDataProcessor:
         """
         Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        gov_eff_norm = (indicators.get('government_effectiveness', 0.0) + 2.5) / 5.0
-        pol_stab_norm = (indicators.get('political_stability', 0.0) + 2.5) / 5.0
-        rule_of_law_norm = (indicators.get('rule_of_law', 0.0) + 2.5) / 5.0
+        # --- VALIDACIÓN CRÍTICA AÑADIDA AQUÍ ---
+        gov_eff = indicators.get('government_effectiveness', 0.0)
+        pol_stab = indicators.get('political_stability', 0.0)
+        rule_of_law = indicators.get('rule_of_law', 0.0)
+
+        gov_eff_norm = (gov_eff + 2.5) / 5.0
+        pol_stab_norm = (pol_stab + 2.5) / 5.0
+        rule_of_law_norm = (rule_of_law + 2.5) / 5.0
+        # --- FIN DE LA VALIDACIÓN ---
 
         stability_score = (
             (gov_eff_norm * 0.4) +
@@ -390,7 +402,9 @@ class CliodynamicDataProcessor:
         end_year = datetime.now().year - 1
         
         initial_results = {}
-        countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD', 'PER'] if test_mode else self.country_codes
+        countries = self.country_codes
+        if test_mode:
+            countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD', 'PER', 'MYS']
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country_initial, country, end_year): country for country in countries}
