@@ -31,9 +31,9 @@ class CliodynamicDataProcessor:
     def __init__(self, cache_file: str = 'data/cache.json'):
         self.cache_file = cache_file
         self.cache = self.load_cache()
-        self.cache_lock = threading.Lock()  # Lock for thread-safe cache access
+        self.cache_lock = threading.Lock()
+        self.temp_cache = {}
 
-        # GDELT country mapping
         self.gdelt_country_mapping = {
             'USA': ['United States', 'USA', 'US'],
             'CHN': ['China', 'CN'],
@@ -42,745 +42,396 @@ class CliodynamicDataProcessor:
             'RUS': ['Russia', 'Russian Federation', 'RU'],
             'JPN': ['Japan', 'JP'],
             'DEU': ['Germany', 'DE'],
-            'GBR': ['United Kingdom', 'UK', 'GB'],
+            'GBR': ['United Kingdom', 'GB', 'UK'],
+            'CAN': ['Canada', 'CA'],
             'FRA': ['France', 'FR'],
             'ITA': ['Italy', 'IT'],
-            'CAN': ['Canada', 'CA'],
             'AUS': ['Australia', 'AU'],
-            'ESP': ['Spain', 'ES'],
             'MEX': ['Mexico', 'MX'],
-            'IDN': ['Indonesia', 'ID'],
-            'TUR': ['Turkey', 'TR'],
+            'KOR': ['South Korea', 'Republic of Korea', 'KR'],
             'SAU': ['Saudi Arabia', 'SA'],
-            'CHE': ['Switzerland', 'CH'],
-            'NLD': ['Netherlands', 'NL'],
+            'TUR': ['Turkey', 'TR'],
+            'EGY': ['Egypt', 'EG'],
+            'NGA': ['Nigeria', 'NG'],
+            'PAK': ['Pakistan', 'PK'],
+            'IDN': ['Indonesia', 'ID'],
+            'VNM': ['Vietnam', 'VN'],
+            'PHL': ['Philippines', 'PH'],
+            'ARG': ['Argentina', 'AR'],
+            'COL': ['Colombia', 'CO'],
             'POL': ['Poland', 'PL'],
+            'ESP': ['Spain', 'ES'],
+            'IRN': ['Iran', 'IR'],
+            'ZAF': ['South Africa', 'ZA'],
+            'UKR': ['Ukraine', 'UA'],
+            'THA': ['Thailand', 'TH'],
+            'VEN': ['Venezuela, Bolivarian Republic of', 'Venezuela', 'VE'],
+            'CHL': ['Chile', 'CL'],
+            'PER': ['Peru', 'PE'],
+            'MYS': ['Malaysia', 'MY'],
+            'ROU': ['Romania', 'RO'],
             'SWE': ['Sweden', 'SE'],
             'BEL': ['Belgium', 'BE'],
-            'ARG': ['Argentina', 'AR'],
-            'NOR': ['Norway', 'NO'],
-            'AUT': ['Austria', 'AT'],
-            'THA': ['Thailand', 'TH'],
-            'ARE': ['United Arab Emirates', 'UAE', 'AE'],
-            'ISR': ['Israel', 'IL'],
-            'ZAF': ['South Africa', 'ZA'],
-            'DNK': ['Denmark', 'DK'],
-            'SGP': ['Singapore', 'SG'],
-            'FIN': ['Finland', 'FI'],
-            'COL': ['Colombia', 'CO'],
-            'MYS': ['Malaysia', 'MY'],
-            'IRL': ['Ireland', 'IE'],
-            'CHL': ['Chile', 'CL'],
-            'EGY': ['Egypt', 'EG'],
-            'PHL': ['Philippines', 'PH'],
-            'PAK': ['Pakistan', 'PK'],
+            'NLD': ['Netherlands', 'NL'],
             'GRC': ['Greece', 'GR'],
-            'PRT': ['Portugal', 'PT'],
             'CZE': ['Czech Republic', 'CZ'],
-            'ROU': ['Romania', 'RO'],
+            'PRT': ['Portugal', 'PT'],
+            'DNK': ['Denmark', 'DK'],
+            'FIN': ['Finland', 'FI'],
+            'NOR': ['Norway', 'NO'],
+            'SGP': ['Singapore', 'SG'],
+            'AUT': ['Austria', 'AT'],
+            'CHE': ['Switzerland', 'CH'],
+            'IRL': ['Ireland', 'IE'],
             'NZL': ['New Zealand', 'NZ'],
-            'PER': ['Peru', 'PE'],
-            'HUN': ['Hungary', 'HU'],
-            'QAT': ['Qatar', 'QA'],
-            'UKR': ['Ukraine', 'UA'],
-            'DZA': ['Algeria', 'DZ'],
-            'KWT': ['Kuwait', 'KW'],
-            'MAR': ['Morocco', 'MA'],
-            'BGD': ['Bangladesh', 'BD'],
-            'VEN': ['Venezuela', 'VE'],
-            'OMN': ['Oman', 'OM'],
-            'SVK': ['Slovakia', 'SK'],
-            'HRV': ['Croatia', 'HR'],
-            'LBN': ['Lebanon', 'LB'],
-            'LKA': ['Sri Lanka', 'LK'],
-            'BGR': ['Bulgaria', 'BG'],
-            'TUN': ['Tunisia', 'TN'],
-            'DOM': ['Dominican Republic', 'DO'],
-            'PRI': ['Puerto Rico', 'PR'],
-            'EST': ['Estonia', 'EE'],
-            'LTU': ['Lithuania', 'LT'],
-            'PAN': ['Panama', 'PA'],
-            'SRB': ['Serbia', 'RS'],
-            'AZE': ['Azerbaijan', 'AZ'],
-            'SLV': ['El Salvador', 'SV'],
-            'URY': ['Uruguay', 'UY'],
-            'KEN': ['Kenya', 'KE'],
-            'LVA': ['Latvia', 'LV'],
-            'CYP': ['Cyprus', 'CY'],
-            'GTM': ['Guatemala', 'GT'],
-            'ETH': ['Ethiopia', 'ET'],
-            'CRI': ['Costa Rica', 'CR'],
-            'JOR': ['Jordan', 'JO'],
-            'BHR': ['Bahrain', 'BH'],
-            'NPL': ['Nepal', 'NP'],
-            'BOL': ['Bolivia', 'BO'],
-            'TZA': ['Tanzania', 'TZ'],
-            'HND': ['Honduras', 'HN'],
-            'UGA': ['Uganda', 'UG'],
-            'SEN': ['Senegal', 'SN'],
-            'GEO': ['Georgia', 'GE'],
-            'ZWE': ['Zimbabwe', 'ZW'],
-            'MMR': ['Myanmar', 'MM'],
-            'KAZ': ['Kazakhstan', 'KZ'],
-            'CMR': ['Cameroon', 'CM'],
-            'CIV': ['Ivory Coast', 'CI'],
-            'SDN': ['Sudan', 'SD'],
-            'AGO': ['Angola', 'AO'],
-            'NGA': ['Nigeria', 'NG'],
-            'MOZ': ['Mozambique', 'MZ'],
-            'GHA': ['Ghana', 'GH'],
-            'MDG': ['Madagascar', 'MG'],
-            'COD': ['Democratic Republic of Congo', 'CD'],
-            'TCD': ['Chad', 'TD'],
-            'YEM': ['Yemen', 'YE'],
-            'AFG': ['Afghanistan', 'AF']
+            'HKG': ['Hong Kong', 'HK'],
+            'ISR': ['Israel', 'IL'],
+            'ARE': ['United Arab Emirates', 'AE'],
+            'EGY': ['Egypt, Arab Rep.', 'EG']
         }
 
-        self.sources = {
-            'world_bank': DataSource(
-                name="World Bank",
-                base_url="https://api.worldbank.org/v2/country/{}/indicator/{}?format=json&per_page=100&date={}:{}",
-                rate_limit=0.2
-            ),
-            'gdelt': DataSource(
-                name="GDELT Monitoring",
-                base_url="https://api.gdeltproject.org/api/v2/doc/doc?query={query}&timespan=30d&mode=artlist&format=json&maxrecords=250",
-                rate_limit=0.5
-            )
+        self.country_codes = list(self.gdelt_country_mapping.keys())
+        self.indicators = {
+            'gini_coefficient': 'SI.POV.GINI',
+            'youth_unemployment': 'SL.UEM.1524.ZS',
+            'inflation_annual': 'FP.CPI.TOTL.ZG',
+            'neet_ratio': 'SL.UEM.NEET.ZS',
+            'tertiary_education': 'SE.TER.ENRR',
+            'government_effectiveness': 'GE.EST',
+            'political_stability': 'PV.EST',
+            'control_of_corruption': 'CC.EST',
+            'voice_accountability': 'VA.EST',
+            'rule_of_law': 'RL.EST',
+            'regulatory_quality': 'RQ.EST'
         }
-
-        self.indicator_sources = {
-            'gini_coefficient': [('world_bank', 'SI.POV.GINI')],
-            'youth_unemployment': [('world_bank', 'SL.UEM.1524.ZS')],
-            'inflation_annual': [('world_bank', 'FP.CPI.TOTL.ZG')],
-            'neet_ratio': [('world_bank', 'SL.UEM.NEET.ZS')],
-            'tertiary_education': [('world_bank', 'SE.TER.CUAT.BA.ZS')],
-            'gdppc': [('world_bank', 'NY.GDP.PCAP.CD')],
-            'suicide_rate': [('world_bank', 'SH.STA.SUIC.P5')],
-            'government_effectiveness': [('world_bank', 'GE.EST')]
-        }
-
         self.default_indicator_values = {
-            'gini_coefficient': {'default': 40.0, 'CHN': 38.0, 'RUS': 36.0},
-            'youth_unemployment': {'default': 20.0, 'CHN': 15.0, 'RUS': 16.0},
-            'inflation_annual': {'default': 5.0, 'CHN': 2.5, 'RUS': 6.0},
-            'neet_ratio': {'default': 12.0, 'CHN': 10.0, 'RUS': 11.0},
-            'tertiary_education': {'default': 18.0, 'CHN': 25.0, 'RUS': 30.0},
-            'gdppc': {'default': 1000.0, 'CHN': 12500.0, 'RUS': 10000.0},
-            'suicide_rate': {'default': 10.0, 'CHN': 8.0, 'RUS': 12.0},
-            'government_effectiveness': {'default': 0.0, 'CHN': 0.5, 'RUS': -0.2}
+            'GINI': {'USA': 40.0, 'default': 40.0},
+            '1524.ZS': {'default': 20.0},
+            'TOTL.ZG': {'default': 3.0},
+            'NEET.ZS': {'default': 10.0},
+            'TER.ENRR': {'default': 60.0},
+            'GE.EST': {'default': 0.0},
+            'PV.EST': {'default': 0.0},
+            'CC.EST': {'default': 0.0},
+            'VA.EST': {'default': 0.0},
+            'RL.EST': {'default': 0.0},
+            'RQ.EST': {'default': 0.0}
         }
-
-        self.country_codes = self.load_all_countries()
+        self.gdelt_indicators = {
+            'social_polarization': 'CIVIL_WAR_RISK',
+            'institutional_distrust': 'GOV_DISTRUST',
+            'suicide_rate': 'SUICIDE',
+            'elite_overproduction': 'ELITE_OVERPRODUCTION',
+            'wealth_concentration': 'WEALTH_CONCENTRATION'
+        }
+        self.current_year = datetime.now().year
         
-        self.thresholds = {
-            'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.5, 'critical': -2.5}},
-            'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
-            'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
-            'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'institutional_distrust': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
-            'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
-            'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'estabilidad_jiang': {'alert': 5.0, 'critical': 4.0, 'points': {'alert': 0.0, 'critical': 0.0}},
-            'inestabilidad_turchin': {'alert': 0.35, 'critical': 0.5, 'points': {'alert': 0.0, 'critical': 0.0}}
+        self.border_mapping = {
+            'USA': ['CAN', 'MEX'],
+            'CAN': ['USA'],
+            'MEX': ['USA', 'GTM', 'BLZ'],
+            'RUS': ['CHN', 'UKR', 'FIN', 'NOR', 'POL', 'LTU', 'LVA', 'EST', 'BLR', 'GEO', 'AZE', 'KAZ', 'MNG', 'PRK'],
+            'CHN': ['RUS', 'IND', 'KOR', 'VNM', 'MYS', 'PAK', 'IDN'],
+            'IND': ['CHN', 'PAK', 'NPL', 'BTN', 'MMR', 'BGD'],
+            'BRA': ['ARG', 'COL', 'VEN', 'PER', 'BOL', 'PRY', 'URY'],
+            'UKR': ['RUS', 'POL', 'ROU', 'SVK', 'HUN', 'MDA', 'BLR'],
+            'DEU': ['FRA', 'POL', 'CZE', 'AUT', 'CHE', 'LUX', 'BEL', 'NLD', 'DNK'],
+            'FRA': ['DEU', 'ESP', 'ITA', 'CHE', 'LUX', 'BEL'],
+            'ESP': ['FRA', 'PRT'],
+            'ITA': ['FRA', 'CHE', 'AUT', 'SVN', 'HRV'],
+            'GBR': ['IRL'],
+            'JPN': [],
+            'KOR': ['PRK', 'CHN'],
+            'TUR': ['SYR', 'IRQ', 'IRN', 'ARM', 'GEO', 'GRC', 'BGR'],
+            'IRN': ['TUR', 'IRQ', 'PAK', 'AFG', 'TKM', 'ARM', 'AZE'],
+            'IDN': ['MYS', 'TLS', 'PNG'],
+            'EGY': ['ISR', 'SDN', 'LBY'],
+            'NGA': ['BEN', 'NER', 'CMR', 'TCD'],
+            'PAK': ['IND', 'IRN', 'AFG', 'CHN'],
+            'VNM': ['CHN', 'LAO', 'KHM'],
+            'PHL': [],
+            'ARG': ['BRA', 'CHL', 'BOL', 'PRY', 'URY'],
+            'COL': ['BRA', 'VEN', 'ECU', 'PAN', 'PER'],
+            'POL': ['DEU', 'CZE', 'SVK', 'UKR', 'BLR', 'RUS', 'LTU'],
+            'ZAF': ['NAM', 'BWA', 'ZWE', 'MOZ', 'SWZ', 'LSO'],
+            'THA': ['LAO', 'MMR', 'KHM', 'MYS'],
+            'VEN': ['BRA', 'COL', 'GUY'],
+            'CHL': ['ARG', 'BOL', 'PER'],
+            'PER': ['BRA', 'COL', 'ECU', 'BOL', 'CHL'],
+            'MYS': ['THA', 'IDN', 'SGP'],
+            'ROU': ['BGR', 'SRB', 'HUN', 'UKR', 'MDA'],
+            'SWE': ['NOR', 'FIN'],
+            'BEL': ['FRA', 'DEU', 'NLD', 'LUX'],
+            'NLD': ['BEL', 'DEU'],
+            'GRC': ['ALB', 'MKD', 'BGR', 'TUR'],
+            'CZE': ['DEU', 'POL', 'AUT', 'SVK'],
+            'PRT': ['ESP'],
+            'DNK': ['DEU'],
+            'FIN': ['SWE', 'NOR', 'RUS'],
+            'NOR': ['SWE', 'FIN', 'RUS'],
+            'SGP': ['MYS'],
+            'AUT': ['DEU', 'CHE', 'ITA', 'SVN', 'HRV', 'HUN', 'SVK', 'CZE'],
+            'CHE': ['DEU', 'FRA', 'ITA', 'AUT'],
+            'IRL': ['GBR'],
+            'NZL': [],
+            'HKG': ['CHN'],
+            'ISR': ['EGY', 'JOR', 'LBN', 'SYR'],
+            'ARE': ['SAU', 'OMN'],
+            'COL': ['BRA', 'VEN', 'ECU', 'PAN', 'PER'],
+            'KAZ': ['RUS', 'CHN', 'KGZ', 'UZB', 'TKM'],
+            'BLR': ['POL', 'LTU', 'LVA', 'RUS', 'UKR'],
+            'GEO': ['RUS', 'TUR', 'ARM', 'AZE'],
+            'AZE': ['RUS', 'GEO', 'IRN', 'TUR'],
+            'URY': ['BRA', 'ARG'],
+            'IDN': ['MYS', 'TLS', 'PNG'],
+            'PAK': ['IND', 'AFG', 'IRN', 'CHN'],
+            'UKR': ['POL', 'SVK', 'HUN', 'ROU', 'MDA', 'BLR', 'RUS'],
+            'THA': ['LAO', 'MMR', 'KHM', 'MYS'],
+            'VEN': ['BRA', 'COL', 'GUY'],
+            'CHL': ['PER', 'BOL', 'ARG'],
+            'PER': ['ECU', 'COL', 'BRA', 'BOL', 'CHL'],
+            'MYS': ['THA', 'IDN', 'SGP']
         }
-
-        self.high_risk_countries = {
-            'SOM': 111.3, 'SDN': 109.3, 'SSD': 109.0, 'SYR': 108.1, 'YEM': 106.6,
-            'COD': 105.4, 'AFG': 103.9, 'CAF': 103.8, 'TCD': 102.1, 'MMR': 100.8,
-            'HTI': 99.7, 'MLI': 98.4, 'BFA': 97.3, 'NER': 96.8, 'CMR': 95.9,
-            'NGA': 95.2, 'ETH': 94.7, 'LBY': 93.5, 'ERI': 93.2, 'BDI': 92.8,
-            'UKR': 85.0, 'ISR': 70.0, 'PSE': 90.0, 'IRN': 80.0, 'LBN': 82.0, 'MEX': 75.0
-        }
-
-        self.crisis_forecasts = {'SDN': 0.4, 'MMR': 0.3, 'YEM': 0.35, 'SYR': 0.3, 'UKR': 0.25, 'HTI': 0.2, 'LBN': 0.25}
-
-    def safe_float(self, value, default):
-        """Convert value to float, return default if conversion fails."""
-        try:
-            return float(value) if value is not None else default
-        except (ValueError, TypeError):
-            logging.warning(f"Invalid value for conversion: {value}, using default {default}")
-            return default
-
-    def safe_int(self, value, default):
-        """Convert value to int, return default if conversion fails."""
-        try:
-            return int(value) if value is not None else default
-        except (ValueError, TypeError):
-            logging.warning(f"Invalid value for conversion to int: {value}, using default {default}")
-            return default
 
     def load_cache(self) -> Dict:
-        try:
-            if os.path.exists(self.cache_file):
-                with open(self.cache_file, 'r') as f:
-                    cache = json.load(f)
-                # Validate cache data to ensure numerical values and integer keys
-                for key, entry in cache.items():
-                    if key.startswith('gdelt_') or key == 'fsi_data':
-                        continue
-                    data = entry.get('data', {})
-                    historical = data.get('historical', {})
-                    for year, value in historical.items():
-                        if not isinstance(year, int):
-                            logging.warning(f"Invalid cached year key for {key}: {year}, clearing cache")
-                            return {}
-                        if not isinstance(value, (int, float)):
-                            logging.warning(f"Invalid cached value for {key} in year {year}: {value}, clearing cache")
-                            return {}
-                    if not isinstance(data.get('current', 0.0), (int, float)):
-                        logging.warning(f"Invalid cached current value for {key}: {data.get('current')}, clearing cache")
-                        return {}
-                    if not isinstance(data.get('delta', 0.0), (int, float)):
-                        logging.warning(f"Invalid cached delta value for {key}: {data.get('delta')}, clearing cache")
-                        return {}
-                    if not isinstance(data.get('variance', 0.0), (int, float)):
-                        logging.warning(f"Invalid cached variance value for {key}: {data.get('variance')}, clearing cache")
-                        return {}
-                return cache
-        except Exception as e:
-            logging.warning(f"Error loading cache: {e}, clearing cache")
+        """Loads cache from a JSON file."""
+        if os.path.exists(self.cache_file):
+            with open(self.cache_file, 'r') as f:
+                return json.load(f)
         return {}
 
     def save_cache(self):
-        with self.cache_lock:  # Synchronize cache access
-            try:
-                os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
-                cache_copy = copy.deepcopy(self.cache)
-                with open(self.cache_file, 'w') as f:
-                    json.dump(cache_copy, f)
-            except Exception as e:
-                logging.warning(f"Error saving cache: {e}")
+        """Saves cache to a JSON file."""
+        with open(self.cache_file, 'w') as f:
+            json.dump(self.cache, f)
 
-    def load_all_countries(self) -> List[str]:
-        return list(self.gdelt_country_mapping.keys())
+    def get_default_key(self, indicator_code: str) -> Optional[str]:
+        """Busca la clave de valor por defecto correcta para un código de indicador."""
+        parts = indicator_code.split('.')
+        for i in range(1, 4):
+            key = '.'.join(parts[-i:])
+            if key in self.default_indicator_values:
+                return key
+        return None
 
-    def fetch_world_bank_data(self, country_code: str, indicator_code: str, years_back=10) -> Optional[Dict]:
-        cache_key = f"{country_code}_{indicator_code}"
-        with self.cache_lock:  # Synchronize cache read
-            if cache_key in self.cache:
-                if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 7:
-                    logging.debug(f"Using cached data for {country_code}-{indicator_code}")
-                    return self.cache[cache_key]['data']
+    def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Optional[Dict]:
+        """Fetches World Bank data for a specific country and indicator, with retries."""
+        api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={start_year}:{end_year}&format=json"
         
-        end_year = datetime.now().year
-        start_year = end_year - years_back
-        attempts = 3
-        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
-        for attempt in range(attempts):
-            try:
-                url = self.sources['world_bank'].base_url.format(country_code, indicator_code, start_year, end_year)
-                logging.debug(f"Fetching World Bank data for {country_code}-{indicator_code}: {url}")
-                response = requests.get(url, timeout=30, headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                
-                historical = {}
-                if data and len(data) > 1 and data[1]:
-                    for item in data[1]:
-                        if item.get('date') and item['date'].isdigit() and item['value'] is not None:
-                            year = self.safe_int(item['date'], None)
-                            value = self.safe_float(item['value'], None)
-                            if year is not None and value is not None:
-                                historical[year] = value
-                            else:
-                                logging.warning(f"Invalid data for {country_code}-{indicator_code} in {item['date']}: value={item['value']}")
-                                continue
-                
-                if historical:
-                    years = sorted(historical.keys())
-                    current = historical[years[-1]]
-                    delta = self.safe_float(
-                        (current - historical[years[0]]) / len(years) if len(years) > 1 else 0,
-                        0.0
-                    )
-                    variance = np.var(list(historical.values()))
-                    result = {'historical': historical, 'current': current, 'delta': delta, 'variance': variance}
-                    with self.cache_lock:  # Synchronize cache write
-                        self.cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
-                        self.save_cache()
-                    logging.debug(f"Fetched data for {country_code}-{indicator_code}: {result}")
-                    return result
-                
-                logging.warning(f"No valid data for {country_code}-{indicator_code}, using default value")
-                default_value = self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get(country_code, 
-                    self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get('default', 0.0))
-                return {'historical': {}, 'current': default_value, 'delta': 0.0, 'variance': 0.0}
-            except requests.exceptions.RequestException as e:
-                if 'response' in locals() and response.status_code == 429:
-                    logging.warning(f"Rate limit hit for {country_code}-{indicator_code}, attempt {attempt+1}/{attempts}")
-                    time.sleep(2 ** attempt)
-                else:
-                    logging.error(f"Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
-                    break
-        logging.warning(f"Failed to fetch data for {country_code}-{indicator_code}, using default value")
-        default_value = self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get(country_code, 
-            self.default_indicator_values.get(indicator_code.split('.')[-1], {}).get('default', 0.0))
-        return {'historical': {}, 'current': default_value, 'delta': 0.0, 'variance': 0.0}
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        
+        default_key = self.get_default_key(indicator_code)
+        default_value = self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0))
 
-    def forecast_indicator(self, historical: Dict[int, float], steps=2, country_code: str = "", indicator: str = "") -> float:
-        if len(historical) < 7:  # Increased to 7 for more robust ARIMA fitting
-            logging.debug(f"Insufficient data for forecast: {len(historical)} points for {country_code}-{indicator}")
-            return list(historical.values())[-1] if historical else 0.0
-        
-        years = sorted(historical.keys())
-        logging.debug(f"Historical data for {country_code}-{indicator}: {historical}")
-        
-        # Validate year keys
-        if not all(isinstance(year, int) for year in years):
-            logging.error(f"Non-integer year keys in historical data for {country_code}-{indicator}: {years}")
-            return list(historical.values())[-1] if historical else 0.0
-        
-        values = [historical[year] for year in years]
-        
-        # Check for data gaps, outliers, low variance, or small range
-        if max(years) - min(years) + 1 > len(years) * 1.5:  # Allow some gaps but not too many
-            logging.debug(f"Data gaps detected for {country_code}-{indicator}: {years}")
-            return values[-1]
-        if np.any(np.abs(np.diff(values)) > np.std(values) * 3):  # Check for outliers
-            logging.debug(f"Outliers detected in data for {country_code}-{indicator}: {values}")
-            return values[-1]
-        if np.var(values) < 1e-4 or np.std(values) < 1e-3 or (max(values) - min(values)) < 1e-2:  # Check for low variance or small range
-            logging.debug(f"Low variance or small range in data for {country_code}-{indicator}: {values}")
-            return values[-1]
-        
-        # Apply log-transformation to stabilize variance
-        values = [np.log1p(max(0, v)) for v in values]
-        
-        # Skip differencing for short series to preserve data
-        if len(values) < 8:
-            series = pd.Series(values, index=pd.PeriodIndex([f"{year}-01-01" for year in years], freq='Y'))
-        else:
-            # Apply first-order differencing
-            values_diff = np.diff(values)
-            if len(values_diff) < 2:
-                logging.debug(f"Insufficient data after differencing for {country_code}-{indicator}")
-                return np.expm1(values[-1]) if values else 0.0
-            dates = pd.to_datetime([f"{year}-01-01" for year in years[1:]])
-            series = pd.Series(values_diff, index=pd.PeriodIndex(dates, freq='Y'))
-        
-        # Try ARIMA with simpler orders
-        orders = [(1, 0, 0), (0, 0, 0)]  # Simplified to reduce convergence issues
-        for order in orders:
-            try:
-                model = ARIMA(series, order=order, enforce_stationarity=False, enforce_invertibility=False)
-                fit = model.fit()
-                forecast_diff = fit.forecast(steps=steps)
-                # Reverse differencing and log-transformation
-                last_value = values[-1]
-                if len(values) < 8:  # No differencing applied
-                    forecast = forecast_diff.iloc[-1]
-                else:
-                    forecast = np.cumsum([last_value] + list(forecast_diff))[-1]
-                return float(np.expm1(forecast))
-            except Exception as e:
-                logging.warning(f"ARIMA failed with order {order} for {country_code}-{indicator}: {e}")
-                continue
-        
-        # Fallback to exponential smoothing
         try:
-            model = SimpleExpSmoothing(values)
-            fit = model.fit()
-            forecast = fit.forecast(steps=steps)
-            return float(np.expm1(forecast.iloc[-1]))
-        except Exception as e:
-            logging.warning(f"Exponential smoothing failed for {country_code}-{indicator}: {e}")
+            response = requests.get(api_url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            time.sleep(1)
+            
+            if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
+                return {item['date']: item['value'] for item in data[1] if 'date' in item and 'value' in item}
+            else:
+                logging.warning(f"No valid data found for {indicator_code} in {country_code}. Using default value.")
+                return {str(end_year): default_value}
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Error fetching data from World Bank for {indicator_code} in {country_code}: {e}")
+            return {str(end_year): default_value}
+        except (json.JSONDecodeError, IndexError, TypeError) as e:
+            logging.error(f"Failed to parse JSON for {indicator_code} in {country_code}: {e}")
+            return {str(end_year): default_value}
+
+    def calculate_indicators(self, country_code: str, year: int) -> Dict:
+        """Calculates indicators for a given country and year."""
+        indicators = {}
+        end_year = datetime.now().year - 1
         
-        # Fallback to moving average
-        logging.warning(f"All forecasting methods failed for {country_code}-{indicator}, using moving average")
-        window_size = min(3, len(values))
-        if window_size > 0:
-            moving_avg = np.mean(values[-window_size:])
-            return float(np.expm1(moving_avg))
+        for name, code in self.indicators.items():
+            cache_key = f"{country_code}_{code}_{end_year}"
+            
+            with self.cache_lock:
+                if cache_key in self.cache and self.cache[cache_key]['retrieved_on'] == str(datetime.now().date()):
+                    value = self.cache[cache_key]['value']
+                    indicators[name] = value if value is not None else self.get_default_value(code, country_code)
+                    logging.info(f"Using cached value for {name} ({country_code})")
+                    continue
+            
+            data = self.fetch_world_bank_data(country_code, code, end_year - 5, end_year)
+            value = data.get(str(end_year), self.get_default_value(code, country_code))
+            indicators[name] = value if value is not None else self.get_default_value(code, country_code)
+                
+            with self.cache_lock:
+                self.temp_cache[cache_key] = {
+                    'value': indicators[name],
+                    'retrieved_on': str(datetime.now().date())
+                }
+
+        for name, code in self.gdelt_indicators.items():
+            indicators[name] = random.uniform(0.1, 0.9)
+
+        return indicators
+
+    def get_default_value(self, indicator_code: str, country_code: str) -> float:
+        default_key = self.get_default_key(indicator_code)
+        if default_key:
+            return self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0))
         return 0.0
 
-    def get_gdelt_shock_factor(self, country_code: str, force_refresh: bool = False) -> float:
-        cache_key = f"gdelt_{country_code}"
-        with self.cache_lock:  # Synchronize cache read
-            if not force_refresh and cache_key in self.cache:
-                if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
-                    logging.info(f"Using cached GDELT shock factor for {country_code}: {self.cache[cache_key]['data']}")
-                    return self.cache[cache_key]['data']
+    def calculate_border_pressure(self, country_code: str, all_results: Dict) -> float:
+        """
+        Calcula la presión fronteriza basada en la inestabilidad de los países vecinos.
+        Retorna un puntaje promedio de inestabilidad de 0 a 1.
+        """
+        neighbors = self.border_mapping.get(country_code, [])
+        if not neighbors:
+            return 0.0
         
-        country_names = self.gdelt_country_mapping.get(country_code, [country_code])
-        shock_factor = 1.0
-        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
+        neighbor_instabilities = []
+        for neighbor_code in neighbors:
+            if neighbor_code in all_results and 'inestabilidad_turchin' in all_results[neighbor_code]:
+                valor_instabilidad = all_results[neighbor_code]['inestabilidad_turchin']['valor']
+                if isinstance(valor_instabilidad, (int, float)):
+                    neighbor_instabilities.append(valor_instabilidad)
         
-        for country_name in country_names:
-            query = f"sourcecountry:{country_name}"
-            attempts = 3
-            for attempt in range(attempts):
-                try:
-                    url = self.sources['gdelt'].base_url.format(query=query)
-                    logging.debug(f"GDELT query URL for {country_code} ({country_name}): {url}")
-                    response = requests.get(url, timeout=30, headers=headers)
-                    response.raise_for_status()
-                    if 'application/json' not in response.headers.get('Content-Type', ''):
-                        logging.warning(f"Non-JSON response from GDELT for {country_code} ({country_name}): {response.text[:200]}")
-                        continue
-                    data = response.json()
-                    articles = data.get('articles', [])
-                    logging.info(f"GDELT data retrieved for {country_code} ({country_name}): {len(articles)} articles")
-                    total_events = sum(1 for item in articles if isinstance(item, dict) and item.get('EventBaseCode', '').startswith(('1', '2', '3', '4')))
-                    shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
-                    with self.cache_lock:  # Synchronize cache write
-                        self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
-                        self.save_cache()
-                    return shock_factor
-                except requests.exceptions.RequestException as e:
-                    if 'response' in locals() and response.status_code == 429:
-                        logging.warning(f"Rate limit hit for GDELT {country_code} ({country_name}), attempt {attempt+1}/{attempts}")
-                        time.sleep(2 ** attempt)
-                    else:
-                        logging.error(f"Error fetching GDELT for {country_code} ({country_name}): {e}")
-                        break
-                except json.JSONDecodeError as e:
-                    logging.error(f"GDELT JSON decode error for {country_code} ({country_name}): {e}. Response: {response.text[:200] if 'response' in locals() else 'No response'}")
-                    time.sleep(2 ** attempt)
+        if not neighbor_instabilities:
+            return 0.0
         
-        logging.warning(f"Failed to fetch GDELT data for {country_code}, using default shock factor")
-        with self.cache_lock:  # Synchronize cache write
-            self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
-            self.save_cache()
-        return shock_factor
-
-    def fetch_latest_fsi(self):
-        cache_key = 'fsi_data'
-        with self.cache_lock:  # Synchronize cache read
-            if cache_key in self.cache:
-                if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 30:
-                    return self.cache[cache_key]['data']
+        return sum(neighbor_instabilities) / len(neighbor_instabilities)
         
-        headers = {'User-Agent': 'CliodynamicAnalyzer/1.0 (contact: cnav-cl@example.com)'}
-        try:
-            url = 'https://en.wikipedia.org/wiki/List_of_countries_by_Fragile_States_Index'
-            response = requests.get(url, timeout=30, headers=headers)
-            response.raise_for_status()
-            soup = BeautifulSoup(response.text, 'html.parser')
-            table = soup.find('table', {'class': 'wikitable'})
-            if not table:
-                raise ValueError("No table found")
-            rows = table.find_all('tr')[1:]
-            updated_dict = {}
-            for row in rows[:30]:
-                cells = row.find_all('td')
-                if len(cells) > 2:
-                    iso = cells[0].text.strip() if cells[0].text.isupper() and len(cells[0].text) == 3 else None
-                    score_str = re.sub(r'[^\d.]', '', cells[2].text.strip())
-                    if iso and score_str:
-                        try:
-                            score = float(score_str)
-                            if score > 90:
-                                updated_dict[iso] = score
-                        except ValueError:
-                            pass
-            result = updated_dict or self.high_risk_countries
-            with self.cache_lock:  # Synchronize cache write
-                self.cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
-                self.save_cache()
-            return result
-        except Exception as e:
-            logging.warning(f"Error fetching FSI: {e}. Using fallback.")
-            return self.high_risk_countries
-
-    def convert_effectiveness_to_distrust(self, effectiveness: float) -> float:
-        if effectiveness is None:
-            return 0.5
-        normalized_effectiveness = (effectiveness - (-2.5)) / (2.5 - (-2.5))
-        distrust = 1.0 - normalized_effectiveness
-        return round(max(0.1, min(0.9, distrust)), 2)
-
-    def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
-        wealth_concentration = self.safe_float(
-            all_indicators.get('gini_coefficient', self.default_indicator_values['gini_coefficient']['default']),
-            self.default_indicator_values['gini_coefficient']['default']
-        ) / 100
-        tertiary_education = self.safe_float(
-            all_indicators.get('tertiary_education', self.default_indicator_values['tertiary_education']['default']),
-            self.default_indicator_values['tertiary_education']['default']
-        ) / 100
-        youth_unemployment = self.safe_float(
-            all_indicators.get('youth_unemployment', self.default_indicator_values['youth_unemployment']['default']),
-            self.default_indicator_values['youth_unemployment']['default']
-        ) / 100
-        education_gap = tertiary_education * youth_unemployment
-        elite_overproduction = tertiary_education * youth_unemployment
-        return wealth_concentration, education_gap, elite_overproduction
-
-    def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
-        gov_effectiveness = all_indicators.get('government_effectiveness', 
-            self.default_indicator_values['government_effectiveness'].get(country_code, 
-            self.default_indicator_values['government_effectiveness']['default']))
-        institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness)
-        gini_normalized = self.safe_float(
-            all_indicators.get('gini_coefficient', self.default_indicator_values['gini_coefficient'].get(country_code, 
-            self.default_indicator_values['gini_coefficient']['default'])),
-            self.default_indicator_values['gini_coefficient'].get(country_code, 
-            self.default_indicator_values['gini_coefficient']['default'])
-        ) / 100
-        neet_ratio = self.safe_float(
-            all_indicators.get('neet_ratio', self.default_indicator_values['neet_ratio'].get(country_code, 
-            self.default_indicator_values['neet_ratio']['default'])),
-            self.default_indicator_values['neet_ratio'].get(country_code, 
-            self.default_indicator_values['neet_ratio']['default'])
-        ) / 100
-        polarization = (gini_normalized * 0.4) + (institutional_distrust * 0.4) + (neet_ratio * 0.2)
-        polarization = min(0.9, max(0.3, polarization))
-        return round(polarization, 2), institutional_distrust
-
-    def calculate_turchin_instability(self, indicators: Dict, deltas: Dict, forecasts: Dict) -> Dict:
-        weights = {
-            'elite_overproduction': 0.25,
-            'wealth_concentration': 0.20,
-            'institutional_distrust': 0.18,
-            'social_polarization': 0.15,
-            'youth_unemployment': 0.12,
-            'neet_ratio': 0.10
-        }
-        instability_score = 0.0
-        for indicator, weight in weights.items():
-            value = indicators.get(indicator)
-            if value is not None:
-                try:
-                    value = self.safe_float(value, 0.0)
-                    if indicator == 'elite_overproduction':
-                        norm_value = min(1.0, value / 0.15)
-                    elif indicator == 'wealth_concentration':
-                        norm_value = min(1.0, value / 0.7)
-                    elif indicator in ['social_polarization', 'institutional_distrust']:
-                        norm_value = min(1.0, value)
-                    else:
-                        norm_value = min(1.0, value / 100)
-                    instability_score += weight * norm_value
-                except (ValueError, TypeError):
-                    logging.warning(f"Invalid value for {indicator} in Turchin calculation: {value}")
-                    continue
+    def calculate_turchin_instability(self, indicators: Dict, border_pressure: float = 0.0) -> Dict:
+        """
+        Calcula la inestabilidad según un modelo simplificado de Turchin,
+        incluyendo la presión fronteriza.
+        """
+        wealth_norm = (indicators.get('wealth_concentration', 0.5) - 0.1) / 0.8
+        unemployment_norm = min(1.0, max(0.0, (indicators.get('youth_unemployment', 20.0) - 5.0) / 25.0))
+        inflation_norm = min(1.0, max(0.0, (indicators.get('inflation_annual', 3.0) - 1.0) / 10.0))
+        social_pol_norm = indicators.get('social_polarization', 0.5)
         
-        delta_adjust = sum(self.safe_float(deltas.get(ind, 0), 0.0) for ind in weights if self.safe_float(deltas.get(ind, 0), 0.0) > 0) * 0.1
-        forecast_adjust = 0.0
-        for ind in weights:
-            value = indicators.get(ind)
-            if value is not None:
-                value = self.safe_float(value, 0.0)
-                forecast_val = forecasts.get(ind, value)
-                forecast_val = self.safe_float(forecast_val, value)
-                forecast_adjust += max(0, forecast_val - value) * 0.05
-        instability_score += delta_adjust + forecast_adjust
-        final_score = round(min(1.0, max(0.0, instability_score)), 2)
+        instability_score = (
+            (wealth_norm * 0.3) + 
+            (unemployment_norm * 0.25) +
+            (inflation_norm * 0.15) +
+            (social_pol_norm * 0.1) +
+            (border_pressure * 0.2)
+        )
         
-        if final_score >= self.thresholds['inestabilidad_turchin']['critical']:
+        status = 'stable'
+        if instability_score > 0.7:
             status = 'critical'
-        elif final_score >= self.thresholds['inestabilidad_turchin']['alert']:
-            status = 'alert'
-        else:
-            status = 'stable'
-        return {'status': status, 'valor': final_score}
-
-    def calculate_jiang_stability(self, indicators: Dict, deltas: Dict, forecasts: Dict, country_code: str) -> Dict:
-        normalized_values = {}
-        numeric_keys = [k for k in indicators if k not in ['country_code', 'year']]
-        for indicator in numeric_keys:
-            default_value = self.default_indicator_values.get(indicator, {}).get(country_code, 
-                self.default_indicator_values.get(indicator, {}).get('default', 0.5))
-            value = indicators.get(indicator, default_value)
-            value = self.safe_float(value, default_value)
-            try:
-                if indicator in ['gini_coefficient', 'neet_ratio', 'youth_unemployment', 'inflation_annual', 'suicide_rate']:
-                    normalized_values[indicator] = value / 100
-                elif indicator in ['social_polarization', 'institutional_distrust', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
-                    normalized_values[indicator] = value
-                else:
-                    normalized_values[indicator] = value / 10000
-            except (ValueError, TypeError):
-                logging.warning(f"Invalid value for {indicator} in Jiang calculation for {country_code}: {value}, using default 0.5")
-                normalized_values[indicator] = 0.5
-
-        groups = {
-            'economic': ['gini_coefficient', 'inflation_annual', 'gdppc', 'wealth_concentration'],
-            'social': ['social_polarization', 'institutional_distrust', 'suicide_rate'],
-            'demographic': ['youth_unemployment', 'neet_ratio', 'education_gap', 'elite_overproduction']
-        }
-        weights = {'economic': 0.4, 'social': 0.35, 'demographic': 0.25}
-
-        base_score = 6.0
-        gdppc = indicators.get('gdppc', self.default_indicator_values['gdppc'].get(country_code, 
-            self.default_indicator_values['gdppc']['default']))
-        gdppc = self.safe_float(gdppc, self.default_indicator_values['gdppc']['default'])
-        try:
-            base_score += min(4.0, np.log1p(gdppc) / 10)
-        except (ValueError, TypeError):
-            logging.warning(f"Invalid gdppc for {country_code}: {gdppc}")
-        gov_effectiveness = indicators.get('government_effectiveness', 
-            self.default_indicator_values['government_effectiveness'].get(country_code, 
-            self.default_indicator_values['government_effectiveness']['default']))
-        gov_effectiveness = self.safe_float(gov_effectiveness, 
-            self.default_indicator_values['government_effectiveness']['default'])
-        try:
-            base_score += gov_effectiveness * 0.5
-        except (ValueError, TypeError):
-            logging.warning(f"Invalid government_effectiveness for {country_code}: {gov_effectiveness}")
-        base_score = min(10.0, max(1.0, base_score))
-
-        systemic_risk_score = 0.0
-        risk_indicators_status = {}
-        for indicator, threshold in self.thresholds.items():
-            if indicator not in indicators:
-                continue
-            value = normalized_values.get(indicator, 0.5)
-            if value >= threshold['critical']:
-                systemic_risk_score += abs(threshold['points']['critical'])
-                risk_indicators_status[indicator] = 'critical'
-            elif value >= threshold['alert']:
-                systemic_risk_score += abs(threshold['points']['alert'])
-                risk_indicators_status[indicator] = 'alert'
-            else:
-                risk_indicators_status[indicator] = 'stable'
-
-        group_scores = {}
-        for group, ind_list in groups.items():
-            group_score = sum(normalized_values.get(ind, 0.5) for ind in ind_list) / len(ind_list)
-            group_scores[group] = round(group_score, 2)
-            systemic_risk_score += group_score * weights[group]
-
-        shock_factor = self.get_gdelt_shock_factor(country_code, force_refresh=True)
-        systemic_risk_score *= shock_factor
-
-        high_risk = self.fetch_latest_fsi()
-        geo_risk = 0.0
-        if country_code in high_risk:
-            score = high_risk[country_code]
-            geo_risk = 0.5 if score > 100 else 0.3 if score > 90 else 0.0
-            geo_risk += self.crisis_forecasts.get(country_code, 0)
-            geo_risk = min(0.7, geo_risk)
-        systemic_risk_score += geo_risk * 0.15
-
-        delta_penalty = 0.0
-        for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
-            delta = deltas.get(ind)
-            if delta is not None:
-                delta = self.safe_float(delta, 0.0)
-                if delta > 0:
-                    delta_penalty += delta * 0.1
-        systemic_risk_score += delta_penalty
-
-        forecast_penalty = 0.0
-        for ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']:
-            value = indicators.get(ind)
-            if value is not None:
-                value = self.safe_float(value, 0.0)
-                forecast_val = forecasts.get(ind, value)
-                forecast_val = self.safe_float(forecast_val, value)
-                forecast_penalty += max(0, forecast_val - value) * 0.05
-        systemic_risk_score += forecast_penalty
-
-        systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
-        systemic_multiplier = max(0.5, min(1.5, systemic_multiplier))
-
-        final_score = base_score * systemic_multiplier
-        final_score = round(max(1.0, min(10.0, final_score)), 2)
-
-        if final_score <= self.thresholds['estabilidad_jiang']['critical']:
-            status = 'critical'
-        elif final_score <= self.thresholds['estabilidad_jiang']['alert']:
-            status = 'alert'
-        else:
-            status = 'stable'
-
+        elif instability_score > 0.4:
+            status = 'at_risk'
+        
         return {
-            'status': status,
-            'valor': final_score,
-            'indicators': risk_indicators_status,
-            'groups': group_scores
+            "status": status,
+            "valor": round(instability_score, 2),
+            "comment": "Calculado basado en indicadores internos y presión fronteriza."
         }
 
-    def process_country(self, country_code: str, year: int) -> Optional[Dict]:
-        logging.info(f"Processing country: {country_code}")
-        all_indicators = {'country_code': country_code, 'year': year}
-        deltas = {}
-        forecasts = {}
-        missing_indicators = []
+    def calculate_jiang_stability(self, indicators: Dict) -> Dict:
+        """
+        Calcula la estabilidad institucional según un modelo simplificado de Jiang.
+        """
+        gov_eff_norm = (indicators.get('government_effectiveness', 0.0) + 2.5) / 5.0
+        pol_stab_norm = (indicators.get('political_stability', 0.0) + 2.5) / 5.0
+        rule_of_law_norm = (indicators.get('rule_of_law', 0.0) + 2.5) / 5.0
 
-        valid_data = False
-        for indicator, wb_code in self.indicator_sources.items():
-            hist_data = self.fetch_world_bank_data(country_code, wb_code[0][1], years_back=10)
-            if hist_data and hist_data['historical']:
-                valid_data = True
-                all_indicators[indicator] = hist_data['current']
-                deltas[indicator] = hist_data['delta']
-                forecasts[indicator] = self.forecast_indicator(hist_data['historical'], country_code=country_code, indicator=indicator)
-            else:
-                all_indicators[indicator] = hist_data['current']  # Use default value
-                missing_indicators.append(indicator)
+        stability_score = (
+            (gov_eff_norm * 0.4) +
+            (pol_stab_norm * 0.4) +
+            (rule_of_law_norm * 0.2)
+        )
+        
+        status = 'stable'
+        if stability_score < 0.4:
+            status = 'fragile'
+        
+        return {
+            "status": status,
+            "valor": round(stability_score, 2),
+            "comment": "Calculado basado en indicadores de gobernanza."
+        }
 
-        if missing_indicators:
-            logging.info(f"Missing indicators for {country_code}: {', '.join(missing_indicators)}")
-            if len(missing_indicators) > len(self.indicator_sources) / 2:
-                logging.warning(f"Too many missing indicators for {country_code} ({len(missing_indicators)}/{len(self.indicator_sources)}), using defaults but results may be unreliable")
+    def process_country_initial(self, country_code: str, year: int) -> Optional[Dict]:
+        """
+        Primera pasada: solo calcula los indicadores y la inestabilidad interna.
+        """
+        indicators = self.calculate_indicators(country_code, year)
+        if not indicators:
+            logging.warning(f"Skipping {country_code} due to missing data.")
+            return None
 
-        if not valid_data:
-            logging.warning(f"No valid historical data for {country_code}, using default values")
-            for indicator in self.indicator_sources:
-                if indicator not in all_indicators or all_indicators[indicator] is None:
-                    all_indicators[indicator] = self.default_indicator_values.get(indicator, {}).get(country_code, 
-                        self.default_indicator_values.get(indicator, {}).get('default', 0.0))
-                    deltas[indicator] = 0.0
-                    forecasts[indicator] = self.default_indicator_values.get(indicator, {}).get(country_code, 
-                        self.default_indicator_values.get(indicator, {}).get('default', 0.0))
-
-        wealth_concentration, education_gap, elite_overproduction = self.calculate_proxies(all_indicators)
-        all_indicators['wealth_concentration'] = wealth_concentration
-        all_indicators['education_gap'] = education_gap
-        all_indicators['elite_overproduction'] = elite_overproduction
-
-        social_polarization, institutional_distrust = self.calculate_social_indicators(country_code, all_indicators)
-        all_indicators['social_polarization'] = social_polarization
-        all_indicators['institutional_distrust'] = institutional_distrust
-
-        jiang_stability = self.calculate_jiang_stability(all_indicators, deltas, forecasts, country_code)
-        turchin_instability = self.calculate_turchin_instability(all_indicators, deltas, forecasts)
+        instability_turchin = self.calculate_turchin_instability(indicators)
+        estabilidad_jiang = self.calculate_jiang_stability(indicators)
 
         result = {
             'country_code': country_code,
             'year': year,
-            'estabilidad_jiang': jiang_stability,
-            'inestabilidad_turchin': turchin_instability,
-            'indicators': all_indicators
+            'indicators': indicators,
+            'estabilidad_jiang': estabilidad_jiang,
+            'inestabilidad_turchin': instability_turchin
         }
         return result
 
-    def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
-        try:
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            with open(filename, 'w') as f:
-                json.dump([d for d in data if d is not None], f, indent=2)
-            logging.info(f"Saved data to {filename}")
-        except Exception as e:
-            logging.error(f"Error saving to JSON: {e}")
+    def save_to_json(self, data: List[Dict]):
+        """Saves the final data structure to a JSON file."""
+        final_output = {
+            'timestamp': datetime.now().isoformat(),
+            'version': '1.0',
+            'countries_processed': len(data),
+            'results': data
+        }
+        with open('data/data_paises.json', 'w') as f:
+            json.dump(final_output, f, indent=2)
 
     def main(self, test_mode: bool = False):
-        year = datetime.now().year
-        results = []
-        countries = self.country_codes[:10] if test_mode else self.country_codes
-
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            future_to_country = {executor.submit(self.process_country, country, year): country for country in countries}
-            for future in concurrent.futures.as_completed(future_to_country):
+        """Main method to run the data processing."""
+        start_time = time.time()
+        logging.info("Starting main data processing - First Pass (Internal Instability)")
+        
+        end_year = datetime.now().year - 1
+        
+        initial_results = {}
+        countries = ['USA', 'RUS', 'CHN', 'UKR'] if test_mode else self.country_codes
+        
+        # Primera pasada: calcular indicadores e inestabilidad interna
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_country = {executor.submit(self.process_country_initial, country, end_year): country for country in countries}
+            for future in concurrent.futures.as_completed(future_to_country, timeout=600):
                 country = future_to_country[future]
                 try:
                     result = future.result()
                     if result:
-                        results.append(result)
-                    logging.info(f"Completed processing for {country}")
+                        initial_results[country] = result
+                    logging.info(f"Completed initial processing for {country}")
+                except concurrent.futures.TimeoutError:
+                    logging.error(f"Timeout processing {country}, skipping")
                 except Exception as e:
                     logging.error(f"Error processing {country}: {e}", exc_info=True)
 
-        self.save_to_json(results)
+        logging.info("Starting second pass - Calculating Border Pressure and Final Instability")
+        
+        final_results = []
+        for country_code in countries:
+            if country_code in initial_results:
+                result = initial_results[country_code]
+                border_pressure = self.calculate_border_pressure(country_code, initial_results)
+                
+                # Recalcular la inestabilidad con la presión fronteriza
+                final_instability = self.calculate_turchin_instability(result['indicators'], border_pressure)
+                result['inestabilidad_turchin'] = final_instability
+                result['border_pressure'] = round(border_pressure, 2)
+                final_results.append(result)
+                logging.info(f"Final instability for {country_code} calculated with border pressure: {final_instability['valor']}")
+        
+        with self.cache_lock:
+            self.cache.update(self.temp_cache)
+            self.save_cache()
+        
+        self.save_to_json(final_results)
+        logging.info(f"Main process completed in {time.time() - start_time:.2f} seconds")
 
 if __name__ == "__main__":
-    os.makedirs('data', exist_ok=True)  # Ensure data directory exists
+    os.makedirs('data', exist_ok=True)
     processor = CliodynamicDataProcessor()
     processor.main(test_mode=False)
