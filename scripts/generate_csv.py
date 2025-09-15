@@ -160,14 +160,14 @@ class CliodynamicDataProcessor:
 
         # Default values for missing indicators with regional adjustments
         self.default_indicator_values = {
-            'gini_coefficient': {'default': 40.0, 'CHN': 38.0},  # Adjusted for China
-            'youth_unemployment': {'default': 20.0, 'CHN': 15.0},
-            'inflation_annual': {'default': 5.0, 'CHN': 2.5},
-            'neet_ratio': {'default': 12.0, 'CHN': 10.0},  # Adjusted for East Asia
-            'tertiary_education': {'default': 18.0, 'CHN': 25.0},
-            'gdppc': {'default': 1000.0, 'CHN': 12500.0},
-            'suicide_rate': {'default': 10.0, 'CHN': 8.0},
-            'government_effectiveness': {'default': 0.0, 'CHN': 0.5}
+            'gini_coefficient': {'default': 40.0, 'CHN': 38.0, 'RUS': 36.0},
+            'youth_unemployment': {'default': 20.0, 'CHN': 15.0, 'RUS': 16.0},
+            'inflation_annual': {'default': 5.0, 'CHN': 2.5, 'RUS': 6.0},
+            'neet_ratio': {'default': 12.0, 'CHN': 10.0, 'RUS': 11.0},
+            'tertiary_education': {'default': 18.0, 'CHN': 25.0, 'RUS': 30.0},
+            'gdppc': {'default': 1000.0, 'CHN': 12500.0, 'RUS': 10000.0},
+            'suicide_rate': {'default': 10.0, 'CHN': 8.0, 'RUS': 12.0},
+            'government_effectiveness': {'default': 0.0, 'CHN': 0.5, 'RUS': -0.2}
         }
 
         self.country_codes = self.load_all_countries()
@@ -287,26 +287,40 @@ class CliodynamicDataProcessor:
         
         years = sorted(historical.keys())
         values = [historical[year] for year in years]
+        
+        # Check for data gaps or outliers
+        if max(years) - min(years) + 1 > len(years) * 1.5:  # Allow some gaps but not too many
+            logging.debug(f"Data gaps detected for {country_code}-{indicator}: {years}")
+            return values[-1]
+        if np.any(np.abs(np.diff(values)) > np.std(values) * 3):  # Check for outliers
+            logging.debug(f"Outliers detected in data for {country_code}-{indicator}: {values}")
+            return values[-1]
+        
         # Check for low variance to avoid ARIMA on near-constant series
-        if np.var(values) < 1e-4:  # Tightened threshold
+        if np.var(values) < 1e-4:
             logging.debug(f"Low variance in data for {country_code}-{indicator}: {values}")
             return values[-1]
         
         # Log historical data for debugging
         logging.debug(f"Historical data for {country_code}-{indicator}: {historical}")
         
-        # Apply log-transformation to stabilize variance (avoid log(0) or negative values)
+        # Apply log-transformation to stabilize variance
         values = [np.log1p(max(0, v)) for v in values]
-        # Apply first-order differencing to improve stationarity
-        values_diff = np.diff(values)
-        if len(values_diff) < 2:
-            logging.debug(f"Insufficient data after differencing for {country_code}-{indicator}")
-            return np.expm1(values[-1]) if values else 0.0
-        dates = pd.to_datetime([f"{year}-01-01" for year in years[1:]])
-        series = pd.Series(values_diff, index=pd.PeriodIndex(dates, freq='Y'))
+        
+        # Skip differencing for short series to preserve data
+        if len(values) < 6:
+            series = pd.Series(values, index=pd.PeriodIndex([f"{year}-01-01" for year in years], freq='Y'))
+        else:
+            # Apply first-order differencing
+            values_diff = np.diff(values)
+            if len(values_diff) < 2:
+                logging.debug(f"Insufficient data after differencing for {country_code}-{indicator}")
+                return np.expm1(values[-1]) if values else 0.0
+            dates = pd.to_datetime([f"{year}-01-01" for year in years[1:]])
+            series = pd.Series(values_diff, index=pd.PeriodIndex(dates, freq='Y'))
         
         # Try ARIMA
-        orders = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (0, 0, 0)]  # Added mean-only model
+        orders = [(1, 0, 0), (0, 1, 0), (0, 0, 1), (0, 0, 0)]
         for order in orders:
             try:
                 model = ARIMA(series, order=order, enforce_stationarity=False, enforce_invertibility=False)
@@ -314,7 +328,10 @@ class CliodynamicDataProcessor:
                 forecast_diff = fit.forecast(steps=steps)
                 # Reverse differencing and log-transformation
                 last_value = values[-1]
-                forecast = np.cumsum([last_value] + list(forecast_diff))[-1]
+                if len(values) < 6:  # No differencing applied
+                    forecast = forecast_diff[-1]
+                else:
+                    forecast = np.cumsum([last_value] + list(forecast_diff))[-1]
                 return float(np.expm1(forecast))
             except Exception as e:
                 logging.warning(f"ARIMA failed with order {order} for {country_code}-{indicator}: {e}")
@@ -651,6 +668,8 @@ class CliodynamicDataProcessor:
 
         if missing_indicators:
             logging.info(f"Missing indicators for {country_code}: {', '.join(missing_indicators)}")
+            if len(missing_indicators) > len(self.indicator_sources) / 2:
+                logging.warning(f"Too many missing indicators for {country_code} ({len(missing_indicators)}/{len(self.indicator_sources)}), using defaults but results may be unreliable")
 
         if not valid_data:
             logging.warning(f"No valid historical data for {country_code}, using default values")
