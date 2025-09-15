@@ -24,18 +24,6 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-      # Si no usas requirements.txt, descomenta lo siguiente:
-      # env:
-      #   REQUIREMENTS: |
-      #     pandas==2.2.3
-      #     numpy==2.1.2
-      #     requests==2.32.3
-      #     beautifulsoup4==4.12.3
-      #     lxml==5.3.0
-      #     statsmodels==0.14.4
-      # run: |
-      #   echo "$REQUIREMENTS" > requirements.txt
-      #   pip install -r requirements.txt
 
     - name: Generate data for JSON
       run: |
@@ -50,15 +38,15 @@ jobs:
       run: |
         echo "Contents of data directory:"
         ls -la data
-        echo "Line count of combined_analysis_results.json:"
-        wc -l data/combined_analysis_results.json || echo "No results file generated"
+        echo "Line count of data_paises.json:"
+        wc -l data/data_paises.json || echo "No results file generated"
         echo "Line count of cache.json:"
         wc -l data/cache.json || echo "No cache file to count"
-        echo "Last 20 lines of combined_analysis_results.json:"
+        echo "Last 20 lines of data_paises.json:"
         tail -n 20 data/data_paises.json || echo "No results file generated"
         echo "Last 20 lines of cache.json:"
         tail -n 20 data/cache.json || echo "No cache file to count"
-        echo "Contents of combined_analysis_results.json: (first 20 lines)"
+        echo "Contents of data_paises.json: (first 20 lines)"
         head -n 20 data/data_paises.json || echo "No results file generated"
         echo "Contents of .gitignore:"
         cat .gitignore || echo "No .gitignore file found"
