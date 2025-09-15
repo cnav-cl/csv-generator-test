@@ -11,6 +11,11 @@ import re
 import random
 from bs4 import BeautifulSoup
 from statsmodels.tsa.arima.model import ARIMA
+import concurrent.futures
+import logging
+
+# Configuración de logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 @dataclass
 class DataSource:
@@ -20,7 +25,9 @@ class DataSource:
     rate_limit: float = 0.1
 
 class CliodynamicDataProcessor:
-    def __init__(self):
+    def __init__(self, cache_file: str = 'data/cache.json'):
+        self.cache_file = cache_file
+        self.cache = self.load_cache()
         self.sources = {
             'world_bank': DataSource(
                 name="World Bank",
@@ -48,21 +55,20 @@ class CliodynamicDataProcessor:
         self.country_codes = self.load_all_countries()
         
         self.thresholds = {
-            'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.0, 'critical': -2.0}},
+            'neet_ratio': {'alert': 20.0, 'critical': 25.0, 'points': {'alert': -1.5, 'critical': -2.5}},  # Ajustado
             'gini_coefficient': {'alert': 0.40, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
             'youth_unemployment': {'alert': 25.0, 'critical': 30.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'inflation_annual': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'social_polarization': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'institutional_distrust': {'alert': 0.30, 'critical': 0.45, 'points': {'alert': -1.5, 'critical': -3.0}},
+            'institutional_distrust': {'alert': 0.60, 'critical': 0.75, 'points': {'alert': -1.5, 'critical': -3.0}},  # Ajustado
             'suicide_rate': {'alert': 10.0, 'critical': 15.0, 'points': {'alert': -1.0, 'critical': -2.0}},
             'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
             'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
             'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'estabilidad_jiang': {'alert': 5.5, 'critical': 4.0, 'points': {'alert': 0.0, 'critical': 0.0}},
-            'inestabilidad_turchin': {'alert': 0.4, 'critical': 0.6, 'points': {'alert': 0.0, 'critical': 0.0}}
+            'estabilidad_jiang': {'alert': 5.0, 'critical': 4.0, 'points': {'alert': 0.0, 'critical': 0.0}},  # Ajustado
+            'inestabilidad_turchin': {'alert': 0.35, 'critical': 0.5, 'points': {'alert': 0.0, 'critical': 0.0}}  # Ajustado
         }
 
-        # Fallback para high_risk_countries basado en FSI 2024/2025 + Crisis Group
         self.high_risk_countries = {
             'SOM': 111.3, 'SDN': 109.3, 'SSD': 109.0, 'SYR': 108.1, 'YEM': 106.6,
             'COD': 105.4, 'AFG': 103.9, 'CAF': 103.8, 'TCD': 102.1, 'MMR': 100.8,
@@ -71,42 +77,73 @@ class CliodynamicDataProcessor:
             'UKR': 85.0, 'ISR': 70.0, 'PSE': 90.0, 'IRN': 80.0, 'LBN': 82.0, 'MEX': 75.0
         }
 
-        # Forecasts de Crisis Group (riesgo proyectado 0-1 para 1-2 años)
         self.crisis_forecasts = {'SDN': 0.4, 'MMR': 0.3, 'YEM': 0.35, 'SYR': 0.3, 'UKR': 0.25, 'HTI': 0.2, 'LBN': 0.25}
 
+    def load_cache(self) -> Dict:
+        try:
+            if os.path.exists(self.cache_file):
+                with open(self.cache_file, 'r') as f:
+                    return json.load(f)
+        except Exception as e:
+            logging.warning(f"Error loading cache: {e}")
+        return {}
+
+    def save_cache(self):
+        try:
+            os.makedirs(os.path.dirname(self.cache_file), exist_ok=True)
+            with open(self.cache_file, 'w') as f:
+                json.dump(self.cache, f)
+        except Exception as e:
+            logging.warning(f"Error saving cache: {e}")
+
     def load_all_countries(self) -> List[str]:
-        # [Código original, omitido por brevedad, pero incluye lista de ISO3]
         return ['USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'FRA', 'ITA', 'CAN', 'AUS', 'ESP', 'MEX', 'IDN', 'TUR', 'SAU', 'CHE', 'NLD', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ARE', 'ISR', 'ZAF', 'DNK', 'SGP', 'FIN', 'COL', 'MYS', 'IRL', 'CHL', 'EGY', 'PHL', 'PAK', 'GRC', 'PRT', 'CZE', 'ROU', 'NZL', 'PER', 'HUN', 'QAT', 'UKR', 'DZA', 'KWT', 'MAR', 'BGD', 'VEN', 'OMN', 'SVK', 'HRV', 'LBN', 'LKA', 'BGR', 'TUN', 'DOM', 'PRI', 'EST', 'LTU', 'PAN', 'SRB', 'AZE', 'SLV', 'URY', 'KEN', 'LVA', 'CYP', 'GTM', 'ETH', 'CRI', 'JOR', 'BHR', 'NPL', 'BOL', 'TZA', 'HND', 'UGA', 'SEN', 'GEO', 'ZWE', 'MMR', 'KAZ', 'CMR', 'CIV', 'SDN', 'AGO', 'NGA', 'MOZ', 'GHA', 'MDG', 'COD', 'TCD', 'YEM', 'AFG']
 
-    def fetch_world_bank_data(self, country_code: str, indicator_code: str, years_back=5) -> Optional[Dict]:
+    def fetch_world_bank_data(self, country_code: str, indicator_code: str, years_back=10) -> Optional[Dict]:
+        cache_key = f"{country_code}_{indicator_code}"
+        if cache_key in self.cache:
+            if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 7:
+                return self.cache[cache_key]['data']
+        
         end_year = datetime.now().year
         start_year = end_year - years_back
-        try:
-            url = self.sources['world_bank'].base_url.format(country_code, indicator_code, start_year, end_year)
-            response = requests.get(url, timeout=30)
-            data = response.json()
-            
-            historical = {}
-            if data and data[0]['total'] > 0:
-                for item in data[1]:
-                    if item['value'] is not None:
-                        historical[int(item['date'])] = float(item['value'])
-            
-            if historical:
-                years = sorted(historical.keys())
-                current = historical[years[-1]]
-                delta = (current - historical[years[0]]) / len(years) if len(years) > 1 else 0
-                variance = np.var(list(historical.values()))
-                return {'historical': historical, 'current': current, 'delta': delta, 'variance': variance}
-            
-            return None
-        except Exception as e:
-            print(f"  -> Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
-            return None
+        attempts = 3
+        for attempt in range(attempts):
+            try:
+                url = self.sources['world_bank'].base_url.format(country_code, indicator_code, start_year, end_year)
+                response = requests.get(url, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                
+                historical = {}
+                if data and data[0]['total'] > 0:
+                    for item in data[1]:
+                        if item['value'] is not None:
+                            historical[int(item['date'])] = float(item['value'])
+                
+                if historical:
+                    years = sorted(historical.keys())
+                    current = historical[years[-1]]
+                    delta = (current - historical[years[0]]) / len(years) if len(years) > 1 else 0
+                    variance = np.var(list(historical.values()))
+                    result = {'historical': historical, 'current': current, 'delta': delta, 'variance': variance}
+                    self.cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
+                    self.save_cache()
+                    return result
+                
+                return None
+            except requests.exceptions.RequestException as e:
+                if response.status_code == 429:
+                    logging.warning(f"Rate limit hit for {country_code}-{indicator_code}, attempt {attempt+1}/{attempts}")
+                    time.sleep(2 ** attempt)
+                else:
+                    logging.error(f"Error fetching World Bank data for {country_code}-{indicator_code}: {e}")
+                    break
+        return None
 
     def forecast_indicator(self, historical: Dict[int, float], steps=2) -> float:
         if len(historical) < 3:
-            return list(historical.values())[-1]  # Fallback
+            return list(historical.values())[-1]
         series = pd.Series(historical)
         try:
             model = ARIMA(series, order=(1,1,0))
@@ -114,32 +151,48 @@ class CliodynamicDataProcessor:
             forecast = fit.forecast(steps=steps)
             return forecast.iloc[-1]
         except Exception as e:
-            print(f"ARIMA error: {e}")
+            logging.warning(f"ARIMA error: {e}")
             return series.iloc[-1]
 
     def get_gdelt_shock_factor(self, country_code: str) -> float:
-        # [Código original, omitido por brevedad]
+        cache_key = f"gdelt_{country_code}"
+        if cache_key in self.cache:
+            if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 1:
+                return self.cache[cache_key]['data']
+        
         end_date = datetime.now().strftime('%Y%m%d%H%M%S')
         start_date = (datetime.now() - timedelta(days=30)).strftime('%Y%m%d%H%M%S')
-        try:
-            url = self.sources['gdelt'].base_url.format(country_code=country_code, start_date=start_date, end_date=end_date)
-            response = requests.get(url, timeout=30)
-            event_counts = response.json().get('timeline', [{}])[0].get('data', [])
-            total_events = sum(item.get('value', 0) for item in event_counts)
-            if total_events > 50:
-                return 2.5
-            elif total_events > 10:
-                return 1.8
-            else:
-                return 1.0
-        except:
-            return 1.0
+        attempts = 3
+        for attempt in range(attempts):
+            try:
+                url = self.sources['gdelt'].base_url.format(country_code=country_code, start_date=start_date, end_date=end_date)
+                response = requests.get(url, timeout=30)
+                response.raise_for_status()
+                event_counts = response.json().get('timeline', [{}])[0].get('data', [])
+                total_events = sum(item.get('value', 0) for item in event_counts)
+                shock_factor = 2.5 if total_events > 50 else 1.8 if total_events > 10 else 1.0
+                self.cache[cache_key] = {'data': shock_factor, 'timestamp': datetime.now().isoformat()}
+                self.save_cache()
+                return shock_factor
+            except requests.exceptions.RequestException as e:
+                if response.status_code == 429:
+                    logging.warning(f"Rate limit hit for GDELT {country_code}, attempt {attempt+1}/{attempts}")
+                    time.sleep(2 ** attempt)
+                else:
+                    logging.error(f"Error fetching GDELT for {country_code}: {e}")
+                    break
+        return 1.0
 
     def fetch_latest_fsi(self):
-        # [Código de scraping Wikipedia, como en respuesta anterior]
+        cache_key = 'fsi_data'
+        if cache_key in self.cache:
+            if (datetime.now() - datetime.fromisoformat(self.cache[cache_key]['timestamp'])).days < 30:
+                return self.cache[cache_key]['data']
+        
         try:
             url = 'https://en.wikipedia.org/wiki/List_of_countries_by_Fragile_States_Index'
-            response = requests.get(url)
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             table = soup.find('table', {'class': 'wikitable'})
             rows = table.find_all('tr')[1:]
@@ -156,19 +209,20 @@ class CliodynamicDataProcessor:
                                 updated_dict[iso] = score
                         except ValueError:
                             pass
-            return updated_dict or self.high_risk_countries
+            result = updated_dict or self.high_risk_countries
+            self.cache[cache_key] = {'data': result, 'timestamp': datetime.now().isoformat()}
+            self.save_cache()
+            return result
         except Exception as e:
-            print(f"Error fetching FSI: {e}. Using fallback.")
+            logging.warning(f"Error fetching FSI: {e}. Using fallback.")
             return self.high_risk_countries
 
     def convert_effectiveness_to_distrust(self, effectiveness: float) -> float:
-        # [Código original]
         normalized_effectiveness = (effectiveness - (-2.5)) / (2.5 - (-2.5))
         distrust = 1.0 - normalized_effectiveness
         return round(max(0.1, min(0.9, distrust)), 2)
 
     def calculate_proxies(self, all_indicators: Dict) -> Tuple[float, float, float]:
-        # [Código original]
         wealth_concentration = all_indicators.get('gini_coefficient', 40.0) / 100
         tertiary_education = all_indicators.get('tertiary_education', 18.0) / 100
         youth_unemployment = all_indicators.get('youth_unemployment', 20.0) / 100
@@ -177,7 +231,6 @@ class CliodynamicDataProcessor:
         return wealth_concentration, education_gap, elite_overproduction
 
     def calculate_social_indicators(self, country_code: str, all_indicators: Dict) -> Tuple[float, float]:
-        # [Código original, con deltas si disponible]
         gov_effectiveness = all_indicators.get('government_effectiveness')
         institutional_distrust = self.convert_effectiveness_to_distrust(gov_effectiveness) if gov_effectiveness is not None else 0.5
         gini_normalized = all_indicators.get('gini_coefficient', 40.0) / 100
@@ -187,7 +240,6 @@ class CliodynamicDataProcessor:
         return round(polarization, 2), institutional_distrust
 
     def calculate_turchin_instability(self, indicators: Dict, deltas: Dict, forecasts: Dict) -> Dict:
-        # [Código original + optimizaciones predictivas]
         weights = {
             'elite_overproduction': 0.25,
             'wealth_concentration': 0.20,
@@ -200,15 +252,18 @@ class CliodynamicDataProcessor:
         for indicator, weight in weights.items():
             value = indicators.get(indicator)
             if value is not None:
-                # Normalización [original]
                 if indicator == 'elite_overproduction':
                     norm_value = min(1.0, value / 0.15)
-                # ... [resto igual]
+                elif indicator == 'wealth_concentration':
+                    norm_value = min(1.0, value / 0.7)
+                elif indicator in ['social_polarization', 'institutional_distrust']:
+                    norm_value = min(1.0, value)
+                else:
+                    norm_value = min(1.0, value / 100)
                 instability_score += weight * norm_value
         
-        # Añadir deltas y forecasts para predicción
-        delta_adjust = sum(deltas.get(ind, 0) for ind in weights if deltas.get(ind, 0) > 0) * 0.1  # Penaliza empeoramientos
-        forecast_adjust = sum(forecasts.get(ind, value) - value for ind, value in indicators.items() if ind in weights and forecasts.get(ind)) * 0.05
+        delta_adjust = sum(deltas.get(ind, 0) for ind in weights if deltas.get(ind, 0) > 0) * 0.1
+        forecast_adjust = sum(max(0, forecasts.get(ind, value) - value) for ind, value in indicators.items() if ind in weights) * 0.05
         instability_score += delta_adjust + forecast_adjust
         final_score = round(min(1.0, max(0.0, instability_score)), 2)
         
@@ -221,32 +276,64 @@ class CliodynamicDataProcessor:
         return {'status': status, 'valor': final_score}
 
     def calculate_jiang_stability(self, indicators: Dict, deltas: Dict, forecasts: Dict, country_code: str) -> Dict:
-        # [Código original + optimizaciones]
-        normalized_values = {}  # [Normalización original, omitida por brevedad]
+        normalized_values = {}
+        for indicator, value in indicators.items():
+            if indicator in ['gini_coefficient', 'neet_ratio', 'youth_unemployment', 'inflation_annual', 'suicide_rate']:
+                normalized_values[indicator] = value / 100 if value is not None else 0.5
+            elif indicator in ['social_polarization', 'institutional_distrust', 'wealth_concentration', 'education_gap', 'elite_overproduction']:
+                normalized_values[indicator] = value if value is not None else 0.5
+            else:
+                normalized_values[indicator] = value / 10000 if value is not None else 0.5
 
-        # ... [Grupos y weights originales]
+        groups = {
+            'economic': ['gini_coefficient', 'inflation_annual', 'gdppc', 'wealth_concentration'],
+            'social': ['social_polarization', 'institutional_distrust', 'suicide_rate'],
+            'demographic': ['youth_unemployment', 'neet_ratio', 'education_gap', 'elite_overproduction']
+        }
+        weights = {'economic': 0.4, 'social': 0.35, 'demographic': 0.25}
 
         base_score = 6.0
-        # [Ajustes base originales]
+        if indicators.get('gdppc') is not None:
+            base_score += min(4.0, np.log1p(indicators['gdppc']) / 10)
+        if indicators.get('government_effectiveness') is not None:
+            base_score += indicators['government_effectiveness'] * 0.5
+        base_score = min(10.0, max(1.0, base_score))
 
         systemic_risk_score = 0.0
         risk_indicators_status = {}
+        for indicator, threshold in self.thresholds.items():
+            if indicator not in indicators:
+                continue
+            value = normalized_values.get(indicator, 0.5)
+            if value >= threshold['critical']:
+                systemic_risk_score += abs(threshold['points']['critical'])
+                risk_indicators_status[indicator] = 'critical'
+            elif value >= threshold['alert']:
+                systemic_risk_score += abs(threshold['points']['alert'])
+                risk_indicators_status[indicator] = 'alert'
+            else:
+                risk_indicators_status[indicator] = 'stable'
 
-        # [Cálculo grupos originales]
+        group_scores = {}
+        for group, ind_list in groups.items():
+            group_score = sum(normalized_values.get(ind, 0.5) for ind in ind_list) / len(ind_list)
+            group_scores[group] = round(group_score, 2)
+            systemic_risk_score += group_score * weights[group]
 
-        # Añadir geo_risk dinámico
+        shock_factor = self.get_gdelt_shock_factor(country_code)
+        systemic_risk_score *= shock_factor
+
         high_risk = self.fetch_latest_fsi()
         geo_risk = 0.0
         if country_code in high_risk:
             score = high_risk[country_code]
             geo_risk = 0.5 if score > 100 else 0.3 if score > 90 else 0.0
             geo_risk += self.crisis_forecasts.get(country_code, 0)
-
+            geo_risk = min(0.7, geo_risk)
         systemic_risk_score += geo_risk * 0.15
 
-        # Añadir deltas y forecasts predictivos
-        delta_penalty = sum(deltas.get(ind, 0) for ind in indicators if deltas.get(ind, 0) > 0 and ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio']) * 0.1
-        forecast_penalty = sum(max(0, forecasts.get(ind, val) - val) for ind, val in indicators.items() if ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio']) * 0.05
+        delta_penalty = sum(deltas.get(ind, 0) for ind in indicators if deltas.get(ind, 0) > 0 and ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']) * 0.1
+        forecast_penalty = sum(max(0, forecasts.get(ind, val) - val) for ind, val in indicators.items() if ind in ['gini_coefficient', 'youth_unemployment', 'neet_ratio', 'inflation_annual']) * 0.05
         systemic_risk_score += delta_penalty + forecast_penalty
 
         systemic_multiplier = 1.5 - (systemic_risk_score * 1.0)
@@ -255,10 +342,22 @@ class CliodynamicDataProcessor:
         final_score = base_score * systemic_multiplier
         final_score = round(max(1.0, min(10.0, final_score)), 2)
 
-        # [Determinación status y return original]
+        if final_score <= self.thresholds['estabilidad_jiang']['critical']:
+            status = 'critical'
+        elif final_score <= self.thresholds['estabilidad_jiang']['alert']:
+            status = 'alert'
+        else:
+            status = 'stable'
+
+        return {
+            'status': status,
+            'valor': final_score,
+            'indicators': risk_indicators_status,
+            'groups': group_scores
+        }
 
     def process_country(self, country_code: str, year: int) -> Dict:
-        # [Código original + nuevos fetches con years_back=10 para trends]
+        logging.info(f"Processing country: {country_code}")
         all_indicators = {'country_code': country_code, 'year': year}
         deltas = {}
         forecasts = {}
@@ -269,16 +368,56 @@ class CliodynamicDataProcessor:
                 all_indicators[indicator] = hist_data['current']
                 deltas[indicator] = hist_data['delta']
                 forecasts[indicator] = self.forecast_indicator(hist_data['historical'])
+            else:
+                all_indicators[indicator] = None
 
-        # [Resto: proxies, social, jiang con deltas/forecasts, turchin con deltas/forecasts, shock factor]
+        wealth_concentration, education_gap, elite_overproduction = self.calculate_proxies(all_indicators)
+        all_indicators['wealth_concentration'] = wealth_concentration
+        all_indicators['education_gap'] = education_gap
+        all_indicators['elite_overproduction'] = elite_overproduction
 
-        return result  # [Como original]
+        social_polarization, institutional_distrust = self.calculate_social_indicators(country_code, all_indicators)
+        all_indicators['social_polarization'] = social_polarization
+        all_indicators['institutional_distrust'] = institutional_distrust
+
+        jiang_stability = self.calculate_jiang_stability(all_indicators, deltas, forecasts, country_code)
+        turchin_instability = self.calculate_turchin_instability(all_indicators, deltas, forecasts)
+
+        result = {
+            'country_code': country_code,
+            'year': year,
+            'estabilidad_jiang': jiang_stability,
+            'inestabilidad_turchin': turchin_instability,
+            'indicators': all_indicators
+        }
+        return result
 
     def save_to_json(self, data: List[Dict], filename: str = 'data/combined_analysis_results.json'):
-        # [Código original]
+        try:
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            with open(filename, 'w') as f:
+                json.dump(data, f, indent=2)
+            logging.info(f"Saved data to {filename}")
+        except Exception as e:
+            logging.error(f"Error saving to JSON: {e}")
 
     def main(self, test_mode: bool = False):
-        # [Código original, con fetch_latest_fsi al inicio si no test]
+        year = datetime.now().year
+        results = []
+        countries = self.country_codes[:10] if test_mode else self.country_codes
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_country = {executor.submit(self.process_country, country, year): country for country in countries}
+            for future in concurrent.futures.as_completed(future_to_country):
+                country = future_to_country[future]
+                try:
+                    result = future.result()
+                    results.append(result)
+                    logging.info(f"Completed processing for {country}")
+                except Exception as e:
+                    logging.error(f"Error processing {country}: {e}")
+
+        self.save_to_json(results)
 
 if __name__ == "__main__":
     processor = CliodynamicDataProcessor()
