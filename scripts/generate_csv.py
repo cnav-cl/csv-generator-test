@@ -51,7 +51,8 @@ class CliodynamicDataProcessor:
             'wealth_concentration': {'alert': 0.45, 'critical': 0.55, 'points': {'alert': -1.5, 'critical': -3.0}},
             'education_gap': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.0, 'critical': -2.5}},
             'elite_overproduction': {'alert': 0.05, 'critical': 0.1, 'points': {'alert': -1.5, 'critical': -3.0}},
-            'estabilidad_jiang': {'alert': 4.9, 'critical': 7.4, 'points': {'alert': 0.0, 'critical': 0.0}}
+            'estabilidad_jiang': {'alert': 4.9, 'critical': 7.4, 'points': {'alert': 0.0, 'critical': 0.0}},
+            'inestabilidad_turchin': {'alert': 0.4, 'critical': 0.6, 'points': {'alert': 0.0, 'critical': 0.0}} # Nuevo umbral para Turchin
         }
 
     
@@ -142,10 +143,9 @@ class CliodynamicDataProcessor:
             print(f"  -> Error calculating social indicators for {country_code}: {e}")
             return 0.5, 0.6
 
-    def calculate_turchin_instability(self, indicators: Dict) -> float:
+    def calculate_turchin_instability(self, indicators: Dict) -> Dict: # Modificado para devolver un diccionario
         """Calcular índice de inestabilidad de Turchin basado en los trabajos originales"""
         try:
-            # Pesos basados en la investigación de Peter Turchin
             weights = {
                 'elite_overproduction': 0.25,
                 'wealth_concentration': 0.20,
@@ -155,35 +155,41 @@ class CliodynamicDataProcessor:
                 'neet_ratio': 0.10
             }
             
-            instability = 0.0
+            instability_score = 0.0
             
             for indicator, weight in weights.items():
                 value = indicators.get(indicator)
                 if value is not None:
-                    # Normalizar valores entre 0-1
                     if indicator == 'elite_overproduction':
-                        norm_value = min(1.0, value / 0.15)  # >15% es crítico
+                        norm_value = min(1.0, value / 0.15)
                     elif indicator == 'wealth_concentration':
-                        norm_value = min(1.0, value / 0.55)  # >55% es crítico
+                        norm_value = min(1.0, value / 0.55)
                     elif indicator == 'institutional_distrust':
-                        norm_value = value  # Ya está en escala 0-1
+                        norm_value = value
                     elif indicator == 'social_polarization':
-                        norm_value = value  # Ya está en escala 0-1
+                        norm_value = value
                     elif indicator == 'youth_unemployment':
-                        norm_value = min(1.0, value / 40.0)  # >40% es crítico
+                        norm_value = min(1.0, value / 40.0)
                     elif indicator == 'neet_ratio':
-                        norm_value = min(1.0, value / 30.0)  # >30% es crítico
+                        norm_value = min(1.0, value / 30.0)
                     
-                    instability += weight * norm_value
+                    instability_score += weight * norm_value
             
-            # Ajustar escala a 0-1
-            instability = min(1.0, max(0.0, instability))
+            final_score = round(min(1.0, max(0.0, instability_score)), 2)
             
-            return round(instability, 2)
+            # Determinar el estado basado en el nuevo umbral
+            if final_score >= self.thresholds['inestabilidad_turchin']['critical']:
+                status = 'critical'
+            elif final_score >= self.thresholds['inestabilidad_turchin']['alert']:
+                status = 'alert'
+            else:
+                status = 'stable'
+            
+            return {'status': status, 'valor': final_score} # Retorna un diccionario
             
         except Exception as e:
             print(f"Error calculating Turchin instability: {e}")
-            return 0.3  # Valor promedio
+            return {'status': 'not_available', 'valor': None}
 
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         stability_score = 10.0
@@ -239,16 +245,15 @@ class CliodynamicDataProcessor:
                 risk_indicators_status[key] = {'status': 'not_available', 'valor': None}
         
         # Determine the status for the Jiang Stability Score
-        if stability_score <= 4.9:
+        if stability_score <= self.thresholds['estabilidad_jiang']['alert']: # Actualizado para usar los umbrales
             stability_level = 'critical'
-        elif stability_score <= 7.4:
+        elif stability_score <= self.thresholds['estabilidad_jiang']['critical']:
             stability_level = 'alert'
         else:
             stability_level = 'stable'
 
         final_score = round(max(1.0, min(10.0, stability_score)), 2)
 
-        # Add the Jiang Stability Score to the risk_indicators_status dictionary for consistency
         risk_indicators_status['estabilidad_jiang'] = {'status': stability_level, 'valor': final_score}
         
         return {
@@ -298,22 +303,24 @@ class CliodynamicDataProcessor:
 
             # Calcular ambos índices
             jiang_metrics = self.calculate_jiang_stability(all_indicators)
-            turchin_instability = self.calculate_turchin_instability(all_indicators)
+            
+            # Ahora Turchin devuelve un diccionario
+            turchin_instability_dict = self.calculate_turchin_instability(all_indicators)
+            
+            # Mover 'inestabilidad_turchin' dentro de 'risk_indicators_status'
+            jiang_metrics['risk_indicators_status']['inestabilidad_turchin'] = turchin_instability_dict
             
             result = {
                 'country_code': country_code,
                 'year': year,
                 'indicators': all_indicators,
-                'risk_indicators_status': jiang_metrics['risk_indicators_status'],
-                'inestabilidad_turchin': turchin_instability
+                'risk_indicators_status': jiang_metrics['risk_indicators_status']
             }
             
             print(f"  -> Finished processing {country_code}. Result: {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('valor')}, {result.get('risk_indicators_status', {}).get('estabilidad_jiang', {}).get('status')}")
             return result
         except Exception as e:
-            # En caso de un fallo inesperado, se retornan los datos parciales
             print(f"  -> Error processing {country_code}: {e}. Returning partial data.")
-            # Añade los campos esperados con valores nulos para no romper el JSON
             all_indicators['wealth_concentration'] = None
             all_indicators['education_gap'] = None
             all_indicators['elite_overproduction'] = None
@@ -324,8 +331,7 @@ class CliodynamicDataProcessor:
                 'country_code': country_code,
                 'year': year,
                 'indicators': all_indicators,
-                'risk_indicators_status': {},
-                'inestabilidad_turchin': None
+                'risk_indicators_status': {}
             }
             
             return result
@@ -339,7 +345,6 @@ class CliodynamicDataProcessor:
         if not os.path.exists('data'):
             os.makedirs('data')
         
-        # Acomoda la salida en un formato más usable para el frontend
         formatted_data = {
             "metadata": {
                 "creation_date": datetime.now().isoformat(),
