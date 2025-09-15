@@ -169,11 +169,11 @@ class CliodynamicDataProcessor:
             'DNK': ['DEU'],
             'FIN': ['SWE', 'NOR', 'RUS'],
             'NOR': ['SWE', 'FIN', 'RUS'],
-            'SGP': ['MYS'],
+            'SGP': ['Singapore', 'SG'],
             'AUT': ['DEU', 'CHE', 'ITA', 'SVN', 'HRV', 'HUN', 'SVK', 'CZE'],
             'CHE': ['DEU', 'FRA', 'ITA', 'AUT'],
             'IRL': ['GBR'],
-            'NZL': [],
+            'NZL': ['New Zealand', 'NZ'],
             'HKG': ['CHN'],
             'ISR': ['EGY', 'JOR', 'LBN', 'SYR'],
             'ARE': ['SAU', 'OMN'],
@@ -233,11 +233,9 @@ class CliodynamicDataProcessor:
             time.sleep(1)
             
             if len(data) > 1 and data[1]:
-                # Check if the specific value is None
                 if data[1][0]['value'] is not None:
                     return {item['date']: item['value'] for item in data[1] if 'date' in item and 'value' in item and item['value'] is not None}
             
-            # If data is empty, or value is None, return default
             logging.warning(f"No valid data found for {indicator_code} in {country_code}. Using default value.")
             return {str(end_year): default_value}
         except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
@@ -255,10 +253,12 @@ class CliodynamicDataProcessor:
             with self.cache_lock:
                 if cache_key in self.cache and self.cache[cache_key]['retrieved_on'] == str(datetime.now().date()):
                     value = self.cache[cache_key]['value']
+                    # --- CORRECCIÓN CRÍTICA AÑADIDA AQUÍ ---
                     if value is not None:
                         indicators[name] = value
                         logging.info(f"Using cached value for {name} ({country_code})")
                         continue
+                    # --- FIN DE LA CORRECCIÓN ---
             
             data = self.fetch_world_bank_data(country_code, code, end_year - 5, end_year)
             value = data.get(str(end_year), self.get_default_value(code, country_code))
@@ -301,7 +301,6 @@ class CliodynamicDataProcessor:
         Calcula la inestabilidad según un modelo simplificado de Turchin,
         incluyendo la presión fronteriza.
         """
-        # Aseguramos que los valores no sean None
         wealth_concentration = indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default'))
         youth_unemployment = indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default'))
         inflation_annual = indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default'))
@@ -336,7 +335,6 @@ class CliodynamicDataProcessor:
         """
         Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        # --- VALIDACIÓN CRÍTICA AÑADIDA AQUÍ ---
         gov_eff = indicators.get('government_effectiveness', 0.0)
         pol_stab = indicators.get('political_stability', 0.0)
         rule_of_law = indicators.get('rule_of_law', 0.0)
@@ -344,7 +342,6 @@ class CliodynamicDataProcessor:
         gov_eff_norm = (gov_eff + 2.5) / 5.0
         pol_stab_norm = (pol_stab + 2.5) / 5.0
         rule_of_law_norm = (rule_of_law + 2.5) / 5.0
-        # --- FIN DE LA VALIDACIÓN ---
 
         stability_score = (
             (gov_eff_norm * 0.4) +
@@ -404,7 +401,7 @@ class CliodynamicDataProcessor:
         initial_results = {}
         countries = self.country_codes
         if test_mode:
-            countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD', 'PER', 'MYS']
+            countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD', 'PER', 'MYS', 'ISR']
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country_initial, country, end_year): country for country in countries}
