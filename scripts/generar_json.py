@@ -831,8 +831,8 @@ class CliodynamicDataProcessor:
         test_mode = test_mode or os.getenv('TEST_MODE', 'false').lower() == 'true'
         year = datetime.now().year
         results = []
-        #countries = ['USA'] if test_mode else self.country_codes  # Descomentar para probar solo USA
-        countries = self.country_codes[:10] if test_mode else self.country_codes
+        countries = ['USA'] if test_mode else self.country_codes  # Descomentar para probar solo USA
+        #countries = self.country_codes[:10] if test_mode else self.country_codes
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country, country, year): country for country in countries}
