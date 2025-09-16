@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-09-16T12:20:06.551734",
+  "timestamp": "2025-09-16T12:26:28.971912",
   "version": "1.0",
   "countries_processed": 52,
   "results": [
@@ -18,11 +18,11 @@
         "voice_accountability": 0.877519071102142,
         "rule_of_law": 1.3276778459549,
         "regulatory_quality": 1.39373278617859,
-        "social_polarization": 0.1535132461431867,
-        "institutional_distrust": 0.49305929077387656,
-        "suicide_rate": 0.7686674562410609,
-        "elite_overproduction": 0.8985987075905332,
-        "wealth_concentration": 0.17396875340435916
+        "social_polarization": 0.8952067329191129,
+        "institutional_distrust": 0.8554318626739953,
+        "suicide_rate": 0.4389923705426285,
+        "elite_overproduction": 0.12563760571156415,
+        "wealth_concentration": 0.8857320305950774
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -30,11 +30,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.17,
+        "status": "at_risk",
+        "valor": 0.5,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.29
+      "border_pressure": 0.22
     },
     {
       "country_code": "CHN",
@@ -51,11 +51,11 @@
         "voice_accountability": -1.50455415248871,
         "rule_of_law": -0.0401299707591534,
         "regulatory_quality": -0.356507807970047,
-        "social_polarization": 0.8907271421874644,
-        "institutional_distrust": 0.4064252971053105,
-        "suicide_rate": 0.6513920975091192,
-        "elite_overproduction": 0.8048769827683684,
-        "wealth_concentration": 0.11152327775730005
+        "social_polarization": 0.13161296628600028,
+        "institutional_distrust": 0.11532512282512455,
+        "suicide_rate": 0.3155129080805848,
+        "elite_overproduction": 0.7275295395047424,
+        "wealth_concentration": 0.5728963393413445
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -64,10 +64,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.26,
+        "valor": 0.36,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.33
+      "border_pressure": 0.36
     },
     {
       "country_code": "IND",
@@ -84,11 +84,11 @@
         "voice_accountability": 0.0944044888019562,
         "rule_of_law": 0.188364565372467,
         "regulatory_quality": -0.136969581246376,
-        "social_polarization": 0.34884330691500454,
-        "institutional_distrust": 0.7902571547119933,
-        "suicide_rate": 0.29407802320208276,
-        "elite_overproduction": 0.7221894422505689,
-        "wealth_concentration": 0.4656072530279144
+        "social_polarization": 0.35101660339483753,
+        "institutional_distrust": 0.5192170912333058,
+        "suicide_rate": 0.24393057604673213,
+        "elite_overproduction": 0.706556315292214,
+        "wealth_concentration": 0.7626190397843275
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -97,10 +97,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.42,
+        "valor": 0.54,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.39
+      "border_pressure": 0.42
     },
     {
       "country_code": "BRA",
@@ -117,11 +117,11 @@
         "voice_accountability": 0.382853865623474,
         "rule_of_law": -0.308802843093872,
         "regulatory_quality": -0.29647821187973,
-        "social_polarization": 0.5062504287563508,
-        "institutional_distrust": 0.3363622773499116,
-        "suicide_rate": 0.5927567375603899,
-        "elite_overproduction": 0.441066940925399,
-        "wealth_concentration": 0.5940247693670174
+        "social_polarization": 0.3812436799353278,
+        "institutional_distrust": 0.12159345278387779,
+        "suicide_rate": 0.6137769069766187,
+        "elite_overproduction": 0.7414983217805864,
+        "wealth_concentration": 0.26059852394801447
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -129,11 +129,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.48,
+        "status": "stable",
+        "valor": 0.34,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.33
+      "border_pressure": 0.29
     },
     {
       "country_code": "RUS",
@@ -150,11 +150,11 @@
         "voice_accountability": -1.2855396270752,
         "rule_of_law": -1.18764269351959,
         "regulatory_quality": -1.12207186222076,
-        "social_polarization": 0.4417213681166442,
-        "institutional_distrust": 0.5364481970987731,
-        "suicide_rate": 0.26139884210061204,
-        "elite_overproduction": 0.16907618210607522,
-        "wealth_concentration": 0.6111007052871166
+        "social_polarization": 0.67660490871305,
+        "institutional_distrust": 0.3485341982648292,
+        "suicide_rate": 0.2259862636059854,
+        "elite_overproduction": 0.8259261150415537,
+        "wealth_concentration": 0.41207472048323257
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -162,11 +162,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.43,
+        "status": "stable",
+        "valor": 0.38,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.32
+      "border_pressure": 0.34
     },
     {
       "country_code": "JPN",
@@ -183,11 +183,11 @@
         "voice_accountability": 1.10550534725189,
         "rule_of_law": 1.53553938865662,
         "regulatory_quality": 1.46932590007782,
-        "social_polarization": 0.23543910920349476,
-        "institutional_distrust": 0.7767262310295184,
-        "suicide_rate": 0.40915525920259677,
-        "elite_overproduction": 0.5570717221416761,
-        "wealth_concentration": 0.2613536449881734
+        "social_polarization": 0.6250135741428721,
+        "institutional_distrust": 0.15393606083437278,
+        "suicide_rate": 0.3598240911254318,
+        "elite_overproduction": 0.13711062035886343,
+        "wealth_concentration": 0.2056713711445041
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -196,7 +196,7 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.11,
+        "valor": 0.13,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -216,11 +216,11 @@
         "voice_accountability": 1.46138572692871,
         "rule_of_law": 1.55120778083801,
         "regulatory_quality": 1.45697498321533,
-        "social_polarization": 0.3836470993317256,
-        "institutional_distrust": 0.568420970316835,
-        "suicide_rate": 0.39573434313586364,
-        "elite_overproduction": 0.6134660098244458,
-        "wealth_concentration": 0.2216314503184913
+        "social_polarization": 0.8767045080359173,
+        "institutional_distrust": 0.3280992316794197,
+        "suicide_rate": 0.24153411035090333,
+        "elite_overproduction": 0.5612634256599006,
+        "wealth_concentration": 0.7268268089481433
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -228,11 +228,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.18,
+        "status": "at_risk",
+        "valor": 0.42,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.3
+      "border_pressure": 0.31
     },
     {
       "country_code": "GBR",
@@ -249,11 +249,11 @@
         "voice_accountability": 1.26162397861481,
         "rule_of_law": 1.39836597442627,
         "regulatory_quality": 1.53656673431396,
-        "social_polarization": 0.22230383831458633,
-        "institutional_distrust": 0.5135021661473992,
-        "suicide_rate": 0.30247745410091387,
-        "elite_overproduction": 0.8665786782194917,
-        "wealth_concentration": 0.773883010635779
+        "social_polarization": 0.6883072727685602,
+        "institutional_distrust": 0.2950228228949543,
+        "suicide_rate": 0.170221350787427,
+        "elite_overproduction": 0.17068899027792267,
+        "wealth_concentration": 0.7022196085716281
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -262,10 +262,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.47,
+        "valor": 0.44,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.42
+      "border_pressure": 0.2
     },
     {
       "country_code": "CAN",
@@ -282,11 +282,11 @@
         "voice_accountability": 1.4796462059021,
         "rule_of_law": 1.47300565242767,
         "regulatory_quality": 1.64471042156219,
-        "social_polarization": 0.7719515858343157,
-        "institutional_distrust": 0.10413141336392098,
-        "suicide_rate": 0.34488693739289233,
-        "elite_overproduction": 0.5426109276954799,
-        "wealth_concentration": 0.37358952899205433
+        "social_polarization": 0.8894059217404439,
+        "institutional_distrust": 0.3524019561115035,
+        "suicide_rate": 0.655925797401754,
+        "elite_overproduction": 0.6305135189088233,
+        "wealth_concentration": 0.39899050916593704
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -294,11 +294,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.31,
+        "status": "at_risk",
+        "valor": 0.4,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.17
+      "border_pressure": 0.5
     },
     {
       "country_code": "FRA",
@@ -315,11 +315,11 @@
         "voice_accountability": 1.15460133552551,
         "rule_of_law": 1.18057084083557,
         "regulatory_quality": 1.15350544452667,
-        "social_polarization": 0.6587918556124626,
-        "institutional_distrust": 0.8438544880893593,
-        "suicide_rate": 0.36321001780455864,
-        "elite_overproduction": 0.8128043580425909,
-        "wealth_concentration": 0.43160813876685544
+        "social_polarization": 0.8151358731537347,
+        "institutional_distrust": 0.5075437233584765,
+        "suicide_rate": 0.1484355283084284,
+        "elite_overproduction": 0.7314465193923461,
+        "wealth_concentration": 0.7179934450889532
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -327,11 +327,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.38,
+        "status": "at_risk",
+        "valor": 0.52,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.31
+      "border_pressure": 0.39
     },
     {
       "country_code": "ITA",
@@ -348,11 +348,11 @@
         "voice_accountability": 1.11553084850311,
         "rule_of_law": 0.390358686447144,
         "regulatory_quality": 0.644031763076782,
-        "social_polarization": 0.5388655747466972,
-        "institutional_distrust": 0.32640505358340477,
-        "suicide_rate": 0.1755493737818922,
-        "elite_overproduction": 0.8066407019209269,
-        "wealth_concentration": 0.4470047109324893
+        "social_polarization": 0.8660485289474865,
+        "institutional_distrust": 0.23929882314434556,
+        "suicide_rate": 0.5651772074723357,
+        "elite_overproduction": 0.3043450270650448,
+        "wealth_concentration": 0.6618927062396616
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -361,10 +361,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.4,
+        "valor": 0.54,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.25
+      "border_pressure": 0.38
     },
     {
       "country_code": "AUS",
@@ -381,11 +381,11 @@
         "voice_accountability": 1.50660192966461,
         "rule_of_law": 1.52318394184113,
         "regulatory_quality": 1.94220554828644,
-        "social_polarization": 0.505018640230941,
-        "institutional_distrust": 0.7052753002813726,
-        "suicide_rate": 0.3787590753591644,
-        "elite_overproduction": 0.32110629450409856,
-        "wealth_concentration": 0.2053421984177958
+        "social_polarization": 0.6410143832093562,
+        "institutional_distrust": 0.8628461057588493,
+        "suicide_rate": 0.3035123229930655,
+        "elite_overproduction": 0.8085793215784215,
+        "wealth_concentration": 0.4320419272453838
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -394,7 +394,7 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.17,
+        "valor": 0.27,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -414,11 +414,11 @@
         "voice_accountability": -0.115086063742638,
         "rule_of_law": -0.806393921375275,
         "regulatory_quality": -0.171988308429718,
-        "social_polarization": 0.24376324182382136,
-        "institutional_distrust": 0.48559822375810036,
-        "suicide_rate": 0.6621093027340913,
-        "elite_overproduction": 0.8778482347313425,
-        "wealth_concentration": 0.6830790691968407
+        "social_polarization": 0.47251674555714696,
+        "institutional_distrust": 0.6723932916747548,
+        "suicide_rate": 0.4304046265135576,
+        "elite_overproduction": 0.6179185702792587,
+        "wealth_concentration": 0.19733533872463893
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -427,10 +427,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.34,
+        "valor": 0.25,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.17
+      "border_pressure": 0.5
     },
     {
       "country_code": "KOR",
@@ -447,11 +447,11 @@
         "voice_accountability": 0.8595951795578,
         "rule_of_law": 1.24850225448608,
         "regulatory_quality": 1.122523188591,
-        "social_polarization": 0.14924819722161342,
-        "institutional_distrust": 0.34161650845523117,
-        "suicide_rate": 0.5039897167421097,
-        "elite_overproduction": 0.20084119751173077,
-        "wealth_concentration": 0.6239038618067663
+        "social_polarization": 0.35224899987305736,
+        "institutional_distrust": 0.8563036113336342,
+        "suicide_rate": 0.6908988398286837,
+        "elite_overproduction": 0.6854452263954262,
+        "wealth_concentration": 0.42753331603707356
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -460,10 +460,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.29,
+        "valor": 0.26,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.26
+      "border_pressure": 0.36
     },
     {
       "country_code": "SAU",
@@ -480,11 +480,11 @@
         "voice_accountability": -1.41669249534607,
         "rule_of_law": 0.414570838212967,
         "regulatory_quality": 0.517070889472961,
-        "social_polarization": 0.7447127372411804,
-        "institutional_distrust": 0.7942609696102148,
-        "suicide_rate": 0.2650999732750984,
-        "elite_overproduction": 0.435742724294921,
-        "wealth_concentration": 0.46827485539679203
+        "social_polarization": 0.8121037083795988,
+        "institutional_distrust": 0.37669190921788354,
+        "suicide_rate": 0.5053899988476599,
+        "elite_overproduction": 0.5900889167034581,
+        "wealth_concentration": 0.6882022547941564
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -493,7 +493,7 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.31,
+        "valor": 0.4,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -513,11 +513,11 @@
         "voice_accountability": -0.860576987266541,
         "rule_of_law": -0.511972904205322,
         "regulatory_quality": -0.229510217905045,
-        "social_polarization": 0.18677470480818173,
-        "institutional_distrust": 0.16404820893847286,
-        "suicide_rate": 0.6675916670204145,
-        "elite_overproduction": 0.6190480036118549,
-        "wealth_concentration": 0.48825313843415663
+        "social_polarization": 0.1529364394763837,
+        "institutional_distrust": 0.1326016073282789,
+        "suicide_rate": 0.7150541547369555,
+        "elite_overproduction": 0.49038415129804613,
+        "wealth_concentration": 0.3183002087430066
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -526,10 +526,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.52,
+        "valor": 0.46,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.48
+      "border_pressure": 0.55
     },
     {
       "country_code": "EGY",
@@ -546,11 +546,11 @@
         "voice_accountability": -1.37938976287842,
         "rule_of_law": -0.184178426861763,
         "regulatory_quality": -0.665456295013428,
-        "social_polarization": 0.44302797597789956,
-        "institutional_distrust": 0.33780141357726545,
-        "suicide_rate": 0.6632895469645131,
-        "elite_overproduction": 0.5345955251858111,
-        "wealth_concentration": 0.8711469129523371
+        "social_polarization": 0.573754154014428,
+        "institutional_distrust": 0.35161770467552245,
+        "suicide_rate": 0.8422715635305825,
+        "elite_overproduction": 0.5428989911319234,
+        "wealth_concentration": 0.290759300157369
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -559,10 +559,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.67,
+        "valor": 0.47,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.25
+      "border_pressure": 0.29
     },
     {
       "country_code": "NGA",
@@ -579,11 +579,11 @@
         "voice_accountability": -0.548258185386658,
         "rule_of_law": -0.887689292430878,
         "regulatory_quality": -0.936865150928497,
-        "social_polarization": 0.6963802808859141,
-        "institutional_distrust": 0.22871244653889314,
-        "suicide_rate": 0.35034422041039937,
-        "elite_overproduction": 0.8120599042202457,
-        "wealth_concentration": 0.3393276911354499
+        "social_polarization": 0.7986827631271822,
+        "institutional_distrust": 0.7901423936610048,
+        "suicide_rate": 0.11518471201004915,
+        "elite_overproduction": 0.7751906131781626,
+        "wealth_concentration": 0.7223609613432727
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -591,8 +591,8 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.31,
+        "status": "at_risk",
+        "valor": 0.46,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -612,11 +612,11 @@
         "voice_accountability": -0.959140300750732,
         "rule_of_law": -0.859885513782501,
         "regulatory_quality": -0.901008188724518,
-        "social_polarization": 0.5076331297973715,
-        "institutional_distrust": 0.6211873235075434,
-        "suicide_rate": 0.28279487764348854,
-        "elite_overproduction": 0.2112193455332176,
-        "wealth_concentration": 0.8285485953161131
+        "social_polarization": 0.6009839014979427,
+        "institutional_distrust": 0.20621094774363924,
+        "suicide_rate": 0.2534423893912965,
+        "elite_overproduction": 0.6070328822356619,
+        "wealth_concentration": 0.7136065528158015
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -625,10 +625,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.61,
+        "valor": 0.58,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.42
+      "border_pressure": 0.48
     },
     {
       "country_code": "IDN",
@@ -645,11 +645,11 @@
         "voice_accountability": 0.138982817530632,
         "rule_of_law": -0.153604462742805,
         "regulatory_quality": 0.301378756761551,
-        "social_polarization": 0.6622126544953323,
-        "institutional_distrust": 0.20807918837014272,
-        "suicide_rate": 0.6367110957784085,
-        "elite_overproduction": 0.7813014207871409,
-        "wealth_concentration": 0.3168184781814432
+        "social_polarization": 0.2978194361970633,
+        "institutional_distrust": 0.7004346738476324,
+        "suicide_rate": 0.44498912774820976,
+        "elite_overproduction": 0.39492939031376595,
+        "wealth_concentration": 0.7327563092751915
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -657,11 +657,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.32,
+        "status": "at_risk",
+        "valor": 0.46,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.27
+      "border_pressure": 0.37
     },
     {
       "country_code": "VNM",
@@ -678,11 +678,11 @@
         "voice_accountability": -1.24185371398926,
         "rule_of_law": -0.0854718759655952,
         "regulatory_quality": -0.382607728242874,
-        "social_polarization": 0.31912367975215683,
-        "institutional_distrust": 0.300165237925927,
-        "suicide_rate": 0.27043168959239994,
-        "elite_overproduction": 0.10564475117046818,
-        "wealth_concentration": 0.627577101753553
+        "social_polarization": 0.7548457958443768,
+        "institutional_distrust": 0.34903027485886834,
+        "suicide_rate": 0.7768621938643682,
+        "elite_overproduction": 0.24447946078938598,
+        "wealth_concentration": 0.5233077178235354
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -691,10 +691,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.34,
+        "valor": 0.36,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.26
+      "border_pressure": 0.36
     },
     {
       "country_code": "PHL",
@@ -711,11 +711,11 @@
         "voice_accountability": -0.0168379731476307,
         "rule_of_law": -0.41814711689949,
         "regulatory_quality": 0.16425496339798,
-        "social_polarization": 0.21289083853993543,
-        "institutional_distrust": 0.8375122122789557,
-        "suicide_rate": 0.13071495430212998,
-        "elite_overproduction": 0.218241568544728,
-        "wealth_concentration": 0.8671160993865517
+        "social_polarization": 0.3897687030584258,
+        "institutional_distrust": 0.5007793364261389,
+        "suicide_rate": 0.48987673401670273,
+        "elite_overproduction": 0.7288296022664119,
+        "wealth_concentration": 0.5563321626527247
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -724,7 +724,7 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.36,
+        "valor": 0.26,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -744,11 +744,11 @@
         "voice_accountability": 0.533921837806702,
         "rule_of_law": -0.410826534032822,
         "regulatory_quality": -0.482535392045975,
-        "social_polarization": 0.6316231961601959,
-        "institutional_distrust": 0.5332222026062149,
-        "suicide_rate": 0.26529365868208,
-        "elite_overproduction": 0.4379981987502294,
-        "wealth_concentration": 0.2913826375617562
+        "social_polarization": 0.2761801710952194,
+        "institutional_distrust": 0.8981498099245319,
+        "suicide_rate": 0.1318933774494455,
+        "elite_overproduction": 0.45185115379453566,
+        "wealth_concentration": 0.40374737441861874
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -757,10 +757,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.43,
+        "valor": 0.41,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.5
+      "border_pressure": 0.37
     },
     {
       "country_code": "COL",
@@ -777,11 +777,11 @@
         "voice_accountability": 0.205213740468025,
         "rule_of_law": -0.458272933959961,
         "regulatory_quality": 0.101034268736839,
-        "social_polarization": 0.3590942633194215,
-        "institutional_distrust": 0.26161531384230474,
-        "suicide_rate": 0.6389730516673426,
-        "elite_overproduction": 0.3631297480999266,
-        "wealth_concentration": 0.24928590094422365
+        "social_polarization": 0.24991916201826953,
+        "institutional_distrust": 0.8579504972793167,
+        "suicide_rate": 0.6195110441733127,
+        "elite_overproduction": 0.6090093173175692,
+        "wealth_concentration": 0.2475644749224163
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -789,11 +789,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.4,
+        "status": "stable",
+        "valor": 0.37,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.39
+      "border_pressure": 0.28
     },
     {
       "country_code": "POL",
@@ -810,11 +810,11 @@
         "voice_accountability": 0.626450896263123,
         "rule_of_law": 0.458741247653961,
         "regulatory_quality": 0.780193567276001,
-        "social_polarization": 0.32881173649085305,
-        "institutional_distrust": 0.13657243122971963,
-        "suicide_rate": 0.2374728025203063,
-        "elite_overproduction": 0.7907060866314547,
-        "wealth_concentration": 0.8264363678852362
+        "social_polarization": 0.6468856270068796,
+        "institutional_distrust": 0.5777385022177612,
+        "suicide_rate": 0.7135680274805315,
+        "elite_overproduction": 0.6650140659059699,
+        "wealth_concentration": 0.27063551300688093
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -822,11 +822,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.47,
+        "status": "stable",
+        "valor": 0.29,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.36
+      "border_pressure": 0.37
     },
     {
       "country_code": "ESP",
@@ -843,11 +843,11 @@
         "voice_accountability": 1.19472968578339,
         "rule_of_law": 0.822885692119598,
         "regulatory_quality": 0.693764328956604,
-        "social_polarization": 0.5390481783400752,
-        "institutional_distrust": 0.2880809709437455,
-        "suicide_rate": 0.5881990926509167,
-        "elite_overproduction": 0.8383662336626683,
-        "wealth_concentration": 0.7525765939904258
+        "social_polarization": 0.876964889312868,
+        "institutional_distrust": 0.8157246252778928,
+        "suicide_rate": 0.2565198175469895,
+        "elite_overproduction": 0.7935039629508044,
+        "wealth_concentration": 0.3895465247438138
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -856,10 +856,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.63,
+        "valor": 0.53,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.43
+      "border_pressure": 0.42
     },
     {
       "country_code": "IRN",
@@ -876,11 +876,11 @@
         "voice_accountability": -1.45358419418335,
         "rule_of_law": -1.06095492839813,
         "regulatory_quality": -1.68747353553772,
-        "social_polarization": 0.7549099063381689,
-        "institutional_distrust": 0.21817098947599123,
-        "suicide_rate": 0.3337407779652488,
-        "elite_overproduction": 0.3325247919227702,
-        "wealth_concentration": 0.556888512485871
+        "social_polarization": 0.44345360745103457,
+        "institutional_distrust": 0.502134353175466,
+        "suicide_rate": 0.10656118974987026,
+        "elite_overproduction": 0.8827472247261109,
+        "wealth_concentration": 0.5087860647672243
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -889,10 +889,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.69,
+        "valor": 0.63,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.56
+      "border_pressure": 0.52
     },
     {
       "country_code": "ZAF",
@@ -909,11 +909,11 @@
         "voice_accountability": 0.744892179965973,
         "rule_of_law": 0.0862350836396217,
         "regulatory_quality": -0.223697945475578,
-        "social_polarization": 0.3731857860431852,
-        "institutional_distrust": 0.1822699768451293,
-        "suicide_rate": 0.5484504400912676,
-        "elite_overproduction": 0.7995611619810208,
-        "wealth_concentration": 0.6529219619381983
+        "social_polarization": 0.3668033821967972,
+        "institutional_distrust": 0.5732306373717272,
+        "suicide_rate": 0.6604043857576146,
+        "elite_overproduction": 0.41534898904728745,
+        "wealth_concentration": 0.4900718241041385
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -922,7 +922,7 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.55,
+        "valor": 0.48,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -942,11 +942,11 @@
         "voice_accountability": -0.100543133914471,
         "rule_of_law": -0.888317406177521,
         "regulatory_quality": -0.266427397727966,
-        "social_polarization": 0.8772862992330848,
-        "institutional_distrust": 0.5570055112548195,
-        "suicide_rate": 0.6686407406387114,
-        "elite_overproduction": 0.28598981041384897,
-        "wealth_concentration": 0.5662168935517319
+        "social_polarization": 0.39428172777948456,
+        "institutional_distrust": 0.19172574089744077,
+        "suicide_rate": 0.895098974263551,
+        "elite_overproduction": 0.37483235406442805,
+        "wealth_concentration": 0.6446820983243026
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -955,10 +955,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.57,
+        "valor": 0.55,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.44
+      "border_pressure": 0.39
     },
     {
       "country_code": "THA",
@@ -975,11 +975,11 @@
         "voice_accountability": -0.450371354818344,
         "rule_of_law": 0.244872748851776,
         "regulatory_quality": 0.158257782459259,
-        "social_polarization": 0.4338740150707998,
-        "institutional_distrust": 0.5665399818594113,
-        "suicide_rate": 0.6308286673244785,
-        "elite_overproduction": 0.6023814460955301,
-        "wealth_concentration": 0.47319784288386435
+        "social_polarization": 0.3448464928649127,
+        "institutional_distrust": 0.26445726032108247,
+        "suicide_rate": 0.10403652346443454,
+        "elite_overproduction": 0.5012861125531404,
+        "wealth_concentration": 0.4699798887865384
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -988,10 +988,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.24,
+        "valor": 0.25,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.27
+      "border_pressure": 0.37
     },
     {
       "country_code": "VEN",
@@ -1008,11 +1008,11 @@
         "voice_accountability": -1.5313206911087,
         "rule_of_law": -2.15153360366821,
         "regulatory_quality": -2.02624750137329,
-        "social_polarization": 0.7035732815741272,
-        "institutional_distrust": 0.16555570529478852,
-        "suicide_rate": 0.3129372715354021,
-        "elite_overproduction": 0.310066612107042,
-        "wealth_concentration": 0.5492097983381657
+        "social_polarization": 0.322009731083846,
+        "institutional_distrust": 0.20346655779009648,
+        "suicide_rate": 0.44997619360409347,
+        "elite_overproduction": 0.17847261321469823,
+        "wealth_concentration": 0.8847360534586243
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -1021,10 +1021,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.41,
+        "valor": 0.48,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.44
+      "border_pressure": 0.35
     },
     {
       "country_code": "CHL",
@@ -1041,11 +1041,11 @@
         "voice_accountability": 1.01794922351837,
         "rule_of_law": 0.625093758106232,
         "regulatory_quality": 0.925731718540192,
-        "social_polarization": 0.19291009479707438,
-        "institutional_distrust": 0.5521855844632436,
-        "suicide_rate": 0.734079299913444,
-        "elite_overproduction": 0.17087083285912996,
-        "wealth_concentration": 0.841324230578484
+        "social_polarization": 0.8678438215152484,
+        "institutional_distrust": 0.21615827316006833,
+        "suicide_rate": 0.30078683131339123,
+        "elite_overproduction": 0.17844041494335539,
+        "wealth_concentration": 0.3431463611960499
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1054,10 +1054,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.6,
+        "valor": 0.45,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.4
+      "border_pressure": 0.26
     },
     {
       "country_code": "PER",
@@ -1074,11 +1074,11 @@
         "voice_accountability": 0.060481496155262,
         "rule_of_law": -0.538132667541504,
         "regulatory_quality": 0.292205184698105,
-        "social_polarization": 0.38100150899455787,
-        "institutional_distrust": 0.13906210705632596,
-        "suicide_rate": 0.7792018641497075,
-        "elite_overproduction": 0.4887259399335052,
-        "wealth_concentration": 0.8516627929081032
+        "social_polarization": 0.4435847393214406,
+        "institutional_distrust": 0.3454367191650697,
+        "suicide_rate": 0.36623174653800206,
+        "elite_overproduction": 0.1563074268263548,
+        "wealth_concentration": 0.11866470751433456
       },
       "estabilidad_jiang": {
         "status": "fragile",
@@ -1086,11 +1086,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.47,
+        "status": "stable",
+        "valor": 0.18,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.49
+      "border_pressure": 0.39
     },
     {
       "country_code": "MYS",
@@ -1107,11 +1107,11 @@
         "voice_accountability": 0.0876194089651108,
         "rule_of_law": 0.571915447711945,
         "regulatory_quality": 0.660894274711609,
-        "social_polarization": 0.4702594863405779,
-        "institutional_distrust": 0.28501235100155164,
-        "suicide_rate": 0.25978545204996417,
-        "elite_overproduction": 0.11121208984616562,
-        "wealth_concentration": 0.46401455975852945
+        "social_polarization": 0.8741816884376544,
+        "institutional_distrust": 0.2923391411210826,
+        "suicide_rate": 0.12548805636788762,
+        "elite_overproduction": 0.41627490188134164,
+        "wealth_concentration": 0.6383035458147936
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1119,11 +1119,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.32,
+        "status": "at_risk",
+        "valor": 0.45,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.26
+      "border_pressure": 0.36
     },
     {
       "country_code": "ROU",
@@ -1140,11 +1140,11 @@
         "voice_accountability": 0.503180325031281,
         "rule_of_law": 0.437425792217255,
         "regulatory_quality": 0.318900614976883,
-        "social_polarization": 0.15730337605230443,
-        "institutional_distrust": 0.7551119880617313,
-        "suicide_rate": 0.8028454356034397,
-        "elite_overproduction": 0.6102431515765332,
-        "wealth_concentration": 0.5421900838962583
+        "social_polarization": 0.5403833676452031,
+        "institutional_distrust": 0.5592891812798165,
+        "suicide_rate": 0.5325815248562576,
+        "elite_overproduction": 0.15753549637229797,
+        "wealth_concentration": 0.685006472001039
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1153,10 +1153,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.53,
+        "valor": 0.62,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.57
+      "border_pressure": 0.55
     },
     {
       "country_code": "SWE",
@@ -1173,11 +1173,11 @@
         "voice_accountability": 1.57483160495758,
         "rule_of_law": 1.60402345657349,
         "regulatory_quality": 1.71801710128784,
-        "social_polarization": 0.14883521888239326,
-        "institutional_distrust": 0.7057057423818115,
-        "suicide_rate": 0.11438325686333464,
-        "elite_overproduction": 0.7187504711663523,
-        "wealth_concentration": 0.30664093777984813
+        "social_polarization": 0.31804596596942225,
+        "institutional_distrust": 0.1845940844415294,
+        "suicide_rate": 0.7270085289284676,
+        "elite_overproduction": 0.15302689716296092,
+        "wealth_concentration": 0.5690386667553484
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1185,11 +1185,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.35,
+        "status": "at_risk",
+        "valor": 0.49,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.23
+      "border_pressure": 0.32
     },
     {
       "country_code": "BEL",
@@ -1206,11 +1206,11 @@
         "voice_accountability": 1.32572901248932,
         "rule_of_law": 1.29537487030029,
         "regulatory_quality": 1.16822481155396,
-        "social_polarization": 0.3899850445246137,
-        "institutional_distrust": 0.44710525411444435,
-        "suicide_rate": 0.24950424842192176,
-        "elite_overproduction": 0.6304240802578346,
-        "wealth_concentration": 0.5715517904401046
+        "social_polarization": 0.6504824899422618,
+        "institutional_distrust": 0.4003042660062657,
+        "suicide_rate": 0.439305237098491,
+        "elite_overproduction": 0.4345891356233562,
+        "wealth_concentration": 0.47491359877144557
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1219,10 +1219,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.42,
+        "valor": 0.44,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.25
+      "border_pressure": 0.43
     },
     {
       "country_code": "NLD",
@@ -1239,11 +1239,11 @@
         "voice_accountability": 1.55626440048218,
         "rule_of_law": 1.64250445365906,
         "regulatory_quality": 1.79096639156342,
-        "social_polarization": 0.29455524194054405,
-        "institutional_distrust": 0.312670223732074,
-        "suicide_rate": 0.784082331630055,
-        "elite_overproduction": 0.2014499978818022,
-        "wealth_concentration": 0.37302207217654026
+        "social_polarization": 0.577808037033906,
+        "institutional_distrust": 0.18643039069916353,
+        "suicide_rate": 0.550777766666053,
+        "elite_overproduction": 0.759296695519898,
+        "wealth_concentration": 0.7009133291054866
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1251,11 +1251,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.26,
+        "status": "at_risk",
+        "valor": 0.44,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.3
+      "border_pressure": 0.43
     },
     {
       "country_code": "GRC",
@@ -1272,11 +1272,11 @@
         "voice_accountability": 1.01216721534729,
         "rule_of_law": 0.213158577680588,
         "regulatory_quality": 0.578935325145721,
-        "social_polarization": 0.8609635837887623,
-        "institutional_distrust": 0.2673237985279758,
-        "suicide_rate": 0.7696503737221748,
-        "elite_overproduction": 0.8432753252939011,
-        "wealth_concentration": 0.3405554161974991
+        "social_polarization": 0.4611030071487584,
+        "institutional_distrust": 0.862095090406067,
+        "suicide_rate": 0.8198939304911107,
+        "elite_overproduction": 0.17719738939137095,
+        "wealth_concentration": 0.8975771147271396
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1285,10 +1285,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.5,
+        "valor": 0.66,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.52
+      "border_pressure": 0.46
     },
     {
       "country_code": "CZE",
@@ -1305,11 +1305,11 @@
         "voice_accountability": 1.07654917240143,
         "rule_of_law": 1.14218366146088,
         "regulatory_quality": 1.30448853969574,
-        "social_polarization": 0.7691955963224876,
-        "institutional_distrust": 0.8088696916546676,
-        "suicide_rate": 0.10248978458008118,
-        "elite_overproduction": 0.5298016687584161,
-        "wealth_concentration": 0.6602330434169362
+        "social_polarization": 0.7020899829201636,
+        "institutional_distrust": 0.8188242063134162,
+        "suicide_rate": 0.37980518674644503,
+        "elite_overproduction": 0.8605915435747703,
+        "wealth_concentration": 0.3397829472820211
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1317,11 +1317,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.4,
+        "status": "stable",
+        "valor": 0.29,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.3
+      "border_pressure": 0.36
     },
     {
       "country_code": "PRT",
@@ -1338,11 +1338,11 @@
         "voice_accountability": 1.21128296852112,
         "rule_of_law": 1.06766510009766,
         "regulatory_quality": 0.755356550216675,
-        "social_polarization": 0.872864275715952,
-        "institutional_distrust": 0.7946396894820438,
-        "suicide_rate": 0.3255771507711368,
-        "elite_overproduction": 0.5939564719338692,
-        "wealth_concentration": 0.6811344133759778
+        "social_polarization": 0.4554210022830665,
+        "institutional_distrust": 0.7620269431347767,
+        "suicide_rate": 0.562556433736381,
+        "elite_overproduction": 0.3696883466106322,
+        "wealth_concentration": 0.3219200209660247
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1351,10 +1351,10 @@
       },
       "inestabilidad_turchin": {
         "status": "at_risk",
-        "valor": 0.61,
+        "valor": 0.42,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.63
+      "border_pressure": 0.53
     },
     {
       "country_code": "DNK",
@@ -1371,11 +1371,11 @@
         "voice_accountability": 1.66469931602478,
         "rule_of_law": 1.90893590450287,
         "regulatory_quality": 1.83951985836029,
-        "social_polarization": 0.29960269642785653,
-        "institutional_distrust": 0.28183642272571197,
-        "suicide_rate": 0.740907439487135,
-        "elite_overproduction": 0.43581324557415246,
-        "wealth_concentration": 0.8981096717669363
+        "social_polarization": 0.4502473181299703,
+        "institutional_distrust": 0.8478811049960526,
+        "suicide_rate": 0.898544177244245,
+        "elite_overproduction": 0.5475093642565405,
+        "wealth_concentration": 0.35096221361208746
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1383,11 +1383,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.44,
+        "status": "stable",
+        "valor": 0.3,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.18
+      "border_pressure": 0.42
     },
     {
       "country_code": "FIN",
@@ -1404,11 +1404,11 @@
         "voice_accountability": 1.63263607025146,
         "rule_of_law": 1.96704590320587,
         "regulatory_quality": 1.76514935493469,
-        "social_polarization": 0.5971830971208192,
-        "institutional_distrust": 0.16952377512924324,
-        "suicide_rate": 0.38631663469844657,
-        "elite_overproduction": 0.16794384072853133,
-        "wealth_concentration": 0.13919515850806452
+        "social_polarization": 0.254169498435462,
+        "institutional_distrust": 0.7385856275087792,
+        "suicide_rate": 0.14893185606913298,
+        "elite_overproduction": 0.24290373084000533,
+        "wealth_concentration": 0.20963630548075898
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1417,10 +1417,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.29,
+        "valor": 0.3,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.34
+      "border_pressure": 0.43
     },
     {
       "country_code": "NOR",
@@ -1437,11 +1437,11 @@
         "voice_accountability": 1.77725434303284,
         "rule_of_law": 1.83398151397705,
         "regulatory_quality": 1.59752345085144,
-        "social_polarization": 0.8309709415603747,
-        "institutional_distrust": 0.4840962071928754,
-        "suicide_rate": 0.8135710240227381,
-        "elite_overproduction": 0.8424237850726559,
-        "wealth_concentration": 0.25098633277254334
+        "social_polarization": 0.6199909251085288,
+        "institutional_distrust": 0.8272234513983848,
+        "suicide_rate": 0.5003319724316811,
+        "elite_overproduction": 0.7618219596276514,
+        "wealth_concentration": 0.7547221810284521
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1449,11 +1449,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.31,
+        "status": "at_risk",
+        "valor": 0.48,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.36
+      "border_pressure": 0.39
     },
     {
       "country_code": "SGP",
@@ -1470,11 +1470,11 @@
         "voice_accountability": -0.0654119327664375,
         "rule_of_law": 1.75317537784576,
         "regulatory_quality": 2.30859136581421,
-        "social_polarization": 0.8233563868926342,
-        "institutional_distrust": 0.5251002918665024,
-        "suicide_rate": 0.7704226102324216,
-        "elite_overproduction": 0.7529374658452536,
-        "wealth_concentration": 0.3488006070875048
+        "social_polarization": 0.8660043551915998,
+        "institutional_distrust": 0.8027500810250374,
+        "suicide_rate": 0.13138957485033675,
+        "elite_overproduction": 0.13022237300686035,
+        "wealth_concentration": 0.7357048909838597
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1483,7 +1483,7 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.22,
+        "valor": 0.37,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -1503,11 +1503,11 @@
         "voice_accountability": 1.41124832630157,
         "rule_of_law": 1.74656546115875,
         "regulatory_quality": 1.36136972904205,
-        "social_polarization": 0.33604046946374366,
-        "institutional_distrust": 0.807085515590127,
-        "suicide_rate": 0.1375422960244894,
-        "elite_overproduction": 0.1035221107648316,
-        "wealth_concentration": 0.43865180123612857
+        "social_polarization": 0.10510916314622164,
+        "institutional_distrust": 0.77124166406392,
+        "suicide_rate": 0.4582719732051992,
+        "elite_overproduction": 0.10711758263382283,
+        "wealth_concentration": 0.7882636537537547
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1515,11 +1515,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "stable",
-        "valor": 0.31,
+        "status": "at_risk",
+        "valor": 0.44,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.28
+      "border_pressure": 0.38
     },
     {
       "country_code": "CHE",
@@ -1536,11 +1536,11 @@
         "voice_accountability": 1.66502690315247,
         "rule_of_law": 1.76172566413879,
         "regulatory_quality": 1.72938001155853,
-        "social_polarization": 0.649989743695692,
-        "institutional_distrust": 0.10034495519999638,
-        "suicide_rate": 0.8149045971337958,
-        "elite_overproduction": 0.3538479526870246,
-        "wealth_concentration": 0.15257704477156153
+        "social_polarization": 0.853299193695486,
+        "institutional_distrust": 0.18048890068066623,
+        "suicide_rate": 0.491024146204999,
+        "elite_overproduction": 0.5943331876645443,
+        "wealth_concentration": 0.5023112988819453
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1549,10 +1549,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.18,
+        "valor": 0.36,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.32
+      "border_pressure": 0.48
     },
     {
       "country_code": "IRL",
@@ -1569,11 +1569,11 @@
         "voice_accountability": 1.48345601558685,
         "rule_of_law": 1.63358354568481,
         "regulatory_quality": 1.74936389923096,
-        "social_polarization": 0.7762247969892045,
-        "institutional_distrust": 0.333978639490282,
-        "suicide_rate": 0.5371145295544657,
-        "elite_overproduction": 0.5438783602176276,
-        "wealth_concentration": 0.7959617465172144
+        "social_polarization": 0.7114614772909683,
+        "institutional_distrust": 0.8084123906052347,
+        "suicide_rate": 0.3616747707838419,
+        "elite_overproduction": 0.21072278493032304,
+        "wealth_concentration": 0.23996752444199496
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1581,11 +1581,11 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.51,
+        "status": "stable",
+        "valor": 0.29,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.47
+      "border_pressure": 0.44
     },
     {
       "country_code": "NZL",
@@ -1602,11 +1602,11 @@
         "voice_accountability": 1.68778347969055,
         "rule_of_law": 1.70570802688599,
         "regulatory_quality": 1.91022837162018,
-        "social_polarization": 0.8915407563308194,
-        "institutional_distrust": 0.6663869333195198,
-        "suicide_rate": 0.6865388349383414,
-        "elite_overproduction": 0.11085309896677256,
-        "wealth_concentration": 0.8466677169417888
+        "social_polarization": 0.8616444841267413,
+        "institutional_distrust": 0.20738734578055074,
+        "suicide_rate": 0.7352618441789147,
+        "elite_overproduction": 0.5763844758024466,
+        "wealth_concentration": 0.2887842433419383
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1614,8 +1614,8 @@
         "comment": "Calculado basado en indicadores de gobernanza."
       },
       "inestabilidad_turchin": {
-        "status": "at_risk",
-        "valor": 0.49,
+        "status": "stable",
+        "valor": 0.28,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
       "border_pressure": 0.0
@@ -1635,11 +1635,11 @@
         "voice_accountability": -0.320146769285202,
         "rule_of_law": 1.29364585876465,
         "regulatory_quality": 1.60433173179626,
-        "social_polarization": 0.39967707300134514,
-        "institutional_distrust": 0.27932482986351276,
-        "suicide_rate": 0.26253612006636323,
-        "elite_overproduction": 0.617960244797269,
-        "wealth_concentration": 0.687913952776128
+        "social_polarization": 0.2880386591198285,
+        "institutional_distrust": 0.7003911645369599,
+        "suicide_rate": 0.8035827735179731,
+        "elite_overproduction": 0.12430077247869704,
+        "wealth_concentration": 0.8703059593670346
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1651,7 +1651,7 @@
         "valor": 0.36,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.26
+      "border_pressure": 0.0
     },
     {
       "country_code": "ISR",
@@ -1668,11 +1668,11 @@
         "voice_accountability": 0.64426463842392,
         "rule_of_law": 0.783846437931061,
         "regulatory_quality": 1.12179791927338,
-        "social_polarization": 0.713062182953745,
-        "institutional_distrust": 0.754426515027583,
-        "suicide_rate": 0.33519359457394493,
-        "elite_overproduction": 0.34062766101815367,
-        "wealth_concentration": 0.46648628895873256
+        "social_polarization": 0.3866980921045363,
+        "institutional_distrust": 0.5433256980418568,
+        "suicide_rate": 0.4793976348007196,
+        "elite_overproduction": 0.17207563120316918,
+        "wealth_concentration": 0.6533994365771303
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1681,10 +1681,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.38,
+        "valor": 0.29,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.67
+      "border_pressure": 0.0
     },
     {
       "country_code": "ARE",
@@ -1701,11 +1701,11 @@
         "voice_accountability": -1.0949410200119,
         "rule_of_law": 0.881900131702423,
         "regulatory_quality": 1.04239141941071,
-        "social_polarization": 0.4159286787791251,
-        "institutional_distrust": 0.6129434903166908,
-        "suicide_rate": 0.7034344640430865,
-        "elite_overproduction": 0.26782531000383025,
-        "wealth_concentration": 0.5164804627043005
+        "social_polarization": 0.28963603376303415,
+        "institutional_distrust": 0.7309043141706131,
+        "suicide_rate": 0.19282776283241249,
+        "elite_overproduction": 0.5038499278717444,
+        "wealth_concentration": 0.6419454920314607
       },
       "estabilidad_jiang": {
         "status": "stable",
@@ -1714,10 +1714,10 @@
       },
       "inestabilidad_turchin": {
         "status": "stable",
-        "valor": 0.28,
+        "valor": 0.26,
         "comment": "Calculado basado en indicadores internos y presi\u00f3n fronteriza."
       },
-      "border_pressure": 0.31
+      "border_pressure": 0.0
     }
   ]
 }
