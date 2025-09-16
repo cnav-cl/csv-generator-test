@@ -286,7 +286,7 @@ class CliodynamicDataProcessor:
             return total_pressure / len(borders)
         return 0.0
 
-    def save_to_json(self, data: List[Dict], filename: str = 'processed_data.json'):
+    def save_to_json(self, data: List[Dict], filename: str = 'data/indices_paises_procesado.json'):
         """Guarda los datos procesados en un archivo JSON."""
         file_path = os.path.join(self.DATA_DIR, filename)
         with open(file_path, 'w', encoding='utf-8') as f:
