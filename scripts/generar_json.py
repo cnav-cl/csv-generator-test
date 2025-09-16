@@ -126,7 +126,6 @@ class CliodynamicDataProcessor:
         }
         self.current_year = datetime.now().year
         
-        # Diccionario para mapear países con sus vecinos
         self.border_mapping = {
             'USA': ['CAN', 'MEX'],
             'CAN': ['USA'],
@@ -170,11 +169,11 @@ class CliodynamicDataProcessor:
             'DNK': ['DEU'],
             'FIN': ['SWE', 'NOR', 'RUS'],
             'NOR': ['SWE', 'FIN', 'RUS'],
-            'SGP': ['MYS'],
+            'SGP': ['Singapore', 'SG'],
             'AUT': ['DEU', 'CHE', 'ITA', 'SVN', 'HRV', 'HUN', 'SVK', 'CZE'],
             'CHE': ['DEU', 'FRA', 'ITA', 'AUT'],
             'IRL': ['GBR'],
-            'NZL': [],
+            'NZL': ['New Zealand', 'NZ'],
             'HKG': ['CHN'],
             'ISR': ['EGY', 'JOR', 'LBN', 'SYR'],
             'ARE': ['SAU', 'OMN'],
@@ -197,8 +196,12 @@ class CliodynamicDataProcessor:
     def load_cache(self) -> Dict:
         """Loads cache from a JSON file."""
         if os.path.exists(self.cache_file):
-            with open(self.cache_file, 'r') as f:
-                return json.load(f)
+            try:
+                with open(self.cache_file, 'r') as f:
+                    return json.load(f)
+            except json.JSONDecodeError:
+                logging.error("Failed to decode cache JSON file. Starting with empty cache.")
+                return {}
         return {}
 
     def save_cache(self):
@@ -215,79 +218,83 @@ class CliodynamicDataProcessor:
                 return key
         return None
 
-    def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Optional[Dict]:
-        """Fetches World Bank data for a specific country and indicator, with retries."""
-        api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={start_year}:{end_year}&format=json"
-        
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+    def get_default_value(self, indicator_code: str, country_code: str) -> float:
+        default_key = self.get_default_key(indicator_code)
+        if default_key:
+            return float(self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0)))
+        return 0.0
 
-        try:
-            response = requests.get(api_url, headers=headers)
-            response.raise_for_status()
-            data = response.json()
-            time.sleep(1)
-            
-            if len(data) > 1 and data[1]:
-                return {item['date']: item['value'] for item in data[1] if 'date' in item and 'value' in item}
-            else:
-                logging.warning(f"No data found for {indicator_code} in {country_code} for years {start_year}-{end_year}. Using default value.")
+    def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
+        """
+        Fetches World Bank data, iterating backward from end_year to find the most recent valid value.
+        """
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        default_value = self.get_default_value(indicator_code, country_code)
+
+        # Iterar desde el año final hacia atrás
+        for year in range(end_year, start_year - 1, -1):
+            api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={year}&format=json"
+            try:
+                response = requests.get(api_url, headers=headers)
+                response.raise_for_status()
+                data = response.json()
+                time.sleep(0.5)
                 
-                default_key = self.get_default_key(indicator_code)
-                if default_key:
-                    defaults = self.default_indicator_values[default_key]
-                    default_value = defaults.get(country_code, defaults.get('default', 0.0))
-                else:
-                    default_value = 0.0
-                
-                return {str(end_year): default_value}
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error fetching data from World Bank for {indicator_code} in {country_code}: {e}")
-            
-            default_key = self.get_default_key(indicator_code)
-            if default_key:
-                defaults = self.default_indicator_values[default_key]
-                default_value = defaults.get(country_code, defaults.get('default', 0.0))
-            else:
-                default_value = 0.0
-            
-            return {str(end_year): default_value}
-        except (json.JSONDecodeError, IndexError) as e:
-            logging.error(f"Failed to parse JSON for {indicator_code} in {country_code}: {e}")
-            return None
+                # Comprobar si hay datos válidos y no nulos
+                if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
+                    logging.info(f"Found data for {indicator_code} in {country_code} for year {year}")
+                    return {str(year): data[1][0]['value']}
+            except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
+                logging.warning(f"Failed to fetch or parse data for {indicator_code} in {country_code} for year {year}: {e}. Trying previous year.")
+                continue
+        
+        logging.warning(f"No valid data found in range for {indicator_code} in {country_code}. Using default value.")
+        return {str(end_year): default_value}
+
 
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
-        """Calculates indicators for a given country and year."""
+        """Calculates indicators, ensuring values are never None."""
         indicators = {}
         end_year = datetime.now().year - 1
-        start_year = end_year - 5
         
         for name, code in self.indicators.items():
             cache_key = f"{country_code}_{code}_{end_year}"
             
+            value_from_cache = None
             with self.cache_lock:
                 if cache_key in self.cache and self.cache[cache_key]['retrieved_on'] == str(datetime.now().date()):
-                    indicators[name] = self.cache[cache_key]['value']
-                    logging.info(f"Using cached value for {name} ({country_code})")
-                    continue
+                    value_from_cache = self.cache[cache_key]['value']
             
-            data = self.fetch_world_bank_data(country_code, code, start_year, end_year)
-            if data and str(end_year) in data:
-                value = data[str(end_year)]
-                indicators[name] = value
-                
-                with self.cache_lock:
-                    self.temp_cache[cache_key] = {
-                        'value': value,
-                        'retrieved_on': str(datetime.now().date())
-                    }
+            if value_from_cache is not None:
+                indicators[name] = float(value_from_cache)
+                logging.info(f"Using cached value for {name} ({country_code})")
+                continue
+
+            # Si el valor de la caché es None o no existe, llamar a la API
+            data = self.fetch_world_bank_data(country_code, code, end_year - 5, end_year)
+            
+            # Obtener el valor del diccionario, tomando el primer valor si existe
+            value = next(iter(data.values()), None)
+            
+            # Asegurar que el valor es un float antes de asignarlo
+            if value is None:
+                final_value = self.get_default_value(code, country_code)
             else:
-                pass
+                final_value = float(value)
+            
+            indicators[name] = final_value
+                
+            with self.cache_lock:
+                self.temp_cache[cache_key] = {
+                    'value': indicators[name],
+                    'retrieved_on': str(datetime.now().date())
+                }
 
         for name, code in self.gdelt_indicators.items():
             indicators[name] = random.uniform(0.1, 0.9)
 
         return indicators
-    
+
     def calculate_border_pressure(self, country_code: str, all_results: Dict) -> float:
         """
         Calcula la presión fronteriza basada en la inestabilidad de los países vecinos.
@@ -299,14 +306,14 @@ class CliodynamicDataProcessor:
         
         neighbor_instabilities = []
         for neighbor_code in neighbors:
-            if neighbor_code in all_results:
-                neighbor_instabilities.append(all_results[neighbor_code]['inestabilidad_turchin']['valor'])
+            if neighbor_code in all_results and 'inestabilidad_turchin' in all_results[neighbor_code]:
+                valor_instabilidad = all_results[neighbor_code]['inestabilidad_turchin']['valor']
+                if isinstance(valor_instabilidad, (int, float)):
+                    neighbor_instabilities.append(valor_instabilidad)
         
         if not neighbor_instabilities:
             return 0.0
         
-        # El puntaje de presión fronteriza es el promedio de la inestabilidad de los vecinos.
-        # Esto significa que un vecino con una inestabilidad de 0.8 tendrá más impacto que uno con 0.2.
         return sum(neighbor_instabilities) / len(neighbor_instabilities)
         
     def calculate_turchin_instability(self, indicators: Dict, border_pressure: float = 0.0) -> Dict:
@@ -314,12 +321,16 @@ class CliodynamicDataProcessor:
         Calcula la inestabilidad según un modelo simplificado de Turchin,
         incluyendo la presión fronteriza.
         """
-        wealth_norm = (indicators.get('wealth_concentration', 0.5) - 0.1) / 0.8
-        unemployment_norm = min(1.0, max(0.0, (indicators.get('youth_unemployment', 20.0) - 5.0) / 25.0))
-        inflation_norm = min(1.0, max(0.0, (indicators.get('inflation_annual', 3.0) - 1.0) / 10.0))
-        social_pol_norm = indicators.get('social_polarization', 0.5)
+        wealth_concentration = float(indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default')))
+        youth_unemployment = float(indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default')))
+        inflation_annual = float(indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default')))
+        social_polarization = float(indicators.get('social_polarization', self.get_default_value('CIVIL_WAR_RISK', 'default')))
+
+        wealth_norm = (wealth_concentration - 0.1) / 0.8
+        unemployment_norm = min(1.0, max(0.0, (youth_unemployment - 5.0) / 25.0))
+        inflation_norm = min(1.0, max(0.0, (inflation_annual - 1.0) / 10.0))
+        social_pol_norm = social_polarization
         
-        # Se añade la presión fronteriza como un factor en el cálculo
         instability_score = (
             (wealth_norm * 0.3) + 
             (unemployment_norm * 0.25) +
@@ -344,9 +355,14 @@ class CliodynamicDataProcessor:
         """
         Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        gov_eff_norm = (indicators.get('government_effectiveness', 0.0) + 2.5) / 5.0
-        pol_stab_norm = (indicators.get('political_stability', 0.0) + 2.5) / 5.0
-        rule_of_law_norm = (indicators.get('rule_of_law', 0.0) + 2.5) / 5.0
+        # Validaciones robustas para asegurar que los valores sean flotantes
+        gov_eff = float(indicators.get('government_effectiveness', 0.0))
+        pol_stab = float(indicators.get('political_stability', 0.0))
+        rule_of_law = float(indicators.get('rule_of_law', 0.0))
+
+        gov_eff_norm = (gov_eff + 2.5) / 5.0
+        pol_stab_norm = (pol_stab + 2.5) / 5.0
+        rule_of_law_norm = (rule_of_law + 2.5) / 5.0
 
         stability_score = (
             (gov_eff_norm * 0.4) +
@@ -404,9 +420,10 @@ class CliodynamicDataProcessor:
         end_year = datetime.now().year - 1
         
         initial_results = {}
-        countries = ['USA', 'RUS', 'CHN', 'UKR'] if test_mode else self.country_codes
+        countries = self.country_codes
+        if test_mode:
+            countries = ['USA', 'RUS', 'CHN', 'UKR', 'FIN', 'NLD', 'PER', 'MYS', 'ISR']
         
-        # Primera pasada: calcular indicadores e inestabilidad interna
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             future_to_country = {executor.submit(self.process_country_initial, country, end_year): country for country in countries}
             for future in concurrent.futures.as_completed(future_to_country, timeout=600):
@@ -429,7 +446,6 @@ class CliodynamicDataProcessor:
                 result = initial_results[country_code]
                 border_pressure = self.calculate_border_pressure(country_code, initial_results)
                 
-                # Recalcular la inestabilidad con la presión fronteriza
                 final_instability = self.calculate_turchin_instability(result['indicators'], border_pressure)
                 result['inestabilidad_turchin'] = final_instability
                 result['border_pressure'] = round(border_pressure, 2)
