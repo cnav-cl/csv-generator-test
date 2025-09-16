@@ -10,7 +10,6 @@ from dataclasses import dataclass
 import re
 import random
 from bs4 import BeautifulSoup
-from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.holtwinters import SimpleExpSmoothing
 import concurrent.futures
 import logging
@@ -226,30 +225,59 @@ class CliodynamicDataProcessor:
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
         """
-        Fetches World Bank data, iterating backward from end_year to find the most recent valid value.
+        Fetches World Bank data, iterating backward to find the most recent valid value
+        and then projects it to the current year if needed. Includes retries.
         """
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'}
+        headers = {'User-Agent': 'Mozilla/5.0'}
         default_value = self.get_default_value(indicator_code, country_code)
+        historical_data = {}
 
-        # Iterar desde el año final hacia atrás
-        for year in range(end_year, start_year - 1, -1):
+        for year in range(end_year, end_year - 5, -1):
             api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={year}&format=json"
-            try:
-                response = requests.get(api_url, headers=headers)
-                response.raise_for_status()
-                data = response.json()
-                time.sleep(0.5)
-                
-                # Comprobar si hay datos válidos y no nulos
-                if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
-                    logging.info(f"Found data for {indicator_code} in {country_code} for year {year}")
-                    return {str(year): data[1][0]['value']}
-            except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
-                logging.warning(f"Failed to fetch or parse data for {indicator_code} in {country_code} for year {year}: {e}. Trying previous year.")
-                continue
-        
-        logging.warning(f"No valid data found in range for {indicator_code} in {country_code}. Using default value.")
-        return {str(end_year): default_value}
+            
+            # Nuevo bloque: Retries con espera exponencial
+            for i in range(3):
+                try:
+                    response = requests.get(api_url, headers=headers, timeout=10) # Añade un timeout de 10 segundos
+                    response.raise_for_status()
+                    data = response.json()
+                    
+                    if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
+                        historical_data[int(data[1][0]['date'])] = data[1][0]['value']
+                        break # Salir del bucle de reintentos
+                except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
+                    logging.warning(f"Attempt {i+1} failed for {indicator_code} in {country_code} for year {year}: {e}")
+                    if i < 2:
+                        time.sleep(2 ** i) # Espera 1, 2, 4 segundos
+                    else:
+                        logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
+            else:
+                continue # Continuar al siguiente año si los reintentos fallan
+            
+            # Si el bucle interno se rompe con éxito, romper el externo también
+            break
+
+        # Si se encuentra data histórica, realizar nowcasting
+        if historical_data:
+            most_recent_year = max(historical_data.keys())
+            most_recent_value = historical_data[most_recent_year]
+            
+            if most_recent_year < end_year:
+                try:
+                    df = pd.DataFrame(list(historical_data.items()), columns=['year', 'value']).sort_values('year')
+                    fit = SimpleExpSmoothing(df['value']).fit()
+                    forecast = fit.forecast(1)[0]
+                    logging.info(f"Projecting {indicator_code} for {country_code} from {most_recent_year} to {end_year}: {round(forecast, 2)}")
+                    return {str(end_year): float(forecast)}
+                except Exception as e:
+                    logging.error(f"Failed to forecast for {indicator_code} in {country_code}: {e}. Using most recent value.")
+                    return {str(most_recent_year): float(most_recent_value)}
+            else:
+                return {str(most_recent_year): float(most_recent_value)}
+
+        # Si no se encontró ninguna data histórica, usar el valor por defecto
+        logging.warning(f"No valid data found for {indicator_code} in {country_code} for the last 5 years. Using default value.")
+        return {str(end_year): float(default_value)}
 
 
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
