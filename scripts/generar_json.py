@@ -101,7 +101,8 @@ class CliodynamicDataProcessor:
             'control_of_corruption': 'CC.EST',
             'voice_accountability': 'VA.EST',
             'rule_of_law': 'RL.EST',
-            'regulatory_quality': 'RQ.EST'
+            'regulatory_quality': 'RQ.EST',
+            'happiness_score': 'WHR.SCORE'
         }
         self.imf_indicators = {
             'inflation_annual': 'PCPI_A_SA_X_PCT',
@@ -120,7 +121,8 @@ class CliodynamicDataProcessor:
             'CC.EST': {'default': 0.0},
             'VA.EST': {'default': 0.0},
             'RL.EST': {'default': 0.0},
-            'RQ.EST': {'default': 0.0}
+            'RQ.EST': {'default': 0.0},
+            'WHR.SCORE': {'default': 5.0} # Valor por defecto para la felicidad
         }
         self.gdelt_indicators = {
             'social_polarization': 'CIVIL_WAR_RISK',
@@ -142,6 +144,7 @@ class CliodynamicDataProcessor:
             'voice_accountability': 'anual',
             'rule_of_law': 'anual',
             'regulatory_quality': 'anual',
+            'happiness_score': 'anual',
             'social_polarization': 'semanal',
             'institutional_distrust': 'semanal',
             'suicide_rate': 'semanal',
@@ -222,7 +225,7 @@ class CliodynamicDataProcessor:
             'USA': 'US', 'CHN': 'CH', 'RUS': 'RS', 'BRA': 'BR', 'GBR': 'UK', 'FRA': 'FR', 'DEU': 'GM', 'JPN': 'JA',
             'IND': 'IN', 'CAN': 'CA', 'MEX': 'MX', 'AUS': 'AS', 'KOR': 'KR', 'ITA': 'IT', 'SAU': 'SA', 'TUR': 'TU',
             'EGY': 'EG', 'NGA': 'NI', 'PAK': 'PK', 'IDN': 'ID', 'VNM': 'VM', 'PHL': 'RP', 'ARG': 'AR', 'COL': 'CO',
-            'POL': 'PL', 'ESP': 'SP', 'IRN': 'IR', 'ZAF': 'SF', 'UKR': 'UP', 'THA': 'TH', 'VEN': 'VE', 'CHL': 'CI',
+            'POL': 'PL', 'ESP': 'SP', 'SP': 'SP', 'IRN': 'IR', 'ZAF': 'SF', 'UKR': 'UP', 'THA': 'TH', 'VEN': 'VE', 'CHL': 'CI',
             'PER': 'PE', 'MYS': 'MY', 'ROU': 'RO', 'SWE': 'SW', 'BEL': 'BE', 'NLD': 'NL', 'GRC': 'GR', 'CZE': 'EZ',
             'PRT': 'PO', 'DNK': 'DA', 'FIN': 'FI', 'NO': 'NO', 'SGP': 'SN', 'AUT': 'AU', 'CHE': 'SZ', 'IRL': 'EI',
             'NZL': 'NZ', 'HKG': 'HK', 'ISR': 'IS', 'ARE': 'AE', 'UKR': 'UP'
@@ -337,6 +340,28 @@ class CliodynamicDataProcessor:
                     else:
                         logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
         return historical_data
+
+    def _fetch_happiness_data(self, country_code: str) -> Optional[float]:
+        """
+        Simula la obtención de datos del World Happiness Report.
+        En una implementación real, esto podría parsear un CSV o usar una API.
+        """
+        # Datos de ejemplo basados en el World Happiness Report 2024
+        happiness_data = {
+            'FIN': 7.74, 'DNK': 7.58, 'ISL': 7.53, 'SWE': 7.34, 'ISR': 7.34, 'NLD': 7.32,
+            'NOR': 7.30, 'LUX': 7.12, 'CHE': 7.06, 'AUS': 7.05, 'NZL': 7.02, 'USA': 6.89,
+            'DEU': 6.78, 'GBR': 6.74, 'CAN': 6.64, 'IRL': 6.55, 'BEL': 6.54, 'CZE': 6.50,
+            'KOR': 6.05, 'MEX': 6.02, 'BRA': 6.00, 'CHL': 5.96, 'ARG': 5.86, 'JPN': 5.84,
+            'IDN': 5.58, 'RUS': 5.66, 'ESP': 6.42, 'ITA': 6.26, 'FRA': 6.60
+        }
+        
+        score = happiness_data.get(country_code)
+        if score:
+            logging.info(f"✅ Happiness score fetched for {country_code}: {score:.2f}")
+        else:
+            score = self.get_default_value('WHR.SCORE', country_code)
+            logging.warning(f"⚠️ No happiness data found for {country_code}. Using default: {score:.2f}")
+        return score
         
     def fetch_gdelt_indicator(self, country_code: str, indicator_name: str) -> float:
         """
@@ -402,7 +427,7 @@ class CliodynamicDataProcessor:
         
         # Procesar indicadores anuales y trimestrales
         for name, wb_code in self.indicators.items():
-            cache_key = f"{country_code}_{wb_code}"
+            cache_key = f"{country_code}_{name}"
             frequency = self.indicator_frequencies.get(name, 'anual')
             
             # Verificar si se debe refrescar el caché
@@ -416,42 +441,46 @@ class CliodynamicDataProcessor:
                 continue
             
             # Si el caché no es válido, buscar nuevos datos
-            historical_data = {}
-            wb_data = self.fetch_world_bank_data(country_code, wb_code, end_year - 5, end_year)
-            historical_data.update(wb_data)
-            
-            if name in self.imf_indicators:
-                imf_code = self.imf_indicators[name]
-                imf_data = self.fetch_imf_data(country_code, imf_code, end_year - 5, end_year)
-                historical_data.update(imf_data)
-            
             final_value = None
             most_recent_year = None
             
-            if historical_data:
-                df = pd.DataFrame(historical_data.items(), columns=['year', 'value']).sort_values('year').drop_duplicates(subset=['year'], keep='last')
+            if name == 'happiness_score':
+                final_value = self._fetch_happiness_data(country_code)
+                most_recent_year = end_year
+            else:
+                historical_data = {}
+                wb_data = self.fetch_world_bank_data(country_code, wb_code, end_year - 5, end_year)
+                historical_data.update(wb_data)
                 
-                most_recent_year = df['year'].max()
-                most_recent_value = df.loc[df['year'] == most_recent_year, 'value'].iloc[0]
+                if name in self.imf_indicators:
+                    imf_code = self.imf_indicators[name]
+                    imf_data = self.fetch_imf_data(country_code, imf_code, end_year - 5, end_year)
+                    historical_data.update(imf_data)
+                
+                if historical_data:
+                    df = pd.DataFrame(historical_data.items(), columns=['year', 'value']).sort_values('year').drop_duplicates(subset=['year'], keep='last')
+                    
+                    most_recent_year = df['year'].max()
+                    most_recent_value = df.loc[df['year'] == most_recent_year, 'value'].iloc[0]
 
-                if most_recent_year >= end_year - 1:
-                    final_value = most_recent_value
-                    logging.info(f"✅ Encontrado dato reciente para {name} ({country_code}) del año {most_recent_year}.")
-                elif len(df) >= 2:
-                    try:
-                        df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('Y')
-                        df = df.set_index('year')
-                        
-                        fit = SimpleExpSmoothing(df['value'], initialization_method="estimated_slinear").fit()
-                        forecast = fit.forecast(1).iloc[0]
-                        final_value = float(forecast)
-                        logging.info(f"🔄 Proyectando {name} para {country_code} de {most_recent_year} a {end_year} usando datos combinados: {round(final_value, 2)}")
-                    except Exception as e:
-                        logging.error(f"❌ Fallo al proyectar para {name} en {country_code}: {e}. Usando valor más reciente.")
+                    if most_recent_year >= end_year - 1:
                         final_value = most_recent_value
-                else:
-                    final_value = most_recent_value
-                    logging.warning(f"⚠️ No hay suficientes puntos de datos para {name} en {country_code} para una proyección. Usando el valor más reciente: {final_value}")
+                        logging.info(f"✅ Encontrado dato reciente para {name} ({country_code}) del año {most_recent_year}.")
+                    elif len(df) >= 2:
+                        try:
+                            df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('Y')
+                            df = df.set_index('year')
+                            
+                            fit = SimpleExpSmoothing(df['value'], initialization_method="estimated_slinear").fit()
+                            forecast = fit.forecast(1).iloc[0]
+                            final_value = float(forecast)
+                            logging.info(f"🔄 Proyectando {name} para {country_code} de {most_recent_year} a {end_year} usando datos combinados: {round(final_value, 2)}")
+                        except Exception as e:
+                            logging.error(f"❌ Fallo al proyectar para {name} en {country_code}: {e}. Usando valor más reciente.")
+                            final_value = most_recent_value
+                    else:
+                        final_value = most_recent_value
+                        logging.warning(f"⚠️ No hay suficientes puntos de datos para {name} en {country_code} para una proyección. Usando el valor más reciente: {final_value}")
             
             if final_value is None:
                 final_value = self.get_default_value(wb_code, country_code)
@@ -514,18 +543,23 @@ class CliodynamicDataProcessor:
     def calculate_turchin_instability(self, indicators: Dict, border_pressure: float = 0.0) -> Dict:
         """
         Calcula la inestabilidad según un modelo simplificado de Turchin,
-        incluyendo la presión fronteriza.
+        incluyendo la presión fronteriza y el factor de felicidad.
         """
         wealth_concentration = float(indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default')))
         youth_unemployment = float(indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default')))
         inflation_annual = float(indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default')))
         social_polarization = float(indicators.get('social_polarization', self.get_default_value('CIVIL_WAR_RISK', 'default')))
+        happiness_score = float(indicators.get('happiness_score', self.get_default_value('WHR.SCORE', 'default')))
 
         wealth_norm = (wealth_concentration - 0.1) / 0.8
         unemployment_norm = min(1.0, max(0.0, (youth_unemployment - 5.0) / 25.0))
         inflation_norm = min(1.0, max(0.0, (inflation_annual - 1.0) / 10.0))
         social_pol_norm = social_polarization
         
+        # El puntaje de felicidad se normaliza y actúa como un factor de reducción de la inestabilidad.
+        # Los puntajes de felicidad van de ~2.5 a ~7.8. Normalizamos a un rango de 0 a 1.
+        happiness_norm = min(1.0, max(0.0, (happiness_score - 2.5) / 5.3))
+
         instability_score = (
             (wealth_norm * 0.3) + 
             (unemployment_norm * 0.25) +
@@ -533,6 +567,12 @@ class CliodynamicDataProcessor:
             (social_pol_norm * 0.1) +
             (border_pressure * 0.2)
         )
+        
+        # Reducción de la inestabilidad por la felicidad
+        instability_score = instability_score - (happiness_norm * 0.15)
+        
+        # Asegurarse de que el puntaje no sea negativo
+        instability_score = max(0.0, instability_score)
         
         status = 'stable'
         if instability_score > 0.7:
@@ -543,7 +583,7 @@ class CliodynamicDataProcessor:
         return {
             "status": status,
             "valor": round(instability_score, 2),
-            "comment": "Calculado basado en indicadores internos y presión fronteriza."
+            "comment": "Calculado basado en indicadores internos, presión fronteriza y un factor de felicidad."
         }
 
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
