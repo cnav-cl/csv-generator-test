@@ -122,7 +122,7 @@ class CliodynamicDataProcessor:
             'VA.EST': {'default': 0.0},
             'RL.EST': {'default': 0.0},
             'RQ.EST': {'default': 0.0},
-            'WHR.SCORE': {'default': 5.0} # Valor por defecto para la felicidad
+            'WHR.SCORE': {'default': 5.0}
         }
         self.gdelt_indicators = {
             'social_polarization': 'CIVIL_WAR_RISK',
@@ -229,6 +229,20 @@ class CliodynamicDataProcessor:
             'PER': 'PE', 'MYS': 'MY', 'ROU': 'RO', 'SWE': 'SW', 'BEL': 'BE', 'NLD': 'NL', 'GRC': 'GR', 'CZE': 'EZ',
             'PRT': 'PO', 'DNK': 'DA', 'FIN': 'FI', 'NO': 'NO', 'SGP': 'SN', 'AUT': 'AU', 'CHE': 'SZ', 'IRL': 'EI',
             'NZL': 'NZ', 'HKG': 'HK', 'ISR': 'IS', 'ARE': 'AE', 'UKR': 'UP'
+        }
+
+        # Mapeo de códigos de país a nombres de país del World Happiness Report
+        self.whr_country_mapping = {
+            'USA': 'United States', 'CHN': 'China', 'IND': 'India', 'BRA': 'Brazil', 'RUS': 'Russia',
+            'JPN': 'Japan', 'DEU': 'Germany', 'GBR': 'United Kingdom', 'CAN': 'Canada', 'FRA': 'France',
+            'ITA': 'Italy', 'AUS': 'Australia', 'MEX': 'Mexico', 'KOR': 'South Korea', 'SAU': 'Saudi Arabia',
+            'TUR': 'Turkey', 'EGY': 'Egypt', 'NGA': 'Nigeria', 'PAK': 'Pakistan', 'IDN': 'Indonesia',
+            'VNM': 'Vietnam', 'PHL': 'Philippines', 'ARG': 'Argentina', 'COL': 'Colombia', 'POL': 'Poland',
+            'ESP': 'Spain', 'IRN': 'Iran', 'ZAF': 'South Africa', 'UKR': 'Ukraine', 'THA': 'Thailand',
+            'VEN': 'Venezuela', 'CHL': 'Chile', 'PER': 'Peru', 'MYS': 'Malaysia', 'ROU': 'Romania',
+            'SWE': 'Sweden', 'BEL': 'Belgium', 'NLD': 'Netherlands', 'GRC': 'Greece', 'CZE': 'Czech Republic',
+            'PRT': 'Portugal', 'DNK': 'Denmark', 'FIN': 'Finland', 'NOR': 'Norway', 'SGP': 'Singapore',
+            'AUT': 'Austria', 'CHE': 'Switzerland', 'IRL': 'Ireland', 'NZL': 'New Zealand', 'ISR': 'Israel'
         }
 
     def load_cache(self) -> Dict:
@@ -343,26 +357,28 @@ class CliodynamicDataProcessor:
 
     def _fetch_happiness_data(self, country_code: str) -> Optional[float]:
         """
-        Simula la obtención de datos del World Happiness Report.
-        En una implementación real, esto podría parsear un CSV o usar una API.
+        Obtiene los datos del World Happiness Report desde un archivo CSV público.
         """
-        # Datos de ejemplo basados en el World Happiness Report 2024
-        happiness_data = {
-            'FIN': 7.74, 'DNK': 7.58, 'ISL': 7.53, 'SWE': 7.34, 'ISR': 7.34, 'NLD': 7.32,
-            'NOR': 7.30, 'LUX': 7.12, 'CHE': 7.06, 'AUS': 7.05, 'NZL': 7.02, 'USA': 6.89,
-            'DEU': 6.78, 'GBR': 6.74, 'CAN': 6.64, 'IRL': 6.55, 'BEL': 6.54, 'CZE': 6.50,
-            'KOR': 6.05, 'MEX': 6.02, 'BRA': 6.00, 'CHL': 5.96, 'ARG': 5.86, 'JPN': 5.84,
-            'IDN': 5.58, 'RUS': 5.66, 'ESP': 6.42, 'ITA': 6.26, 'FRA': 6.60
-        }
+        csv_url = "https://raw.githubusercontent.com/datasets/world-happiness/main/data/2024.csv"
         
-        score = happiness_data.get(country_code)
-        if score:
-            logging.info(f"✅ Happiness score fetched for {country_code}: {score:.2f}")
-        else:
-            score = self.get_default_value('WHR.SCORE', country_code)
-            logging.warning(f"⚠️ No happiness data found for {country_code}. Using default: {score:.2f}")
-        return score
+        try:
+            df = pd.read_csv(csv_url)
+            df.columns = df.columns.str.strip()
+            
+            whr_country_name = self.whr_country_mapping.get(country_code)
+            if whr_country_name:
+                df_country = df[df['Country name'] == whr_country_name]
+                if not df_country.empty:
+                    score = df_country['Ladder score'].values[0]
+                    logging.info(f"✅ Happiness score fetched for {country_code} (real data): {score:.2f}")
+                    return float(score)
+            
+            logging.warning(f"⚠️ Country {country_code} not found in World Happiness Report data. Using default.")
+        except Exception as e:
+            logging.error(f"❌ Error fetching real happiness data: {e}. Using default value.")
         
+        return self.get_default_value('WHR.SCORE', country_code)
+
     def fetch_gdelt_indicator(self, country_code: str, indicator_name: str) -> float:
         """
         Calcula un indicador de GDELT basándose en la frecuencia de temas y eventos.
