@@ -196,8 +196,12 @@ class CliodynamicDataProcessor:
     def load_cache(self) -> Dict:
         """Loads cache from a JSON file."""
         if os.path.exists(self.cache_file):
-            with open(self.cache_file, 'r') as f:
-                return json.load(f)
+            try:
+                with open(self.cache_file, 'r') as f:
+                    return json.load(f)
+            except json.JSONDecodeError:
+                logging.error("Failed to decode cache JSON file. Starting with empty cache.")
+                return {}
         return {}
 
     def save_cache(self):
@@ -217,7 +221,7 @@ class CliodynamicDataProcessor:
     def get_default_value(self, indicator_code: str, country_code: str) -> float:
         default_key = self.get_default_key(indicator_code)
         if default_key:
-            return self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0))
+            return float(self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0)))
         return 0.0
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
@@ -250,19 +254,20 @@ class CliodynamicDataProcessor:
         for name, code in self.indicators.items():
             cache_key = f"{country_code}_{code}_{end_year}"
             
+            value_from_cache = None
             with self.cache_lock:
                 if cache_key in self.cache and self.cache[cache_key]['retrieved_on'] == str(datetime.now().date()):
-                    value = self.cache[cache_key]['value']
-                    # --- CORRECCIÓN CRÍTICA AÑADIDA AQUÍ ---
-                    if value is not None:
-                        indicators[name] = value
-                        logging.info(f"Using cached value for {name} ({country_code})")
-                        continue
-                    # --- FIN DE LA CORRECCIÓN ---
+                    value_from_cache = self.cache[cache_key]['value']
             
+            if value_from_cache is not None:
+                indicators[name] = value_from_cache
+                logging.info(f"Using cached value for {name} ({country_code})")
+                continue
+
+            # Si el valor de la caché es None o no existe, llamar a la API
             data = self.fetch_world_bank_data(country_code, code, end_year - 5, end_year)
             value = data.get(str(end_year), self.get_default_value(code, country_code))
-            indicators[name] = value if value is not None else self.get_default_value(code, country_code)
+            indicators[name] = float(value) if value is not None else self.get_default_value(code, country_code)
                 
             with self.cache_lock:
                 self.temp_cache[cache_key] = {
@@ -301,10 +306,10 @@ class CliodynamicDataProcessor:
         Calcula la inestabilidad según un modelo simplificado de Turchin,
         incluyendo la presión fronteriza.
         """
-        wealth_concentration = indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default'))
-        youth_unemployment = indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default'))
-        inflation_annual = indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default'))
-        social_polarization = indicators.get('social_polarization', self.get_default_value('CIVIL_WAR_RISK', 'default'))
+        wealth_concentration = float(indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default')))
+        youth_unemployment = float(indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default')))
+        inflation_annual = float(indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default')))
+        social_polarization = float(indicators.get('social_polarization', self.get_default_value('CIVIL_WAR_RISK', 'default')))
 
         wealth_norm = (wealth_concentration - 0.1) / 0.8
         unemployment_norm = min(1.0, max(0.0, (youth_unemployment - 5.0) / 25.0))
@@ -335,9 +340,10 @@ class CliodynamicDataProcessor:
         """
         Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        gov_eff = indicators.get('government_effectiveness', 0.0)
-        pol_stab = indicators.get('political_stability', 0.0)
-        rule_of_law = indicators.get('rule_of_law', 0.0)
+        # Validaciones robustas para asegurar que los valores sean flotantes
+        gov_eff = float(indicators.get('government_effectiveness', 0.0))
+        pol_stab = float(indicators.get('political_stability', 0.0))
+        rule_of_law = float(indicators.get('rule_of_law', 0.0))
 
         gov_eff_norm = (gov_eff + 2.5) / 5.0
         pol_stab_norm = (pol_stab + 2.5) / 5.0
