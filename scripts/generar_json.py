@@ -327,7 +327,7 @@ class CliodynamicDataProcessor:
                 elif len(df) >= 2:
                     try:
                         # Convertir el 'year' a un PeriodIndex anual para el modelo de series de tiempo
-                        df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('A')
+                        df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('Y')
                         df = df.set_index('year')
                         
                         fit = SimpleExpSmoothing(df['value'], initialization_method="estimated_slinear").fit()
