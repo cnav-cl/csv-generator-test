@@ -1,4 +1,4 @@
-name: Generate JSON Data
+name: Principal - Calcula indices y Genera JSON
 
 on:
   schedule:
