@@ -223,62 +223,63 @@ class CliodynamicDataProcessor:
             return float(self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0)))
         return 0.0
 
-    def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
-        """
-        Fetches World Bank data, iterating backward to find the most recent valid value
-        and then projects it to the current year if needed. Includes retries.
-        """
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        default_value = self.get_default_value(indicator_code, country_code)
-        historical_data = {}
+    # Dentro de la clase CliodynamicDataProcessor
+def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
+    """
+    Fetches World Bank data, iterating backward to find the most recent valid value
+    and then projects it to the current year if needed. Includes retries.
+    """
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    default_value = self.get_default_value(indicator_code, country_code)
+    historical_data = {}
 
-        for year in range(end_year, end_year - 5, -1):
-            api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={year}&format=json"
-            
-            # Nuevo bloque: Retries con espera exponencial
-            for i in range(3):
-                try:
-                    response = requests.get(api_url, headers=headers, timeout=10) # Añade un timeout de 10 segundos
-                    response.raise_for_status()
-                    data = response.json()
-                    
-                    if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
-                        historical_data[int(data[1][0]['date'])] = data[1][0]['value']
-                        break # Salir del bucle de reintentos
-                except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
-                    logging.warning(f"Attempt {i+1} failed for {indicator_code} in {country_code} for year {year}: {e}")
-                    if i < 2:
-                        time.sleep(2 ** i) # Espera 1, 2, 4 segundos
-                    else:
-                        logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
-            else:
-                continue # Continuar al siguiente año si los reintentos fallan
-            
-            # Si el bucle interno se rompe con éxito, romper el externo también
-            break
+    for year in range(end_year, end_year - 5, -1):
+        api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={year}&format=json"
+        
+        # Nuevo bloque: Retries con espera exponencial
+        for i in range(3):
+            try:
+                # Aumenta el timeout a 30 segundos
+                response = requests.get(api_url, headers=headers, timeout=30) 
+                response.raise_for_status()
+                data = response.json()
+                
+                if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
+                    historical_data[int(data[1][0]['date'])] = data[1][0]['value']
+                    break # Salir del bucle de reintentos
+            except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
+                logging.warning(f"Attempt {i+1} failed for {indicator_code} in {country_code} for year {year}: {e}")
+                if i < 2:
+                    time.sleep(2 ** i) # Espera 1, 2, 4 segundos
+                else:
+                    logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
+        else:
+            continue # Continuar al siguiente año si los reintentos fallan
+        
+        # Si el bucle interno se rompe con éxito, romper el externo también
+        break
 
-        # Si se encuentra data histórica, realizar nowcasting
-        if historical_data:
-            most_recent_year = max(historical_data.keys())
-            most_recent_value = historical_data[most_recent_year]
-            
-            if most_recent_year < end_year:
-                try:
-                    df = pd.DataFrame(list(historical_data.items()), columns=['year', 'value']).sort_values('year')
-                    fit = SimpleExpSmoothing(df['value']).fit()
-                    forecast = fit.forecast(1)[0]
-                    logging.info(f"Projecting {indicator_code} for {country_code} from {most_recent_year} to {end_year}: {round(forecast, 2)}")
-                    return {str(end_year): float(forecast)}
-                except Exception as e:
-                    logging.error(f"Failed to forecast for {indicator_code} in {country_code}: {e}. Using most recent value.")
-                    return {str(most_recent_year): float(most_recent_value)}
-            else:
+    # Si se encuentra data histórica, realizar nowcasting
+    if historical_data:
+        most_recent_year = max(historical_data.keys())
+        most_recent_value = historical_data[most_recent_year]
+        
+        if most_recent_year < end_year:
+            try:
+                df = pd.DataFrame(list(historical_data.items()), columns=['year', 'value']).sort_values('year')
+                fit = SimpleExpSmoothing(df['value']).fit()
+                forecast = fit.forecast(1)[0]
+                logging.info(f"Projecting {indicator_code} for {country_code} from {most_recent_year} to {end_year}: {round(forecast, 2)}")
+                return {str(end_year): float(forecast)}
+            except Exception as e:
+                logging.error(f"Failed to forecast for {indicator_code} in {country_code}: {e}. Using most recent value.")
                 return {str(most_recent_year): float(most_recent_value)}
+        else:
+            return {str(most_recent_year): float(most_recent_value)}
 
-        # Si no se encontró ninguna data histórica, usar el valor por defecto
-        logging.warning(f"No valid data found for {indicator_code} in {country_code} for the last 5 years. Using default value.")
-        return {str(end_year): float(default_value)}
-
+    # Si no se encontró ninguna data histórica, usar el valor por defecto
+    logging.warning(f"No valid data found for {indicator_code} in {country_code} for the last 5 years. Using default value.")
+    return {str(end_year): float(default_value)}
 
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
         """Calculates indicators, ensuring values are never None."""
