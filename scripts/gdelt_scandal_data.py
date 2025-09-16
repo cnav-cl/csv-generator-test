@@ -15,7 +15,9 @@ class GDELTScandalDataGenerator:
     """
     DATA_DIR = 'data'
     OUTPUT_FILE = os.path.join(DATA_DIR, 'data_gdelt.json')
-    GDELT_BASE_URL = "https://api.gdeltproject.org/api/v2/gkg/gkg"
+    
+    # URL de la API de GDELT - punto final corregido
+    GDELT_BASE_URL = "https://api.gdeltproject.org/api/v2/gkg/timeline"
 
     def __init__(self, country_codes: list):
         self.country_codes = country_codes
@@ -45,16 +47,15 @@ class GDELTScandalDataGenerator:
         Consulta la API de GDELT para obtener el número de eventos de escándalos.
         Selecciona las palabras clave basadas en el idioma del país.
         """
-        # Obtiene los términos del diccionario, si no existen, usa el default
         terms = self.search_terms.get(country_code, self.search_terms['default'])
-        
         query = f"sourcecountry:{country_code} ({' OR '.join(terms)})"
         
+        # Parámetros corregidos para la API de GDELT
         params = {
             'query': query,
             'mode': 'TimelineVol',
             'format': 'json',
-            'timelineseries': '1min',
+            'timebin': '15min', # '1min' es demasiado granular y puede ser inestable
             'startdatetime': self.start_date.strftime('%Y%m%d%H%M%S'),
             'enddatetime': self.end_date.strftime('%Y%m%d%H%M%S')
         }
@@ -65,6 +66,7 @@ class GDELTScandalDataGenerator:
             response.raise_for_status()
             data = response.json()
             
+            # GDELT retorna un diccionario con el total de artículos
             total_events = int(data.get('timeline').get('events', {}).get('total', 0))
             logging.info(f"✅ Eventos encontrados para {country_code}: {total_events}")
             return total_events
