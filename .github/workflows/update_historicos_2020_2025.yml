@@ -58,8 +58,8 @@ jobs:
       env:
         PYTHONPATH: ${{ github.workspace }}
         MAX_RETRIES: 5
-        REQUEST_TIMEOUT: 45
-      timeout-minutes: 90  # Timeout extendido para las APIs
+        REQUEST_TIMEOUT: 90
+      timeout-minutes: 120  # Timeout extendido para las APIs
 
     - name: Verificar archivo generado
       run: |
