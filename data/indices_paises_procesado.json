@@ -1,0 +1,1718 @@
+[
+  {
+    "country_code": "USA",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 41.8,
+      "youth_unemployment": 9.389,
+      "inflation_annual": 2.94952520485207,
+      "neet_ratio": 11.191,
+      "tertiary_education": 79.361930847168,
+      "government_effectiveness": 1.21720099449158,
+      "political_stability": 0.029424749314785,
+      "control_of_corruption": 1.12343263626099,
+      "voice_accountability": 0.877519071102142,
+      "rule_of_law": 1.3276778459549,
+      "regulatory_quality": 1.39373278617859,
+      "social_polarization": 0.8292265109781706,
+      "institutional_distrust": 0.2907138217411994,
+      "suicide_rate": 0.74576557377059,
+      "elite_overproduction": 0.7038571422152462,
+      "wealth_concentration": 0.47294548663247393
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.65,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.44,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.07
+  },
+  {
+    "country_code": "CHN",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 35.7,
+      "youth_unemployment": 15.226,
+      "inflation_annual": 0.218128938439177,
+      "neet_ratio": 10.0,
+      "tertiary_education": 74.823600769043,
+      "government_effectiveness": 0.679014027118683,
+      "political_stability": -0.513097047805786,
+      "control_of_corruption": -0.00537010468542576,
+      "voice_accountability": -1.50455415248871,
+      "rule_of_law": -0.0401299707591534,
+      "regulatory_quality": -0.356507807970047,
+      "social_polarization": 0.7578581697185877,
+      "institutional_distrust": 0.8099530254348988,
+      "suicide_rate": 0.16144785104166248,
+      "elite_overproduction": 0.6562154935038704,
+      "wealth_concentration": 0.5510506456314348
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.51,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.5,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.08
+  },
+  {
+    "country_code": "IND",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 25.5,
+      "youth_unemployment": 16.028,
+      "inflation_annual": 4.95303550973656,
+      "neet_ratio": 23.494,
+      "tertiary_education": 33.1165237426758,
+      "government_effectiveness": 0.47511014342308,
+      "political_stability": -0.635076940059662,
+      "control_of_corruption": -0.366014748811722,
+      "voice_accountability": 0.0944044888019562,
+      "rule_of_law": 0.188364565372467,
+      "regulatory_quality": -0.136969581246376,
+      "social_polarization": 0.36694574052344364,
+      "institutional_distrust": 0.2525909329566881,
+      "suicide_rate": 0.7716592551478466,
+      "elite_overproduction": 0.6118768723136777,
+      "wealth_concentration": 0.4811023408310421
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.49,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.32,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.03
+  },
+  {
+    "country_code": "BRA",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 51.6,
+      "youth_unemployment": 17.95,
+      "inflation_annual": 4.36746407652337,
+      "neet_ratio": 20.621,
+      "tertiary_education": 60.3906211853027,
+      "government_effectiveness": -0.546764314174652,
+      "political_stability": -0.408567786216736,
+      "control_of_corruption": -0.503643155097961,
+      "voice_accountability": 0.382853865623474,
+      "rule_of_law": -0.308802843093872,
+      "regulatory_quality": -0.29647821187973,
+      "social_polarization": 0.567010039304909,
+      "institutional_distrust": 0.36056642641532144,
+      "suicide_rate": 0.3780579399584484,
+      "elite_overproduction": 0.8466641132673879,
+      "wealth_concentration": 0.3078487897471055
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.41,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.49,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.04
+  },
+  {
+    "country_code": "RUS",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 35.1,
+      "youth_unemployment": 9.252,
+      "inflation_annual": 6.69445891957612,
+      "neet_ratio": 8.701,
+      "tertiary_education": 53.9151916503906,
+      "government_effectiveness": -0.712461888790131,
+      "political_stability": -1.13433384895325,
+      "control_of_corruption": -1.10467827320099,
+      "voice_accountability": -1.2855396270752,
+      "rule_of_law": -1.18764269351959,
+      "regulatory_quality": -1.12207186222076,
+      "social_polarization": 0.4524436595566116,
+      "institutional_distrust": 0.26955036305288016,
+      "suicide_rate": 0.698203597047808,
+      "elite_overproduction": 0.20288017554379972,
+      "wealth_concentration": 0.4649995184972159
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.3,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.26,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.03
+  },
+  {
+    "country_code": "JPN",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 32.3,
+      "youth_unemployment": 3.925,
+      "inflation_annual": 2.73853681635241,
+      "neet_ratio": 10.0,
+      "tertiary_education": 64.6288299560547,
+      "government_effectiveness": 1.63126504421234,
+      "political_stability": 0.951136231422424,
+      "control_of_corruption": 1.3956606388092,
+      "voice_accountability": 1.10550534725189,
+      "rule_of_law": 1.53553938865662,
+      "regulatory_quality": 1.46932590007782,
+      "social_polarization": 0.8935813483121142,
+      "institutional_distrust": 0.5631746001964714,
+      "suicide_rate": 0.8265927040356312,
+      "elite_overproduction": 0.8261053192659015,
+      "wealth_concentration": 0.8740488363369315
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.77,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.47,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "DEU",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 32.4,
+      "youth_unemployment": 6.7,
+      "inflation_annual": 2.2564981433876,
+      "neet_ratio": 7.456,
+      "tertiary_education": 77.3656997680664,
+      "government_effectiveness": 1.18541669845581,
+      "political_stability": 0.586989283561707,
+      "control_of_corruption": 1.66416621208191,
+      "voice_accountability": 1.46138572692871,
+      "rule_of_law": 1.55120778083801,
+      "regulatory_quality": 1.45697498321533,
+      "social_polarization": 0.6013335172031792,
+      "institutional_distrust": 0.6295544254503121,
+      "suicide_rate": 0.28453756866777324,
+      "elite_overproduction": 0.8073159434352724,
+      "wealth_concentration": 0.19832950211641187
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.7,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.45,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.06
+  },
+  {
+    "country_code": "GBR",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 32.4,
+      "youth_unemployment": 12.444,
+      "inflation_annual": 3.2715729463592,
+      "neet_ratio": 12.802,
+      "tertiary_education": 80.1511001586914,
+      "government_effectiveness": 1.16114270687103,
+      "political_stability": 0.514935672283173,
+      "control_of_corruption": 1.48091387748718,
+      "voice_accountability": 1.26162397861481,
+      "rule_of_law": 1.39836597442627,
+      "regulatory_quality": 1.53656673431396,
+      "social_polarization": 0.7818429718193756,
+      "institutional_distrust": 0.283510023014953,
+      "suicide_rate": 0.25398923809842655,
+      "elite_overproduction": 0.8886753349353084,
+      "wealth_concentration": 0.7300509372924447
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.69,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.46,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.09
+  },
+  {
+    "country_code": "CAN",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 29.9,
+      "youth_unemployment": 12.965,
+      "inflation_annual": 2.38158383281173,
+      "neet_ratio": 11.735,
+      "tertiary_education": 77.3137588500977,
+      "government_effectiveness": 1.51680326461792,
+      "political_stability": 0.822420537471771,
+      "control_of_corruption": 1.67150104045868,
+      "voice_accountability": 1.4796462059021,
+      "rule_of_law": 1.47300565242767,
+      "regulatory_quality": 1.64471042156219,
+      "social_polarization": 0.7145104085870359,
+      "institutional_distrust": 0.8405029742031161,
+      "suicide_rate": 0.7321113930569715,
+      "elite_overproduction": 0.7654462018289325,
+      "wealth_concentration": 0.685246678728202
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.75,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.5,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.09
+  },
+  {
+    "country_code": "FRA",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 31.2,
+      "youth_unemployment": 16.57,
+      "inflation_annual": 1.99904942291463,
+      "neet_ratio": 11.804,
+      "tertiary_education": 71.4203109741211,
+      "government_effectiveness": 1.14462625980377,
+      "political_stability": 0.343697965145111,
+      "control_of_corruption": 1.18482184410095,
+      "voice_accountability": 1.15460133552551,
+      "rule_of_law": 1.18057084083557,
+      "regulatory_quality": 1.15350544452667,
+      "social_polarization": 0.6889988411105653,
+      "institutional_distrust": 0.8595150332370832,
+      "suicide_rate": 0.5029036992644563,
+      "elite_overproduction": 0.6966414974196801,
+      "wealth_concentration": 0.6072678134978091
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.67,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.5,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.06
+  },
+  {
+    "country_code": "ITA",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 33.7,
+      "youth_unemployment": 21.801,
+      "inflation_annual": 0.982373023061417,
+      "neet_ratio": 12.672,
+      "tertiary_education": 73.8962097167969,
+      "government_effectiveness": 0.611036896705627,
+      "political_stability": 0.583320736885071,
+      "control_of_corruption": 0.550129175186157,
+      "voice_accountability": 1.11553084850311,
+      "rule_of_law": 0.390358686447144,
+      "regulatory_quality": 0.644031763076782,
+      "social_polarization": 0.5604914640910935,
+      "institutional_distrust": 0.494459445836289,
+      "suicide_rate": 0.8500402807364565,
+      "elite_overproduction": 0.58442977205412,
+      "wealth_concentration": 0.11804294176978276
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.61,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.42,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.05
+  },
+  {
+    "country_code": "AUS",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 9.471,
+      "inflation_annual": 3.1616142830575,
+      "neet_ratio": 7.913,
+      "tertiary_education": 106.240760803223,
+      "government_effectiveness": 1.58987963199615,
+      "political_stability": 0.91705721616745,
+      "control_of_corruption": 1.78120493888855,
+      "voice_accountability": 1.50660192966461,
+      "rule_of_law": 1.52318394184113,
+      "regulatory_quality": 1.94220554828644,
+      "social_polarization": 0.5897105910941567,
+      "institutional_distrust": 0.65580217667934,
+      "suicide_rate": 0.3695739847071443,
+      "elite_overproduction": 0.21898635850101728,
+      "wealth_concentration": 0.1560532346883192
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.76,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.35,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "MEX",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 43.5,
+      "youth_unemployment": 5.545,
+      "inflation_annual": 4.72225588452932,
+      "neet_ratio": 16.351,
+      "tertiary_education": 46.4061317443848,
+      "government_effectiveness": -0.198361441493034,
+      "political_stability": -0.630761027336121,
+      "control_of_corruption": -1.02057874202728,
+      "voice_accountability": -0.115086063742638,
+      "rule_of_law": -0.806393921375275,
+      "regulatory_quality": -0.171988308429718,
+      "social_polarization": 0.278725989018347,
+      "institutional_distrust": 0.22802677261727747,
+      "suicide_rate": 0.48150866447926777,
+      "elite_overproduction": 0.11502848025903277,
+      "wealth_concentration": 0.4265530519864551
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.4,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.22,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.03
+  },
+  {
+    "country_code": "KOR",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 32.9,
+      "youth_unemployment": 5.897,
+      "inflation_annual": 2.32174328643542,
+      "neet_ratio": 10.0,
+      "tertiary_education": 103.276039123535,
+      "government_effectiveness": 1.40480732917786,
+      "political_stability": 0.609834730625153,
+      "control_of_corruption": 0.894088566303253,
+      "voice_accountability": 0.8595951795578,
+      "rule_of_law": 1.24850225448608,
+      "regulatory_quality": 1.122523188591,
+      "social_polarization": 0.2547577563644138,
+      "institutional_distrust": 0.43139316366853053,
+      "suicide_rate": 0.3287824228540573,
+      "elite_overproduction": 0.23689974418895243,
+      "wealth_concentration": 0.4515562824849646
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.71,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.25,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.05
+  },
+  {
+    "country_code": "SAU",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 13.773,
+      "inflation_annual": 1.68792112375812,
+      "neet_ratio": 16.986,
+      "tertiary_education": 73.7492065429688,
+      "government_effectiveness": 0.796441078186035,
+      "political_stability": -0.213224530220032,
+      "control_of_corruption": 0.536042988300323,
+      "voice_accountability": -1.41669249534607,
+      "rule_of_law": 0.414570838212967,
+      "regulatory_quality": 0.517070889472961,
+      "social_polarization": 0.8620301172968095,
+      "institutional_distrust": 0.5131614490631559,
+      "suicide_rate": 0.6785478745197004,
+      "elite_overproduction": 0.5841022607790717,
+      "wealth_concentration": 0.6027918958965063
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.56,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.46,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "TUR",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 44.5,
+      "youth_unemployment": 15.567,
+      "inflation_annual": 58.5064507300343,
+      "neet_ratio": 22.421,
+      "tertiary_education": 127.577972412109,
+      "government_effectiveness": -0.247911587357521,
+      "political_stability": -1.01108038425446,
+      "control_of_corruption": -0.50248908996582,
+      "voice_accountability": -0.860576987266541,
+      "rule_of_law": -0.511972904205322,
+      "regulatory_quality": -0.229510217905045,
+      "social_polarization": 0.5479339948399174,
+      "institutional_distrust": 0.2913521751720518,
+      "suicide_rate": 0.16606032854290947,
+      "elite_overproduction": 0.5354456600953291,
+      "wealth_concentration": 0.7453010816468659
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.38,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.39,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.04
+  },
+  {
+    "country_code": "EGY",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 28.5,
+      "youth_unemployment": 18.71,
+      "inflation_annual": 28.2705899322083,
+      "neet_ratio": 24.567,
+      "tertiary_education": 39.3823089599609,
+      "government_effectiveness": -0.239516973495483,
+      "political_stability": -0.866764307022095,
+      "control_of_corruption": -0.747790396213531,
+      "voice_accountability": -1.37938976287842,
+      "rule_of_law": -0.184178426861763,
+      "regulatory_quality": -0.665456295013428,
+      "social_polarization": 0.24523037982144055,
+      "institutional_distrust": 0.27523343053115995,
+      "suicide_rate": 0.13411976897684383,
+      "elite_overproduction": 0.15569285271450994,
+      "wealth_concentration": 0.621140695965001
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.4,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.23,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.02
+  },
+  {
+    "country_code": "NGA",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 5.052,
+      "inflation_annual": 33.2420966545405,
+      "neet_ratio": 11.851,
+      "tertiary_education": 60.0,
+      "government_effectiveness": -0.847906708717346,
+      "political_stability": -1.7684383392334,
+      "control_of_corruption": -1.04097437858582,
+      "voice_accountability": -0.548258185386658,
+      "rule_of_law": -0.887689292430878,
+      "regulatory_quality": -0.936865150928497,
+      "social_polarization": 0.8911655984762498,
+      "institutional_distrust": 0.17569362079327205,
+      "suicide_rate": 0.5409836961958399,
+      "elite_overproduction": 0.37122158357674284,
+      "wealth_concentration": 0.6540957524717126
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.26,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.35,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "PAK",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 9.858,
+      "inflation_annual": 12.6325318530452,
+      "neet_ratio": 34.564,
+      "tertiary_education": 11.2206001281738,
+      "government_effectiveness": -0.577790379524231,
+      "political_stability": -1.93273079395294,
+      "control_of_corruption": -0.999357461929321,
+      "voice_accountability": -0.959140300750732,
+      "rule_of_law": -0.859885513782501,
+      "regulatory_quality": -0.901008188724518,
+      "social_polarization": 0.8663937248596415,
+      "institutional_distrust": 0.4846898549236862,
+      "suicide_rate": 0.284513251751105,
+      "elite_overproduction": 0.2896835234810059,
+      "wealth_concentration": 0.21691188807314543
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.26,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.39,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.08
+  },
+  {
+    "country_code": "IDN",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 34.9,
+      "youth_unemployment": 13.141,
+      "inflation_annual": 3.67013142377007,
+      "neet_ratio": 21.365,
+      "tertiary_education": 45.1352272033691,
+      "government_effectiveness": 0.58032637834549,
+      "political_stability": -0.404375314712524,
+      "control_of_corruption": -0.48687219619751,
+      "voice_accountability": 0.138982817530632,
+      "rule_of_law": -0.153604462742805,
+      "regulatory_quality": 0.301378756761551,
+      "social_polarization": 0.4283204541972939,
+      "institutional_distrust": 0.8807066498764328,
+      "suicide_rate": 0.14860349790207383,
+      "elite_overproduction": 0.6064918709835204,
+      "wealth_concentration": 0.5313749899981358
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.51,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.44,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.03
+  },
+  {
+    "country_code": "VNM",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 36.1,
+      "youth_unemployment": 6.821,
+      "inflation_annual": 3.62109273885843,
+      "neet_ratio": 10.818,
+      "tertiary_education": 42.2242393493652,
+      "government_effectiveness": 0.126466900110245,
+      "political_stability": -0.0363807342946529,
+      "control_of_corruption": -0.415814280509949,
+      "voice_accountability": -1.24185371398926,
+      "rule_of_law": -0.0854718759655952,
+      "regulatory_quality": -0.382607728242874,
+      "social_polarization": 0.7747779337404296,
+      "institutional_distrust": 0.3815713698374755,
+      "suicide_rate": 0.15203509561669729,
+      "elite_overproduction": 0.490543891963359,
+      "wealth_concentration": 0.46477632662234736
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.5,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.38,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.03
+  },
+  {
+    "country_code": "PHL",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 39.3,
+      "youth_unemployment": 6.587,
+      "inflation_annual": 3.21260487006347,
+      "neet_ratio": 12.756,
+      "tertiary_education": 45.2818946838379,
+      "government_effectiveness": 0.154091909527779,
+      "political_stability": -0.566050469875336,
+      "control_of_corruption": -0.537639975547791,
+      "voice_accountability": -0.0168379731476307,
+      "rule_of_law": -0.41814711689949,
+      "regulatory_quality": 0.16425496339798,
+      "social_polarization": 0.10580814468538105,
+      "institutional_distrust": 0.6783459746027151,
+      "suicide_rate": 0.7921381373407008,
+      "elite_overproduction": 0.1833891486029982,
+      "wealth_concentration": 0.10790026692968678
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.45,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.27,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "ARG",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 42.4,
+      "youth_unemployment": 21.188,
+      "inflation_annual": 3.0,
+      "neet_ratio": 15.028,
+      "tertiary_education": 107.047912597656,
+      "government_effectiveness": -0.377517342567444,
+      "political_stability": -0.127517908811569,
+      "control_of_corruption": -0.360883951187134,
+      "voice_accountability": 0.533921837806702,
+      "rule_of_law": -0.410826534032822,
+      "regulatory_quality": -0.482535392045975,
+      "social_polarization": 0.36770193683899943,
+      "institutional_distrust": 0.305929547652313,
+      "suicide_rate": 0.6015293786822273,
+      "elite_overproduction": 0.7424588755211482,
+      "wealth_concentration": 0.3468786263402537
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.44,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.41,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.04
+  },
+  {
+    "country_code": "COL",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 53.9,
+      "youth_unemployment": 19.761,
+      "inflation_annual": 6.60908593728228,
+      "neet_ratio": 23.251,
+      "tertiary_education": 59.2901382446289,
+      "government_effectiveness": -0.075877919793129,
+      "political_stability": -0.717313230037689,
+      "control_of_corruption": -0.309191286563873,
+      "voice_accountability": 0.205213740468025,
+      "rule_of_law": -0.458272933959961,
+      "regulatory_quality": 0.101034268736839,
+      "social_polarization": 0.18706933114276394,
+      "institutional_distrust": 0.7726937145218551,
+      "suicide_rate": 0.14921303282968434,
+      "elite_overproduction": 0.15582158229300022,
+      "wealth_concentration": 0.5376537152223434
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.42,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.36,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.05
+  },
+  {
+    "country_code": "POL",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 28.9,
+      "youth_unemployment": 9.875,
+      "inflation_annual": 3.79060897630203,
+      "neet_ratio": 10.236,
+      "tertiary_education": 75.2911071777344,
+      "government_effectiveness": 0.421437799930573,
+      "political_stability": 0.559584558010101,
+      "control_of_corruption": 0.565399944782257,
+      "voice_accountability": 0.626450896263123,
+      "rule_of_law": 0.458741247653961,
+      "regulatory_quality": 0.780193567276001,
+      "social_polarization": 0.6581080063716825,
+      "institutional_distrust": 0.1204089745009604,
+      "suicide_rate": 0.8887776616043375,
+      "elite_overproduction": 0.4406670681611756,
+      "wealth_concentration": 0.17617164760447884
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.6,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.31,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.04
+  },
+  {
+    "country_code": "ESP",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 33.6,
+      "youth_unemployment": 27.009,
+      "inflation_annual": 2.77417826534772,
+      "neet_ratio": 9.903,
+      "tertiary_education": 94.5131072998047,
+      "government_effectiveness": 0.752065539360046,
+      "political_stability": 0.287291556596756,
+      "control_of_corruption": 0.629368722438812,
+      "voice_accountability": 1.19472968578339,
+      "rule_of_law": 0.822885692119598,
+      "regulatory_quality": 0.693764328956604,
+      "social_polarization": 0.7053281819091292,
+      "institutional_distrust": 0.5021524623050068,
+      "suicide_rate": 0.5345682889672481,
+      "elite_overproduction": 0.8708119098336783,
+      "wealth_concentration": 0.5388930220608924
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.62,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.52,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.09
+  },
+  {
+    "country_code": "IRN",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 35.9,
+      "youth_unemployment": 22.754,
+      "inflation_annual": 32.455871402917,
+      "neet_ratio": 26.94,
+      "tertiary_education": 60.6945381164551,
+      "government_effectiveness": -1.02239692211151,
+      "political_stability": -1.6941009759903,
+      "control_of_corruption": -1.23189043998718,
+      "voice_accountability": -1.45358419418335,
+      "rule_of_law": -1.06095492839813,
+      "regulatory_quality": -1.68747353553772,
+      "social_polarization": 0.4852463334292948,
+      "institutional_distrust": 0.8775553560392757,
+      "suicide_rate": 0.710185232327181,
+      "elite_overproduction": 0.13962196693682793,
+      "wealth_concentration": 0.7603840273048988
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.24,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.38,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.02
+  },
+  {
+    "country_code": "ZAF",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 60.889,
+      "inflation_annual": 4.36115246518962,
+      "neet_ratio": 33.977,
+      "tertiary_education": 27.1743202209473,
+      "government_effectiveness": -0.256946682929993,
+      "political_stability": -0.665642023086548,
+      "control_of_corruption": -0.284670442342758,
+      "voice_accountability": 0.744892179965973,
+      "rule_of_law": 0.0862350836396217,
+      "regulatory_quality": -0.223697945475578,
+      "social_polarization": 0.44478359520152067,
+      "institutional_distrust": 0.4497230453577481,
+      "suicide_rate": 0.8984149685293205,
+      "elite_overproduction": 0.8132242350950584,
+      "wealth_concentration": 0.33612753834099207
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.43,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.55,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "UKR",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 25.6,
+      "youth_unemployment": 19.145,
+      "inflation_annual": 6.50198464669254,
+      "neet_ratio": 10.0,
+      "tertiary_education": 75.9079437255859,
+      "government_effectiveness": -0.357320100069046,
+      "political_stability": -1.42982339859009,
+      "control_of_corruption": -0.686146318912506,
+      "voice_accountability": -0.100543133914471,
+      "rule_of_law": -0.888317406177521,
+      "regulatory_quality": -0.266427397727966,
+      "social_polarization": 0.4752856348091087,
+      "institutional_distrust": 0.342826048291478,
+      "suicide_rate": 0.31795549340693374,
+      "elite_overproduction": 0.4036025308183886,
+      "wealth_concentration": 0.36190927107187487
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.32,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.32,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.03
+  },
+  {
+    "country_code": "THA",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 33.5,
+      "youth_unemployment": 4.311,
+      "inflation_annual": 1.36580540798037,
+      "neet_ratio": 12.463,
+      "tertiary_education": 46.1752090454102,
+      "government_effectiveness": 0.171705812215805,
+      "political_stability": -0.280302882194519,
+      "control_of_corruption": -0.489050775766373,
+      "voice_accountability": -0.450371354818344,
+      "rule_of_law": 0.244872748851776,
+      "regulatory_quality": 0.158257782459259,
+      "social_polarization": 0.4299892120126103,
+      "institutional_distrust": 0.5107461049475331,
+      "suicide_rate": 0.4423810221336981,
+      "elite_overproduction": 0.6487572932759972,
+      "wealth_concentration": 0.44213680057305405
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.5,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.37,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.02
+  },
+  {
+    "country_code": "VEN",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 10.554,
+      "inflation_annual": 3.0,
+      "neet_ratio": 37.13,
+      "tertiary_education": 60.0,
+      "government_effectiveness": -1.599200963974,
+      "political_stability": -1.18902802467346,
+      "control_of_corruption": -1.69000518321991,
+      "voice_accountability": -1.5313206911087,
+      "rule_of_law": -2.15153360366821,
+      "regulatory_quality": -2.02624750137329,
+      "social_polarization": 0.8646788504034852,
+      "institutional_distrust": 0.5598464089642924,
+      "suicide_rate": 0.7116377117926922,
+      "elite_overproduction": 0.25017075526019317,
+      "wealth_concentration": 0.6920828642018426
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.19,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.4,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.06
+  },
+  {
+    "country_code": "CHL",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 43.0,
+      "youth_unemployment": 22.3,
+      "inflation_annual": 4.29763891572524,
+      "neet_ratio": 15.321,
+      "tertiary_education": 99.3372802734375,
+      "government_effectiveness": 0.71755576133728,
+      "political_stability": 0.13615994155407,
+      "control_of_corruption": 0.968603789806366,
+      "voice_accountability": 1.01794922351837,
+      "rule_of_law": 0.625093758106232,
+      "regulatory_quality": 0.925731718540192,
+      "social_polarization": 0.1857264404448299,
+      "institutional_distrust": 0.4650760616361531,
+      "suicide_rate": 0.5538091861507171,
+      "elite_overproduction": 0.4338006217980729,
+      "wealth_concentration": 0.5899483789011031
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.59,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.35,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.04
+  },
+  {
+    "country_code": "PER",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.7,
+      "youth_unemployment": 8.814,
+      "inflation_annual": 2.00770739412712,
+      "neet_ratio": 22.779,
+      "tertiary_education": 60.0,
+      "government_effectiveness": -0.491872787475586,
+      "political_stability": -0.52178555727005,
+      "control_of_corruption": -0.721040904521942,
+      "voice_accountability": 0.060481496155262,
+      "rule_of_law": -0.538132667541504,
+      "regulatory_quality": 0.292205184698105,
+      "social_polarization": 0.20799924495091632,
+      "institutional_distrust": 0.18246770176096022,
+      "suicide_rate": 0.5809642822436375,
+      "elite_overproduction": 0.18888713653709735,
+      "wealth_concentration": 0.12346407787191707
+    },
+    "estabilidad_jiang": {
+      "status": "fragile",
+      "valor": 0.4,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.22,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.05
+  },
+  {
+    "country_code": "MYS",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.7,
+      "youth_unemployment": 12.279,
+      "inflation_annual": 1.834100204499,
+      "neet_ratio": 10.22,
+      "tertiary_education": 41.2618560791016,
+      "government_effectiveness": 0.875369668006897,
+      "political_stability": 0.16851469874382,
+      "control_of_corruption": 0.295621365308762,
+      "voice_accountability": 0.0876194089651108,
+      "rule_of_law": 0.571915447711945,
+      "regulatory_quality": 0.660894274711609,
+      "social_polarization": 0.614728789219658,
+      "institutional_distrust": 0.6025775341497186,
+      "suicide_rate": 0.816550537019782,
+      "elite_overproduction": 0.7279612345154848,
+      "wealth_concentration": 0.8721237673410123
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.61,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.47,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.07
+  },
+  {
+    "country_code": "ROU",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 32.3,
+      "youth_unemployment": 21.326,
+      "inflation_annual": 5.72140574354439,
+      "neet_ratio": 16.639,
+      "tertiary_education": 58.2390403747559,
+      "government_effectiveness": -0.0926659479737282,
+      "political_stability": 0.373643964529037,
+      "control_of_corruption": 0.0404953435063362,
+      "voice_accountability": 0.503180325031281,
+      "rule_of_law": 0.437425792217255,
+      "regulatory_quality": 0.318900614976883,
+      "social_polarization": 0.5017327755150957,
+      "institutional_distrust": 0.23217575553040773,
+      "suicide_rate": 0.7833853931774402,
+      "elite_overproduction": 0.33440866894952215,
+      "wealth_concentration": 0.3230331735682188
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.54,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.31,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.01
+  },
+  {
+    "country_code": "SWE",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 31.6,
+      "youth_unemployment": 23.766,
+      "inflation_annual": 2.83581658224034,
+      "neet_ratio": 5.118,
+      "tertiary_education": 83.8976135253906,
+      "government_effectiveness": 1.60138332843781,
+      "political_stability": 0.758365273475647,
+      "control_of_corruption": 2.0282461643219,
+      "voice_accountability": 1.57483160495758,
+      "rule_of_law": 1.60402345657349,
+      "regulatory_quality": 1.71801710128784,
+      "social_polarization": 0.2641847964258195,
+      "institutional_distrust": 0.11423663757563762,
+      "suicide_rate": 0.2323083535184358,
+      "elite_overproduction": 0.7626579179327981,
+      "wealth_concentration": 0.4710107159832848
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.75,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.36,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.09
+  },
+  {
+    "country_code": "BEL",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 26.4,
+      "youth_unemployment": 16.752,
+      "inflation_annual": 3.14349136500041,
+      "neet_ratio": 6.699,
+      "tertiary_education": 83.5736465454102,
+      "government_effectiveness": 1.03702199459076,
+      "political_stability": 0.403853088617325,
+      "control_of_corruption": 1.3368444442749,
+      "voice_accountability": 1.32572901248932,
+      "rule_of_law": 1.29537487030029,
+      "regulatory_quality": 1.16822481155396,
+      "social_polarization": 0.26959961902225793,
+      "institutional_distrust": 0.7146212030762713,
+      "suicide_rate": 0.8269276017790972,
+      "elite_overproduction": 0.5789823743743167,
+      "wealth_concentration": 0.24182305343946187
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.67,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.38,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.06
+  },
+  {
+    "country_code": "NLD",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 25.7,
+      "youth_unemployment": 8.17,
+      "inflation_annual": 3.34754304219953,
+      "neet_ratio": 3.332,
+      "tertiary_education": 89.3898620605469,
+      "government_effectiveness": 1.62553191184998,
+      "political_stability": 0.658281981945038,
+      "control_of_corruption": 1.86710047721863,
+      "voice_accountability": 1.55626440048218,
+      "rule_of_law": 1.64250445365906,
+      "regulatory_quality": 1.79096639156342,
+      "social_polarization": 0.1839657482274868,
+      "institutional_distrust": 0.6302702110384557,
+      "suicide_rate": 0.8880634078269103,
+      "elite_overproduction": 0.5526685677530607,
+      "wealth_concentration": 0.34149680764615975
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.75,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.33,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.08
+  },
+  {
+    "country_code": "GRC",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 33.4,
+      "youth_unemployment": 24.735,
+      "inflation_annual": 2.74149045788606,
+      "neet_ratio": 12.505,
+      "tertiary_education": 166.665649414062,
+      "government_effectiveness": 0.148003026843071,
+      "political_stability": 0.239744067192078,
+      "control_of_corruption": 0.0978469252586365,
+      "voice_accountability": 1.01216721534729,
+      "rule_of_law": 0.213158577680588,
+      "regulatory_quality": 0.578935325145721,
+      "social_polarization": 0.8648727845023333,
+      "institutional_distrust": 0.3658601561869592,
+      "suicide_rate": 0.8918126623389451,
+      "elite_overproduction": 0.7442570821747879,
+      "wealth_concentration": 0.5509725890954416
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.54,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.48,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.02
+  },
+  {
+    "country_code": "CZE",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 25.9,
+      "youth_unemployment": 8.384,
+      "inflation_annual": 2.43531202435314,
+      "neet_ratio": 7.034,
+      "tertiary_education": 70.8145904541016,
+      "government_effectiveness": 1.1140114068985,
+      "political_stability": 0.967361629009247,
+      "control_of_corruption": 0.767809867858887,
+      "voice_accountability": 1.07654917240143,
+      "rule_of_law": 1.14218366146088,
+      "regulatory_quality": 1.30448853969574,
+      "social_polarization": 0.24464896288986707,
+      "institutional_distrust": 0.6670302772779237,
+      "suicide_rate": 0.150933363385598,
+      "elite_overproduction": 0.5120448883081341,
+      "wealth_concentration": 0.8440034311153274
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.71,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.33,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.06
+  },
+  {
+    "country_code": "PRT",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 36.3,
+      "youth_unemployment": 21.198,
+      "inflation_annual": 2.41613187791884,
+      "neet_ratio": 7.855,
+      "tertiary_education": 75.557243347168,
+      "government_effectiveness": 0.987550020217896,
+      "political_stability": 0.712578117847443,
+      "control_of_corruption": 0.696312069892883,
+      "voice_accountability": 1.21128296852112,
+      "rule_of_law": 1.06766510009766,
+      "regulatory_quality": 0.755356550216675,
+      "social_polarization": 0.43887626712869665,
+      "institutional_distrust": 0.1016888832997303,
+      "suicide_rate": 0.6836461128713067,
+      "elite_overproduction": 0.4323738067796432,
+      "wealth_concentration": 0.2348484848134536
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.68,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.32,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.1
+  },
+  {
+    "country_code": "DNK",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 29.3,
+      "youth_unemployment": 12.121,
+      "inflation_annual": 1.37220049768918,
+      "neet_ratio": 7.115,
+      "tertiary_education": 84.5866088867188,
+      "government_effectiveness": 2.01564884185791,
+      "political_stability": 0.850847959518433,
+      "control_of_corruption": 2.37605309486389,
+      "voice_accountability": 1.66469931602478,
+      "rule_of_law": 1.90893590450287,
+      "regulatory_quality": 1.83951985836029,
+      "social_polarization": 0.1887154955220053,
+      "institutional_distrust": 0.2634462774048316,
+      "suicide_rate": 0.2820843528408339,
+      "elite_overproduction": 0.4676383123178207,
+      "wealth_concentration": 0.5159335466382372
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.81,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.27,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.09
+  },
+  {
+    "country_code": "FIN",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 27.9,
+      "youth_unemployment": 19.169,
+      "inflation_annual": 1.56568906231616,
+      "neet_ratio": 7.482,
+      "tertiary_education": 104.944221496582,
+      "government_effectiveness": 1.73860657215118,
+      "political_stability": 0.713986694812775,
+      "control_of_corruption": 2.22151660919189,
+      "voice_accountability": 1.63263607025146,
+      "rule_of_law": 1.96704590320587,
+      "regulatory_quality": 1.76514935493469,
+      "social_polarization": 0.35903444196253054,
+      "institutional_distrust": 0.33712822157589617,
+      "suicide_rate": 0.4124668499331139,
+      "elite_overproduction": 0.21874121666062143,
+      "wealth_concentration": 0.4224828281469786
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.77,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.27,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.08
+  },
+  {
+    "country_code": "NOR",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 26.9,
+      "youth_unemployment": 11.588,
+      "inflation_annual": 3.14530134431073,
+      "neet_ratio": 5.433,
+      "tertiary_education": 97.6419830322266,
+      "government_effectiveness": 1.79993534088135,
+      "political_stability": 0.892857432365417,
+      "control_of_corruption": 2.11352157592773,
+      "voice_accountability": 1.77725434303284,
+      "rule_of_law": 1.83398151397705,
+      "regulatory_quality": 1.59752345085144,
+      "social_polarization": 0.5083965503665908,
+      "institutional_distrust": 0.7398350502203994,
+      "suicide_rate": 0.23164043310040042,
+      "elite_overproduction": 0.560522378153553,
+      "wealth_concentration": 0.8380671590851237
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.79,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.4,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.06
+  },
+  {
+    "country_code": "SGP",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 7.815,
+      "inflation_annual": 2.38951123595017,
+      "neet_ratio": 6.757,
+      "tertiary_education": 98.0222320556641,
+      "government_effectiveness": 2.31747198104858,
+      "political_stability": 1.42420423030853,
+      "control_of_corruption": 2.04018402099609,
+      "voice_accountability": -0.0654119327664375,
+      "rule_of_law": 1.75317537784576,
+      "regulatory_quality": 2.30859136581421,
+      "social_polarization": 0.7734499524517457,
+      "institutional_distrust": 0.6510011184965332,
+      "suicide_rate": 0.6999298357685577,
+      "elite_overproduction": 0.39802268578629474,
+      "wealth_concentration": 0.2125865304503564
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.87,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.41,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "AUT",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 30.9,
+      "youth_unemployment": 11.694,
+      "inflation_annual": 2.93791574279383,
+      "neet_ratio": 13.118,
+      "tertiary_education": 94.5116882324219,
+      "government_effectiveness": 1.32668149471283,
+      "political_stability": 0.727989196777344,
+      "control_of_corruption": 1.1336532831192,
+      "voice_accountability": 1.41124832630157,
+      "rule_of_law": 1.74656546115875,
+      "regulatory_quality": 1.36136972904205,
+      "social_polarization": 0.8271032818423649,
+      "institutional_distrust": 0.752983939471326,
+      "suicide_rate": 0.48012531439426664,
+      "elite_overproduction": 0.16369479708912832,
+      "wealth_concentration": 0.45413308399561314
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.73,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.38,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.04
+  },
+  {
+    "country_code": "CHE",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 33.8,
+      "youth_unemployment": 7.94,
+      "inflation_annual": 1.06234041976595,
+      "neet_ratio": 6.611,
+      "tertiary_education": 74.1526794433594,
+      "government_effectiveness": 2.13492703437805,
+      "political_stability": 1.07144391536713,
+      "control_of_corruption": 2.02199912071228,
+      "voice_accountability": 1.66502690315247,
+      "rule_of_law": 1.76172566413879,
+      "regulatory_quality": 1.72938001155853,
+      "social_polarization": 0.7293304540648252,
+      "institutional_distrust": 0.618198034363596,
+      "suicide_rate": 0.4930921087782232,
+      "elite_overproduction": 0.6652521302287882,
+      "wealth_concentration": 0.4743804078528461
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.83,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.45,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.09
+  },
+  {
+    "country_code": "IRL",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 29.9,
+      "youth_unemployment": 11.103,
+      "inflation_annual": 2.11344999577317,
+      "neet_ratio": 6.445,
+      "tertiary_education": 76.6049499511719,
+      "government_effectiveness": 1.59114551544189,
+      "political_stability": 0.901911556720734,
+      "control_of_corruption": 1.5752888917923,
+      "voice_accountability": 1.48345601558685,
+      "rule_of_law": 1.63358354568481,
+      "regulatory_quality": 1.74936389923096,
+      "social_polarization": 0.33452012776010265,
+      "institutional_distrust": 0.848995802367379,
+      "suicide_rate": 0.7492117111155742,
+      "elite_overproduction": 0.6405956666754068,
+      "wealth_concentration": 0.7375823630321532
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.76,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "at_risk",
+      "valor": 0.42,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.09
+  },
+  {
+    "country_code": "NZL",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 14.279,
+      "inflation_annual": 2.92279782301957,
+      "neet_ratio": 11.67,
+      "tertiary_education": 77.0104675292969,
+      "government_effectiveness": 1.5299768447876,
+      "political_stability": 1.35856962203979,
+      "control_of_corruption": 2.08409547805786,
+      "voice_accountability": 1.68778347969055,
+      "rule_of_law": 1.70570802688599,
+      "regulatory_quality": 1.91022837162018,
+      "social_polarization": 0.8504753425731884,
+      "institutional_distrust": 0.12964924475459227,
+      "suicide_rate": 0.7775651377795253,
+      "elite_overproduction": 0.42837113464239374,
+      "wealth_concentration": 0.1433287997806045
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.8,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.37,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.0
+  },
+  {
+    "country_code": "HKG",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 8.384,
+      "inflation_annual": 1.72972119105914,
+      "neet_ratio": 5.942,
+      "tertiary_education": 100.461082458496,
+      "government_effectiveness": 1.55483567714691,
+      "political_stability": 0.673060536384583,
+      "control_of_corruption": 1.62514543533325,
+      "voice_accountability": -0.320146769285202,
+      "rule_of_law": 1.29364585876465,
+      "regulatory_quality": 1.60433173179626,
+      "social_polarization": 0.4707101628547721,
+      "institutional_distrust": 0.25568109457774113,
+      "suicide_rate": 0.5106078009533627,
+      "elite_overproduction": 0.2297508773201644,
+      "wealth_concentration": 0.22946651136763566
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.73,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.29,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.1
+  },
+  {
+    "country_code": "ISR",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 37.9,
+      "youth_unemployment": 6.075,
+      "inflation_annual": 3.05710605410043,
+      "neet_ratio": 14.935,
+      "tertiary_education": 57.6379203796387,
+      "government_effectiveness": 1.1453697681427,
+      "political_stability": -1.46484839916229,
+      "control_of_corruption": 0.829359412193298,
+      "voice_accountability": 0.64426463842392,
+      "rule_of_law": 0.783846437931061,
+      "regulatory_quality": 1.12179791927338,
+      "social_polarization": 0.851259325499257,
+      "institutional_distrust": 0.3038007880182201,
+      "suicide_rate": 0.7219247404671998,
+      "elite_overproduction": 0.2172614150076333,
+      "wealth_concentration": 0.4574234766055839
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.51,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.33,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.01
+  },
+  {
+    "country_code": "ARE",
+    "year": 2024,
+    "indicators": {
+      "gini_coefficient": 40.0,
+      "youth_unemployment": 6.434,
+      "inflation_annual": 1.66336510224894,
+      "neet_ratio": 8.917,
+      "tertiary_education": 61.3456115722656,
+      "government_effectiveness": 1.60428190231323,
+      "political_stability": 0.677530944347382,
+      "control_of_corruption": 1.07366383075714,
+      "voice_accountability": -1.0949410200119,
+      "rule_of_law": 0.881900131702423,
+      "regulatory_quality": 1.04239141941071,
+      "social_polarization": 0.6955251422227631,
+      "institutional_distrust": 0.15126135540344388,
+      "suicide_rate": 0.5132867941443788,
+      "elite_overproduction": 0.7573384081268869,
+      "wealth_concentration": 0.5131136927595036
+    },
+    "estabilidad_jiang": {
+      "status": "stable",
+      "valor": 0.72,
+      "comment": "Calculado basado en indicadores de gobernanza."
+    },
+    "inestabilidad_turchin": {
+      "status": "stable",
+      "valor": 0.4,
+      "comment": "Calculado basado en indicadores internos y presión fronteriza."
+    },
+    "border_pressure": 0.05
+  }
+]
