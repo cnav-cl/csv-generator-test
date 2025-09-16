@@ -59,7 +59,7 @@ def process_and_save_data():
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             
-        output_path = os.path.join(output_dir, 'cultural_data.json')
+        output_path = os.path.join(output_dir, 'data/cultural_data.json')
         df.to_json(output_path, orient='records', indent=4)
         print(f"Datos guardados exitosamente en {output_path}")
         
