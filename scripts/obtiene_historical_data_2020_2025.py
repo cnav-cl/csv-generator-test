@@ -64,6 +64,10 @@ class HistoricalDataGenerator:
             'NGDP_RPCH': {'default': 2.0}
         }
 
+        self.max_retries = int(os.getenv('MAX_RETRIES', 3)) # Valor por defecto 3
+        self.request_timeout = int(os.getenv('REQUEST_TIMEOUT', 30)) # Valor por defecto 30
+
+
     def get_default_key(self, indicator_code: str) -> Optional[str]:
         """Busca la clave de valor por defecto correcta para un código de indicador."""
         parts = indicator_code.split('.')
@@ -100,8 +104,8 @@ class HistoricalDataGenerator:
         headers = {'User-Agent': 'Mozilla/5.0'}
         
         for attempt in range(max_retries):
-            try:
-                response = requests.get(url, headers=headers, timeout=timeout)
+            try:                
+                response = requests.get(url, headers=headers, timeout=self.request_timeout)            
                 response.raise_for_status()
                 
                 # Verificar que la respuesta contiene datos válidos
