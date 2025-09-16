@@ -24,7 +24,7 @@ jobs:
           pip install requests pandas
 
       - name: Run data processing script
-        run: python generar_json.py # Cambia si el archivo está en otra ruta
+        run: python scripts/generar_json.py
 
       - name: Commit and push new JSON data
         run: |
