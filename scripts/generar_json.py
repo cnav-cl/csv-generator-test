@@ -488,7 +488,7 @@ class CliodynamicDataProcessor:
                             df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('Y')
                             df = df.set_index('year')
                             
-                            fit = SimpleExpSmoothing(df['value'], initialization_method="estimated_slinear").fit()
+                            fit = SimpleExpSmoothing(df['value'], initialization_method="heuristic").fit()
                             forecast = fit.forecast(1).iloc[0]
                             final_value = float(forecast)
                             logging.info(f"🔄 Proyectando {name} para {country_code} de {most_recent_year} a {end_year} usando datos combinados: {round(final_value, 2)}")
