@@ -64,8 +64,8 @@ class HistoricalDataGenerator:
             'NGDP_RPCH': {'default': 2.0}
         }
 
-        self.max_retries = int(os.getenv('MAX_RETRIES', 3)) # Valor por defecto 3
-        self.request_timeout = int(os.getenv('REQUEST_TIMEOUT', 30)) # Valor por defecto 30
+        self.max_retries = int(os.getenv('MAX_RETRIES', 5)) # Valor por defecto 3
+        self.request_timeout = int(os.getenv('REQUEST_TIMEOUT', 90)) # Valor por defecto 30
 
 
     def get_default_key(self, indicator_code: str) -> Optional[str]:
@@ -99,7 +99,7 @@ class HistoricalDataGenerator:
         except (ValueError, TypeError):
             return None
 
-    def fetch_with_retry(self, url: str, max_retries: int = 3, timeout: int = 30) -> Optional[dict]:
+    def fetch_with_retry(self, url: str, max_retries: int = 3, timeout: int = 90) -> Optional[dict]:
         """Realiza una petición HTTP con reintentos y manejo de timeouts."""
         headers = {'User-Agent': 'Mozilla/5.0'}
         
@@ -197,7 +197,7 @@ class HistoricalDataGenerator:
         
         return historical_data
 
-    def generate_historical_dataset(self, batch_size: int = 10):
+    def generate_historical_dataset(self, batch_size: int = 5):
         """Generate historical dataset for the last 5 years with comprehensive error handling"""
         current_year = 2025
         start_year = current_year - 5
@@ -291,4 +291,4 @@ class HistoricalDataGenerator:
 
 if __name__ == "__main__":
     generator = HistoricalDataGenerator()
-    generator.generate_historical_dataset(batch_size=8)  # Tamaño de lote reducido para evitar timeouts
+    generator.generate_historical_dataset(batch_size=5)  # Tamaño de lote reducido para evitar timeouts
