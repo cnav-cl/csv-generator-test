@@ -102,7 +102,11 @@ class CliodynamicDataProcessor:
             'voice_accountability': 'VA.EST',
             'rule_of_law': 'RL.EST',
             'regulatory_quality': 'RQ.EST',
-            'happiness_score': 'WHR.SCORE'
+            'happiness_score': 'WHR.SCORE',
+            # Nuevos indicadores de cultural
+            'traditional_vs_secular': 'CULTURAL_TRADITIONAL_SECULAR',
+            'survival_vs_self_expression': 'CULTURAL_SURVIVAL_SELFEXPRESSION',
+            'social_cohesion_index': 'CULTURAL_SOCIAL_COHESION'
         }
         self.imf_indicators = {
             'inflation_annual': 'PCPI_A_SA_X_PCT',
@@ -122,7 +126,10 @@ class CliodynamicDataProcessor:
             'VA.EST': {'default': 0.0},
             'RL.EST': {'default': 0.0},
             'RQ.EST': {'default': 0.0},
-            'WHR.SCORE': {'default': 5.0}
+            'WHR.SCORE': {'default': 5.0},
+            'CULTURAL_TRADITIONAL_SECULAR': {'default': 0.0},
+            'CULTURAL_SURVIVAL_SELFEXPRESSION': {'default': 0.0},
+            'CULTURAL_SOCIAL_COHESION': {'default': 0.5}
         }
         self.gdelt_indicators = {
             'social_polarization': 'CIVIL_WAR_RISK',
@@ -150,9 +157,13 @@ class CliodynamicDataProcessor:
             'suicide_rate': 'semanal',
             'elite_overproduction': 'semanal',
             'wealth_concentration': 'semanal',
+            'traditional_vs_secular': 'estatico',
+            'survival_vs_self_expression': 'estatico',
+            'social_cohesion_index': 'estatico'
         }
         
         self.current_year = datetime.now().year
+        self._load_cultural_data()
         
         self.border_mapping = {
             'USA': ['CAN', 'MEX'],
@@ -244,6 +255,19 @@ class CliodynamicDataProcessor:
             'PRT': 'Portugal', 'DNK': 'Denmark', 'FIN': 'Finland', 'NOR': 'Norway', 'SGP': 'Singapore',
             'AUT': 'Austria', 'CHE': 'Switzerland', 'IRL': 'Ireland', 'NZL': 'New Zealand', 'ISR': 'Israel'
         }
+
+    def _load_cultural_data(self, file_path='data/data_worldsurvey_valores.json') -> None:
+        """Carga los datos culturales desde un archivo JSON local."""
+        try:
+            with open(file_path, 'r') as f:
+                self.cultural_data = json.load(f).get('countries', {})
+            logging.info(f"✅ Datos culturales cargados correctamente desde {file_path}")
+        except FileNotFoundError:
+            logging.error(f"❌ Error: El archivo {file_path} no fue encontrado.")
+            self.cultural_data = {}
+        except json.JSONDecodeError:
+            logging.error(f"❌ Error: El archivo {file_path} no es un JSON válido.")
+            self.cultural_data = {}
 
     def load_cache(self) -> Dict:
         """Loads cache from a JSON file."""
@@ -357,26 +381,30 @@ class CliodynamicDataProcessor:
 
     def _fetch_happiness_data(self, country_code: str) -> float:
         """
-        Obtiene los datos del World Happiness Report desde un archivo CSV público.
+        Obtiene los datos del World Happiness Report desde un archivo CSV público, con reintentos.
         """
         csv_url = "https://raw.githubusercontent.com/datasets/world-happiness/main/data/2024.csv"
         
-        try:
-            df = pd.read_csv(csv_url)
-            df.columns = df.columns.str.strip()
-            
-            whr_country_name = self.whr_country_mapping.get(country_code)
-            if whr_country_name:
-                df_country = df[df['Country name'] == whr_country_name]
-                if not df_country.empty:
-                    score = df_country['Ladder score'].values[0]
-                    logging.info(f"✅ Happiness score fetched for {country_code} (real data): {score:.2f}")
-                    return float(score)
-            
-            logging.warning(f"⚠️ Country {country_code} not found in World Happiness Report data. Using default.")
-        except Exception as e:
-            logging.error(f"❌ Error fetching real happiness data: {e}. Using default value.")
-        
+        for i in range(3):
+            try:
+                df = pd.read_csv(csv_url)
+                df.columns = df.columns.str.strip()
+                
+                whr_country_name = self.whr_country_mapping.get(country_code)
+                if whr_country_name:
+                    df_country = df[df['Country name'] == whr_country_name]
+                    if not df_country.empty:
+                        score = df_country['Ladder score'].values[0]
+                        logging.info(f"✅ Happiness score fetched for {country_code} (real data): {score:.2f}")
+                        return float(score)
+                
+                logging.warning(f"⚠️ Country {country_code} not found in World Happiness Report data. Using default.")
+                break 
+            except Exception as e:
+                logging.error(f"❌ Attempt {i+1} failed to fetch real happiness data: {e}. Using default value if max retries reached.")
+                if i < 2:
+                    time.sleep(2 ** i)
+
         return self.get_default_value('WHR.SCORE', country_code)
 
     def fetch_gdelt_indicator(self, country_code: str, indicator_name: str) -> float:
@@ -401,40 +429,45 @@ class CliodynamicDataProcessor:
         if not query_string:
             logging.warning(f"❌ GDELT query not found for indicator: {indicator_name}. Using default.")
             return random.uniform(0.1, 0.9)
-            
-        try:
-            # Petición para obtener datos de los últimos 30 días con granularidad mensual
-            api_url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode=TimelineVol&country={country_gdelt_code}&format=json&timespan=30days&timezoom=yes"
-            response = requests.get(api_url, timeout=10)
-            response.raise_for_status()
-            time.sleep(1) # Añadido para evitar el error 429
-            data = response.json()
-            
-            timeline = data.get('timeline', [])
-            if timeline:
-                # Tomar los últimos 5 puntos de datos para calcular un promedio y suavizar el ruido diario
-                last_values = [d.get('value', 0) for d in timeline[-5:]]
+        
+        # Se añaden reintentos para la petición GDELT
+        for i in range(3):
+            try:
+                # Petición para obtener datos de los últimos 30 días con granularidad mensual
+                api_url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode=TimelineVol&country={country_gdelt_code}&format=json&timespan=30days&timezoom=yes"
+                response = requests.get(api_url, timeout=10)
+                response.raise_for_status()
+                time.sleep(1) # Añadido para evitar el error 429
+                data = response.json()
                 
-                if last_values:
-                    recent_average = sum(last_values) / len(last_values)
-                else:
-                    recent_average = 0
-                
-                # Normalizar el valor promedio a un rango de 0.0 a 1.0. Los valores aquí son una estimación
-                # y deben ajustarse con la calibración. Se usan valores más pequeños que el resumen anual.
-                if 'social_polarization' in indicator_name or 'distrust' in indicator_name:
-                    normalized_value = min(1.0, recent_average / 50.0)
-                elif 'elite_overproduction' in indicator_name or 'wealth_concentration' in indicator_name:
-                    normalized_value = min(1.0, recent_average / 100.0)
-                else:
-                    normalized_value = min(1.0, recent_average / 10.0)
+                timeline = data.get('timeline', [])
+                if timeline:
+                    # Tomar los últimos 5 puntos de datos para calcular un promedio y suavizar el ruido diario
+                    last_values = [d.get('value', 0) for d in timeline[-5:]]
                     
-                logging.info(f"✅ GDELT data fetched for {indicator_name} in {country_code}: {normalized_value:.2f} (from a 30-day average)")
-                return normalized_value
-                
-        except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
-            logging.error(f"❌ Error fetching GDELT data for {indicator_name} in {country_code}: {e}")
-            
+                    if last_values:
+                        recent_average = sum(last_values) / len(last_values)
+                    else:
+                        recent_average = 0
+                    
+                    # Normalizar el valor promedio a un rango de 0.0 a 1.0. Los valores aquí son una estimación
+                    # y deben ajustarse con la calibración. Se usan valores más pequeños que el resumen anual.
+                    if 'social_polarization' in indicator_name or 'distrust' in indicator_name:
+                        normalized_value = min(1.0, recent_average / 50.0)
+                    elif 'elite_overproduction' in indicator_name or 'wealth_concentration' in indicator_name:
+                        normalized_value = min(1.0, recent_average / 100.0)
+                    else:
+                        normalized_value = min(1.0, recent_average / 10.0)
+                        
+                    logging.info(f"✅ GDELT data fetched for {indicator_name} in {country_code}: {normalized_value:.2f} (from a 30-day average)")
+                    return normalized_value
+                    
+            except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
+                logging.error(f"❌ Attempt {i+1} failed for GDELT data for {indicator_name} in {country_code}: {e}")
+                if i < 2:
+                    time.sleep(2 ** i)
+        
+        logging.error(f"❌ Max retries reached for {indicator_name} in {country_code}. Using default.")
         return random.uniform(0.1, 0.9)
 
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
@@ -442,8 +475,24 @@ class CliodynamicDataProcessor:
         indicators = {}
         end_year = self.current_year
         
+        # Procesar indicadores estáticos (culturales)
+        cultural_data = self.cultural_data.get(country_code, {})
+        if cultural_data:
+            indicators['traditional_vs_secular'] = cultural_data.get('traditional_vs_secular', self.get_default_value('CULTURAL_TRADITIONAL_SECULAR', country_code))
+            indicators['survival_vs_self_expression'] = cultural_data.get('survival_vs_self_expression', self.get_default_value('CULTURAL_SURVIVAL_SELFEXPRESSION', country_code))
+            indicators['social_cohesion_index'] = cultural_data.get('social_cohesion_index', self.get_default_value('CULTURAL_SOCIAL_COHESION', country_code))
+            logging.info(f"✅ Datos culturales cargados para {country_code} desde el archivo JSON local.")
+        else:
+            logging.warning(f"⚠️ No se encontraron datos culturales para {country_code}. Usando valores por defecto.")
+            indicators['traditional_vs_secular'] = self.get_default_value('CULTURAL_TRADITIONAL_SECULAR', country_code)
+            indicators['survival_vs_self_expression'] = self.get_default_value('CULTURAL_SURVIVAL_SELFEXPRESSION', country_code)
+            indicators['social_cohesion_index'] = self.get_default_value('CULTURAL_SOCIAL_COHESION', country_code)
+        
         # Procesar indicadores anuales y trimestrales
         for name, wb_code in self.indicators.items():
+            if name in ['traditional_vs_secular', 'survival_vs_self_expression', 'social_cohesion_index']:
+                continue
+                
             cache_key = f"{country_code}_{name}"
             frequency = self.indicator_frequencies.get(name, 'anual')
             
@@ -560,18 +609,24 @@ class CliodynamicDataProcessor:
     def calculate_turchin_instability(self, indicators: Dict, border_pressure: float = 0.0) -> Dict:
         """
         Calcula la inestabilidad según un modelo simplificado de Turchin,
-        incluyendo la presión fronteriza y el factor de felicidad.
+        incluyendo la presión fronteriza y el factor de felicidad y auto-expresión.
         """
         wealth_concentration = float(indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default')))
         youth_unemployment = float(indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default')))
         inflation_annual = float(indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default')))
         social_polarization = float(indicators.get('social_polarization', self.get_default_value('CIVIL_WAR_RISK', 'default')))
         happiness_score = float(indicators.get('happiness_score', self.get_default_value('WHR.SCORE', 'default')))
+        
+        # Nuevo factor de auto-expresión
+        self_expression_raw = float(indicators.get('survival_vs_self_expression', self.get_default_value('CULTURAL_SURVIVAL_SELFEXPRESSION', 'default')))
 
         wealth_norm = (wealth_concentration - 0.1) / 0.8
         unemployment_norm = min(1.0, max(0.0, (youth_unemployment - 5.0) / 25.0))
         inflation_norm = min(1.0, max(0.0, (inflation_annual - 1.0) / 10.0))
         social_pol_norm = social_polarization
+        
+        # Normalizar el puntaje cultural de -2 a 2 a un rango de 0 a 1
+        self_expression_norm = (self_expression_raw + 2) / 4
         
         # El puntaje de felicidad se normaliza y actúa como un factor de reducción de la inestabilidad.
         # Los puntajes de felicidad van de ~2.5 a ~7.8. Normalizamos a un rango de 0 a 1.
@@ -585,8 +640,8 @@ class CliodynamicDataProcessor:
             (border_pressure * 0.2)
         )
         
-        # Reducción de la inestabilidad por la felicidad
-        instability_score = instability_score - (happiness_norm * 0.15)
+        # Reducción de la inestabilidad por la felicidad y la auto-expresión cultural
+        instability_score = instability_score - (happiness_norm * 0.1) - (self_expression_norm * 0.1)
         
         # Asegurarse de que el puntaje no sea negativo
         instability_score = max(0.0, instability_score)
@@ -600,25 +655,30 @@ class CliodynamicDataProcessor:
         return {
             "status": status,
             "valor": round(instability_score, 2),
-            "comment": "Calculado basado en indicadores internos, presión fronteriza y un factor de felicidad."
+            "comment": "Calculado basado en indicadores internos, presión fronteriza, felicidad y auto-expresión cultural."
         }
 
     def calculate_jiang_stability(self, indicators: Dict) -> Dict:
         """
-        Calcula la estabilidad institucional según un modelo simplificado de Jiang.
+        Calcula la estabilidad institucional según un modelo simplificado de Jiang,
+        incluyendo la cohesión social.
         """
         gov_eff = float(indicators.get('government_effectiveness', self.get_default_value('GE.EST', 'default')))
         pol_stab = float(indicators.get('political_stability', self.get_default_value('PV.EST', 'default')))
         rule_of_law = float(indicators.get('rule_of_law', self.get_default_value('RL.EST', 'default')))
+        
+        # Nuevo factor de cohesión social
+        social_cohesion_index = float(indicators.get('social_cohesion_index', self.get_default_value('CULTURAL_SOCIAL_COHESION', 'default')))
 
         gov_eff_norm = (gov_eff + 2.5) / 5.0
         pol_stab_norm = (pol_stab + 2.5) / 5.0
         rule_of_law_norm = (rule_of_law + 2.5) / 5.0
 
         stability_score = (
-            (gov_eff_norm * 0.4) +
-            (pol_stab_norm * 0.4) +
-            (rule_of_law_norm * 0.2)
+            (gov_eff_norm * 0.3) +
+            (pol_stab_norm * 0.3) +
+            (rule_of_law_norm * 0.2) +
+            (social_cohesion_index * 0.2)
         )
         
         status = 'stable'
@@ -628,7 +688,7 @@ class CliodynamicDataProcessor:
         return {
             "status": status,
             "valor": round(stability_score, 2),
-            "comment": "Calculado basado en indicadores de gobernanza."
+            "comment": "Calculado basado en indicadores de gobernanza y cohesión social."
         }
 
     def process_country_initial(self, country_code: str, year: int) -> Optional[Dict]:
