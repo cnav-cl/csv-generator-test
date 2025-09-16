@@ -21,16 +21,16 @@ jobs:
     
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10']  # Solo una versión para evitar problemas de concurrencia
     
     steps:
     - name: Checkout código
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Configurar Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -75,7 +75,7 @@ jobs:
           ls -la data/historical_data_2020_2025.json
           echo "Tamaño del archivo: $(du -h data/historical_data_2020_2025.json | cut -f1)"
           echo "Primeras líneas del archivo:"
-          head -n 10 data/historical_data_2020_2025.json
+          head -n 5 data/historical_data_2020_2025.json
         else
           echo "❌ Error: No se generó el archivo histórico"
           exit 1
@@ -97,14 +97,14 @@ jobs:
         "
 
     - name: Subir artefacto con datos históricos
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: historical-data-2020-2025-${{ matrix.python-version }}
+        name: historical-data-2020-2025
         path: data/historical_data_2020_2025.json
         retention-days: 7
 
     - name: Commit y push de datos actualizados
-      if: github.ref == 'refs/heads/main' && matrix.python-version == '3.10'
+      if: github.ref == 'refs/heads/main'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
@@ -124,5 +124,5 @@ jobs:
     - name: Notificar fallo
       if: failure()
       run: |
-        echo "❌ El proceso falló en Python ${{ matrix.python-version }}"
+        echo "❌ El proceso falló"
         exit 1
