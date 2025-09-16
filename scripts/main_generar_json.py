@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class CliodynamicDataProcessor:
     DATA_DIR = 'data'
 
-    def __init__(self, cache_file: str = os.path.join(DATA_DIR, 'cache.json')):
+    def __init__(self, cache_file: str = os.path.join('data', 'cache.json')):
         self.cache_file = cache_file
         self.gdelt_country_mapping = {
             'USA': ['United States', 'USA', 'US'],
@@ -286,7 +286,7 @@ class CliodynamicDataProcessor:
             return total_pressure / len(borders)
         return 0.0
 
-    def save_to_json(self, data: List[Dict], filename: str = 'data/indices_paises_procesado.json'):
+    def save_to_json(self, data: List[Dict], filename: str = 'processed_data.json'):
         """Guarda los datos procesados en un archivo JSON."""
         file_path = os.path.join(self.DATA_DIR, filename)
         with open(file_path, 'w', encoding='utf-8') as f:
@@ -325,7 +325,8 @@ class CliodynamicDataProcessor:
                 final_results.append(result)
                 logging.info(f"Inestabilidad final para {country_code} recalculada con presi\u00f3n fronteriza: {final_instability['valor']}")
         
-        self.save_to_json(final_results)
+        # La línea del error: aquí se llama a la función de guardado
+        self.save_to_json(final_results, 'indices_paises_procesado.json')
         logging.info(f"Proceso principal completado en {time.time() - start_time:.2f} segundos")
 
 if __name__ == "__main__":
