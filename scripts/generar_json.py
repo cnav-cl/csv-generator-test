@@ -103,6 +103,12 @@ class CliodynamicDataProcessor:
             'rule_of_law': 'RL.EST',
             'regulatory_quality': 'RQ.EST'
         }
+        self.imf_indicators = {
+            'inflation_annual': 'PCPI_A_SA_X_PCT', # FMI: Consumer Price Index, Annual Percentage Change
+            'gdp_per_capita': 'NGDPDPC_SA_XDC', # FMI: GDP per Capita
+            'unemployment_rate': 'LUR_SA_X_PT', # FMI: Unemployment Rate
+            'real_gdp_growth': 'NGDP_RPCH' # FMI: Real GDP Growth
+        }
         self.default_indicator_values = {
             'GINI': {'USA': 40.0, 'default': 40.0},
             '1524.ZS': {'default': 20.0},
@@ -222,6 +228,36 @@ class CliodynamicDataProcessor:
         if default_key:
             return float(self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0)))
         return 0.0
+    
+    def fetch_imf_data(self, country_code: str, indicator_code: str, end_year: int) -> Optional[float]:
+        """
+        Fetches the most recent data from the IMF API for a given indicator.
+        """
+        api_url = f"https://www.imf.org/external/datamapper/api/v1/{indicator_code}/{country_code}?periods={end_year}"
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        
+        for i in range(3):
+            try:
+                response = requests.get(api_url, headers=headers, timeout=30)
+                response.raise_for_status()
+                data = response.json()
+                
+                # Acceso a los datos en el formato del FMI
+                series_data = data.get('values', {}).get(indicator_code, {}).get(country_code, {})
+                if series_data:
+                    # El API del FMI puede retornar datos para el año actual o un año proyectado.
+                    # Tomamos el valor más reciente disponible.
+                    most_recent_year = max(series_data.keys(), default=None)
+                    if most_recent_year and series_data[most_recent_year] is not None:
+                        logging.info(f"Found data for {indicator_code} in {country_code} from IMF for year {most_recent_year}.")
+                        return float(series_data[most_recent_year])
+            except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
+                logging.warning(f"Attempt {i+1} failed for {indicator_code} in {country_code} from IMF: {e}")
+                if i < 2:
+                    time.sleep(2 ** i)
+                else:
+                    logging.warning(f"Max retries reached for {indicator_code} in {country_code} from IMF. Skipping IMF fetch.")
+        return None
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
         """
@@ -299,12 +335,15 @@ class CliodynamicDataProcessor:
                 logging.info(f"Using cached value for {name} ({country_code})")
                 continue
 
-            # Si el valor de la caché es None o no existe, llamar a la API
+            # Primero, intenta con el Banco Mundial
             data = self.fetch_world_bank_data(country_code, code, end_year - 5, end_year)
-            
-            # Obtener el valor del diccionario, tomando el primer valor si existe
             value = next(iter(data.values()), None)
             
+            # Si el Banco Mundial falla, intenta con el FMI
+            if value is None and name in self.imf_indicators:
+                imf_code = self.imf_indicators[name]
+                value = self.fetch_imf_data(country_code, imf_code, end_year)
+
             # Asegurar que el valor es un float antes de asignarlo
             if value is None:
                 final_value = self.get_default_value(code, country_code)
