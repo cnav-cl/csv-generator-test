@@ -129,6 +129,26 @@ class CliodynamicDataProcessor:
             'elite_overproduction': 'ELITE_OVERPRODUCTION',
             'wealth_concentration': 'WEALTH_CONCENTRATION'
         }
+        
+        self.indicator_frequencies = {
+            'gini_coefficient': 'anual',
+            'youth_unemployment': 'anual',
+            'inflation_annual': 'anual',
+            'neet_ratio': 'anual',
+            'tertiary_education': 'anual',
+            'government_effectiveness': 'anual',
+            'political_stability': 'anual',
+            'control_of_corruption': 'anual',
+            'voice_accountability': 'anual',
+            'rule_of_law': 'anual',
+            'regulatory_quality': 'anual',
+            'social_polarization': 'semanal',
+            'institutional_distrust': 'semanal',
+            'suicide_rate': 'semanal',
+            'elite_overproduction': 'semanal',
+            'wealth_concentration': 'semanal',
+        }
+        
         self.current_year = datetime.now().year
         
         self.border_mapping = {
@@ -224,6 +244,29 @@ class CliodynamicDataProcessor:
         with open(self.cache_file, 'w') as f:
             json.dump(self.cache, f)
 
+    def _should_refresh(self, cache_entry: Dict, frequency: str) -> bool:
+        """Determines if a cached value needs to be refreshed based on its frequency."""
+        if not cache_entry:
+            return True
+        
+        last_retrieved_date_str = cache_entry.get('retrieved_on')
+        if not last_retrieved_date_str:
+            return True
+        
+        last_retrieved_date = datetime.strptime(last_retrieved_date_str, '%Y-%m-%d')
+        now = datetime.now()
+
+        if frequency == 'anual':
+            return now.year > last_retrieved_date.year
+        elif frequency == 'trimestral':
+            # Check if a month has passed
+            return (now - last_retrieved_date).days >= 30
+        elif frequency == 'semanal':
+            # Check if a week has passed
+            return (now - last_retrieved_date).days >= 7
+        
+        return True # Default to refresh if frequency is unknown
+
     def get_default_key(self, indicator_code: str) -> Optional[str]:
         """Busca la clave de valor por defecto correcta para un código de indicador."""
         parts = indicator_code.split('.')
@@ -298,12 +341,12 @@ class CliodynamicDataProcessor:
     def fetch_gdelt_indicator(self, country_code: str, indicator_name: str) -> float:
         """
         Calcula un indicador de GDELT basándose en la frecuencia de temas y eventos.
-        Retorna un valor normalizado entre 0.0 y 1.0.
+        Retorna un valor normalizado entre 0.0 y 1.0, basado en un promedio mensual.
         """
         gdelt_queries = {
             'social_polarization': 'protest OR riot OR "social unrest" OR "political tension"',
             'institutional_distrust': '"government corruption" OR "political scandal" OR "institutional failure" OR "public distrust"',
-            'suicide_rate': '"suicide" OR "suicide rate"', # GDELT no es una fuente demográfica, esto es una aproximación.
+            'suicide_rate': '"suicide" OR "suicide rate"',
             'elite_overproduction': '"elite overproduction" OR "elite competition" OR "political infighting"',
             'wealth_concentration': '"wealth inequality" OR "gini coefficient" OR "income gap" OR "billionaires" theme:WB_1603'
         }
@@ -319,23 +362,32 @@ class CliodynamicDataProcessor:
             return random.uniform(0.1, 0.9)
             
         try:
-            api_url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode=TimelineVol&country={country_gdelt_code}&format=json&timespan=1year&timezoom=yes"
+            # Petición para obtener datos de los últimos 30 días con granularidad mensual
+            api_url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode=TimelineVol&country={country_gdelt_code}&format=json&timespan=30days&timezoom=yes"
             response = requests.get(api_url, timeout=10)
             response.raise_for_status()
             data = response.json()
             
             timeline = data.get('timeline', [])
             if timeline:
-                last_value = timeline[-1].get('value', 0)
+                # Tomar los últimos 5 puntos de datos para calcular un promedio y suavizar el ruido diario
+                last_values = [d.get('value', 0) for d in timeline[-5:]]
                 
-                if 'social_polarization' in indicator_name or 'distrust' in indicator_name:
-                    normalized_value = min(1.0, last_value / 500.0)
-                elif 'elite_overproduction' in indicator_name or 'wealth_concentration' in indicator_name:
-                    normalized_value = min(1.0, last_value / 1000.0)
+                if last_values:
+                    recent_average = sum(last_values) / len(last_values)
                 else:
-                    normalized_value = min(1.0, last_value / 100.0)
+                    recent_average = 0
+                
+                # Normalizar el valor promedio a un rango de 0.0 a 1.0. Los valores aquí son una estimación
+                # y deben ajustarse con la calibración. Se usan valores más pequeños que el resumen anual.
+                if 'social_polarization' in indicator_name or 'distrust' in indicator_name:
+                    normalized_value = min(1.0, recent_average / 50.0)
+                elif 'elite_overproduction' in indicator_name or 'wealth_concentration' in indicator_name:
+                    normalized_value = min(1.0, recent_average / 100.0)
+                else:
+                    normalized_value = min(1.0, recent_average / 10.0)
                     
-                logging.info(f"✅ GDELT data fetched for {indicator_name} in {country_code}: {normalized_value:.2f}")
+                logging.info(f"✅ GDELT data fetched for {indicator_name} in {country_code}: {normalized_value:.2f} (from a 30-day average)")
                 return normalized_value
                 
         except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
@@ -348,19 +400,22 @@ class CliodynamicDataProcessor:
         indicators = {}
         end_year = self.current_year
         
+        # Procesar indicadores anuales y trimestrales
         for name, wb_code in self.indicators.items():
-            cache_key = f"{country_code}_{wb_code}_{end_year}"
+            cache_key = f"{country_code}_{wb_code}"
+            frequency = self.indicator_frequencies.get(name, 'anual')
             
-            value_from_cache = None
+            # Verificar si se debe refrescar el caché
             with self.cache_lock:
-                if cache_key in self.cache and self.cache[cache_key]['retrieved_on'] == str(datetime.now().date()):
-                    value_from_cache = self.cache[cache_key]['value']
+                cache_entry = self.cache.get(cache_key)
+                should_refresh = self._should_refresh(cache_entry, frequency)
             
-            if value_from_cache is not None:
-                indicators[name] = float(value_from_cache)
-                logging.info(f"✅ Using cached value for {name} ({country_code})")
+            if not should_refresh:
+                indicators[name] = float(cache_entry['value'])
+                logging.info(f"✅ Usando valor en caché para {name} ({country_code}) del año {cache_entry['year']}.")
                 continue
             
+            # Si el caché no es válido, buscar nuevos datos
             historical_data = {}
             wb_data = self.fetch_world_bank_data(country_code, wb_code, end_year - 5, end_year)
             historical_data.update(wb_data)
@@ -371,6 +426,8 @@ class CliodynamicDataProcessor:
                 historical_data.update(imf_data)
             
             final_value = None
+            most_recent_year = None
+            
             if historical_data:
                 df = pd.DataFrame(historical_data.items(), columns=['year', 'value']).sort_values('year').drop_duplicates(subset=['year'], keep='last')
                 
@@ -379,7 +436,7 @@ class CliodynamicDataProcessor:
 
                 if most_recent_year >= end_year - 1:
                     final_value = most_recent_value
-                    logging.info(f"✅ Found recent data for {name} ({country_code}) for year {most_recent_year}.")
+                    logging.info(f"✅ Encontrado dato reciente para {name} ({country_code}) del año {most_recent_year}.")
                 elif len(df) >= 2:
                     try:
                         df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('Y')
@@ -388,29 +445,48 @@ class CliodynamicDataProcessor:
                         fit = SimpleExpSmoothing(df['value'], initialization_method="estimated_slinear").fit()
                         forecast = fit.forecast(1).iloc[0]
                         final_value = float(forecast)
-                        logging.info(f"🔄 Projecting {name} for {country_code} from {most_recent_year} to {end_year} using combined data: {round(final_value, 2)}")
+                        logging.info(f"🔄 Proyectando {name} para {country_code} de {most_recent_year} a {end_year} usando datos combinados: {round(final_value, 2)}")
                     except Exception as e:
-                        logging.error(f"❌ Failed to forecast for {name} in {country_code}: {e}. Using most recent value instead.")
+                        logging.error(f"❌ Fallo al proyectar para {name} en {country_code}: {e}. Usando valor más reciente.")
                         final_value = most_recent_value
                 else:
                     final_value = most_recent_value
-                    logging.warning(f"⚠️ Not enough data points for {name} in {country_code} for a proper forecast. Using most recent value: {final_value}")
+                    logging.warning(f"⚠️ No hay suficientes puntos de datos para {name} en {country_code} para una proyección. Usando el valor más reciente: {final_value}")
             
             if final_value is None:
                 final_value = self.get_default_value(wb_code, country_code)
-                logging.warning(f"⚠️ No valid data found for {name} in {country_code}. Using default value: {final_value}")
-
+                logging.warning(f"⚠️ No se encontró dato válido para {name} en {country_code}. Usando valor por defecto: {final_value}")
+            
             indicators[name] = float(final_value)
-                
+
+            # Almacenar el resultado en el caché temporal
             with self.cache_lock:
                 self.temp_cache[cache_key] = {
                     'value': indicators[name],
+                    'year': most_recent_year if most_recent_year is not None else end_year,
                     'retrieved_on': str(datetime.now().date())
                 }
 
-        # Sección actualizada para usar la API de GDELT en lugar de la simulación
+        # Procesar indicadores de GDELT (alta frecuencia)
         for name in self.gdelt_indicators:
-            indicators[name] = self.fetch_gdelt_indicator(country_code, name)
+            cache_key = f"{country_code}_gdelt_{name}"
+            frequency = self.indicator_frequencies.get(name, 'semanal')
+            
+            with self.cache_lock:
+                cache_entry = self.cache.get(cache_key)
+                should_refresh = self._should_refresh(cache_entry, frequency)
+            
+            if not should_refresh:
+                indicators[name] = float(cache_entry['value'])
+                logging.info(f"✅ Usando valor en caché para {name} ({country_code}) de GDELT.")
+            else:
+                indicators[name] = self.fetch_gdelt_indicator(country_code, name)
+                with self.cache_lock:
+                    self.temp_cache[cache_key] = {
+                        'value': indicators[name],
+                        'year': end_year, # No aplica, pero se guarda para consistencia
+                        'retrieved_on': str(datetime.now().date())
+                    }
 
         return indicators
 
