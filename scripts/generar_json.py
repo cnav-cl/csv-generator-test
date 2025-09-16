@@ -310,7 +310,7 @@ class CliodynamicDataProcessor:
 
         for i in range(3):
             try:
-                response = requests.get(api_url, headers=headers, timeout=30)
+                response = requests.get(api_url, headers=headers, timeout=60)
                 response.raise_for_status()
                 data = response.json()
                 
@@ -340,7 +340,7 @@ class CliodynamicDataProcessor:
             
             for i in range(3):
                 try:
-                    response = requests.get(api_url, headers=headers, timeout=30) 
+                    response = requests.get(api_url, headers=headers, timeout=60) 
                     response.raise_for_status()
                     data = response.json()
                     
