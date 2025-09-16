@@ -285,7 +285,6 @@ class CliodynamicDataProcessor:
                         logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
         return historical_data
 
-
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
         """Calculates indicators, ensuring values are never None."""
         indicators = {}
@@ -327,12 +326,12 @@ class CliodynamicDataProcessor:
                     logging.info(f"✅ Found recent data for {name} ({country_code}) for year {most_recent_year}.")
                 elif len(df) >= 2:
                     try:
-                        # Convertir el 'year' a un índice de fecha para el modelo de series de tiempo
-                        df['year'] = pd.to_datetime(df['year'], format='%Y')
+                        # Convertir el 'year' a un PeriodIndex anual para el modelo de series de tiempo
+                        df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('A')
                         df = df.set_index('year')
                         
-                        fit = SimpleExpSmoothing(df['value']).fit()
-                        forecast = fit.forecast(1)[0]
+                        fit = SimpleExpSmoothing(df['value'], initialization_method="estimated_slinear").fit()
+                        forecast = fit.forecast(1).iloc[0]
                         final_value = float(forecast)
                         logging.info(f"🔄 Projecting {name} for {country_code} from {most_recent_year} to {end_year} using combined data: {round(final_value, 2)}")
                     except Exception as e:
