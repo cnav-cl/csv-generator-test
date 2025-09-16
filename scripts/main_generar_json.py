@@ -12,7 +12,9 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class CliodynamicDataProcessor:
-    def __init__(self, cache_file: str = 'data/cache.json'):
+    DATA_DIR = 'data'
+
+    def __init__(self, cache_file: str = os.path.join(DATA_DIR, 'cache.json')):
         self.cache_file = cache_file
         self.gdelt_country_mapping = {
             'USA': ['United States', 'USA', 'US'],
@@ -200,24 +202,25 @@ class CliodynamicDataProcessor:
     def _load_json_data(self, file_path: str) -> Optional[Dict]:
         """Carga datos de un archivo JSON."""
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            full_path = os.path.join(self.DATA_DIR, file_path)
+            with open(full_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-            logging.info(f"Datos cargados exitosamente de {file_path}")
+            logging.info(f"Datos cargados exitosamente de {full_path}")
             return data
         except FileNotFoundError:
-            logging.error(f"Error: El archivo {file_path} no fue encontrado.")
+            logging.error(f"Error: El archivo {full_path} no fue encontrado.")
             return None
         except json.JSONDecodeError as e:
-            logging.error(f"Error al decodificar JSON de {file_path}: {e}")
+            logging.error(f"Error al decodificar JSON de {full_path}: {e}")
             return None
         except Exception as e:
-            logging.error(f"Error inesperado al leer {file_path}: {e}")
+            logging.error(f"Error inesperado al leer {full_path}: {e}")
             return None
 
     def _load_cultural_data(self):
         """Carga datos culturales desde el archivo JSON local."""
-        file_path = "data_worldsurvey_valores.json"
-        data = self._load_json_data(file_path)
+        file_name = "data_worldsurvey_valores.json"
+        data = self._load_json_data(file_name)
         if data and "countries" in data:
             self.cultural_data = data["countries"]
             logging.info("Datos culturales cargados exitosamente desde JSON local.")
@@ -285,7 +288,7 @@ class CliodynamicDataProcessor:
 
     def save_to_json(self, data: List[Dict], filename: str = 'processed_data.json'):
         """Guarda los datos procesados en un archivo JSON."""
-        file_path = os.path.join('data', filename)
+        file_path = os.path.join(self.DATA_DIR, filename)
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
         logging.info(f"Datos guardados en {file_path}")
@@ -297,7 +300,8 @@ class CliodynamicDataProcessor:
         logging.info("Iniciando el proceso de carga de datos desde archivos JSON.")
         
         # Cargar datos procesados del archivo data_paises.json
-        paises_data = self._load_json_data('data_paises.json')
+        file_name = 'data_paises.json'
+        paises_data = self._load_json_data(file_name)
         if not paises_data or 'results' not in paises_data:
             logging.error("No se pudieron cargar los datos de data_paises.json. El proceso finaliza.")
             return
