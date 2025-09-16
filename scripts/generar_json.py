@@ -197,6 +197,16 @@ class CliodynamicDataProcessor:
             'PER': ['ECU', 'COL', 'BRA', 'BOL', 'CHL'],
             'MYS': ['THA', 'IDN', 'SGP']
         }
+        # Mapeo de países a los códigos de GDELT
+        self.gdelt_country_codes = {
+            'USA': 'US', 'CHN': 'CH', 'RUS': 'RS', 'BRA': 'BR', 'GBR': 'UK', 'FRA': 'FR', 'DEU': 'GM', 'JPN': 'JA',
+            'IND': 'IN', 'CAN': 'CA', 'MEX': 'MX', 'AUS': 'AS', 'KOR': 'KR', 'ITA': 'IT', 'SAU': 'SA', 'TUR': 'TU',
+            'EGY': 'EG', 'NGA': 'NI', 'PAK': 'PK', 'IDN': 'ID', 'VNM': 'VM', 'PHL': 'RP', 'ARG': 'AR', 'COL': 'CO',
+            'POL': 'PL', 'ESP': 'SP', 'IRN': 'IR', 'ZAF': 'SF', 'UKR': 'UP', 'THA': 'TH', 'VEN': 'VE', 'CHL': 'CI',
+            'PER': 'PE', 'MYS': 'MY', 'ROU': 'RO', 'SWE': 'SW', 'BEL': 'BE', 'NLD': 'NL', 'GRC': 'GR', 'CZE': 'EZ',
+            'PRT': 'PO', 'DNK': 'DA', 'FIN': 'FI', 'NO': 'NO', 'SGP': 'SN', 'AUT': 'AU', 'CHE': 'SZ', 'IRL': 'EI',
+            'NZL': 'NZ', 'HKG': 'HK', 'ISR': 'IS', 'ARE': 'AE', 'UKR': 'UP'
+        }
 
     def load_cache(self) -> Dict:
         """Loads cache from a JSON file."""
@@ -284,6 +294,54 @@ class CliodynamicDataProcessor:
                     else:
                         logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
         return historical_data
+        
+    def fetch_gdelt_indicator(self, country_code: str, indicator_name: str) -> float:
+        """
+        Calcula un indicador de GDELT basándose en la frecuencia de temas y eventos.
+        Retorna un valor normalizado entre 0.0 y 1.0.
+        """
+        gdelt_queries = {
+            'social_polarization': 'protest OR riot OR "social unrest" OR "political tension"',
+            'institutional_distrust': '"government corruption" OR "political scandal" OR "institutional failure" OR "public distrust"',
+            'suicide_rate': '"suicide" OR "suicide rate"', # GDELT no es una fuente demográfica, esto es una aproximación.
+            'elite_overproduction': '"elite overproduction" OR "elite competition" OR "political infighting"',
+            'wealth_concentration': '"wealth inequality" OR "gini coefficient" OR "income gap" OR "billionaires" theme:WB_1603'
+        }
+        
+        country_gdelt_code = self.gdelt_country_codes.get(country_code, None)
+        if not country_gdelt_code:
+            logging.warning(f"❌ GDELT country code not found for {country_code}. Using default.")
+            return random.uniform(0.1, 0.9)
+            
+        query_string = gdelt_queries.get(indicator_name)
+        if not query_string:
+            logging.warning(f"❌ GDELT query not found for indicator: {indicator_name}. Using default.")
+            return random.uniform(0.1, 0.9)
+            
+        try:
+            api_url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode=TimelineVol&country={country_gdelt_code}&format=json&timespan=1year&timezoom=yes"
+            response = requests.get(api_url, timeout=10)
+            response.raise_for_status()
+            data = response.json()
+            
+            timeline = data.get('timeline', [])
+            if timeline:
+                last_value = timeline[-1].get('value', 0)
+                
+                if 'social_polarization' in indicator_name or 'distrust' in indicator_name:
+                    normalized_value = min(1.0, last_value / 500.0)
+                elif 'elite_overproduction' in indicator_name or 'wealth_concentration' in indicator_name:
+                    normalized_value = min(1.0, last_value / 1000.0)
+                else:
+                    normalized_value = min(1.0, last_value / 100.0)
+                    
+                logging.info(f"✅ GDELT data fetched for {indicator_name} in {country_code}: {normalized_value:.2f}")
+                return normalized_value
+                
+        except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
+            logging.error(f"❌ Error fetching GDELT data for {indicator_name} in {country_code}: {e}")
+            
+        return random.uniform(0.1, 0.9)
 
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
         """Calculates indicators, ensuring values are never None."""
@@ -303,7 +361,6 @@ class CliodynamicDataProcessor:
                 logging.info(f"✅ Using cached value for {name} ({country_code})")
                 continue
             
-            # Recolectar datos históricos de ambas fuentes
             historical_data = {}
             wb_data = self.fetch_world_bank_data(country_code, wb_code, end_year - 5, end_year)
             historical_data.update(wb_data)
@@ -311,22 +368,20 @@ class CliodynamicDataProcessor:
             if name in self.imf_indicators:
                 imf_code = self.imf_indicators[name]
                 imf_data = self.fetch_imf_data(country_code, imf_code, end_year - 5, end_year)
-                historical_data.update(imf_data) # Sobrescribe si el dato del FMI es más reciente
+                historical_data.update(imf_data)
             
             final_value = None
             if historical_data:
-                # Convertir a DataFrame, ordenar y eliminar duplicados de año (manteniendo el último)
                 df = pd.DataFrame(historical_data.items(), columns=['year', 'value']).sort_values('year').drop_duplicates(subset=['year'], keep='last')
                 
                 most_recent_year = df['year'].max()
                 most_recent_value = df.loc[df['year'] == most_recent_year, 'value'].iloc[0]
 
-                if most_recent_year >= end_year - 1: # Si el dato es del año actual o el anterior
+                if most_recent_year >= end_year - 1:
                     final_value = most_recent_value
                     logging.info(f"✅ Found recent data for {name} ({country_code}) for year {most_recent_year}.")
                 elif len(df) >= 2:
                     try:
-                        # Convertir el 'year' a un PeriodIndex anual para el modelo de series de tiempo
                         df['year'] = pd.to_datetime(df['year'], format='%Y').dt.to_period('Y')
                         df = df.set_index('year')
                         
@@ -353,8 +408,9 @@ class CliodynamicDataProcessor:
                     'retrieved_on': str(datetime.now().date())
                 }
 
-        for name, code in self.gdelt_indicators.items():
-            indicators[name] = random.uniform(0.1, 0.9)
+        # Sección actualizada para usar la API de GDELT en lugar de la simulación
+        for name in self.gdelt_indicators:
+            indicators[name] = self.fetch_gdelt_indicator(country_code, name)
 
         return indicators
 
@@ -384,8 +440,6 @@ class CliodynamicDataProcessor:
         Calcula la inestabilidad según un modelo simplificado de Turchin,
         incluyendo la presión fronteriza.
         """
-        # Aseguramos que cada valor sea un float, incluso si el diccionario 'indicators'
-        # contiene un valor inesperado como None.
         wealth_concentration = float(indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default')))
         youth_unemployment = float(indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default')))
         inflation_annual = float(indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default')))
@@ -420,7 +474,6 @@ class CliodynamicDataProcessor:
         """
         Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        # Aseguramos que cada valor sea un float.
         gov_eff = float(indicators.get('government_effectiveness', self.get_default_value('GE.EST', 'default')))
         pol_stab = float(indicators.get('political_stability', self.get_default_value('PV.EST', 'default')))
         rule_of_law = float(indicators.get('rule_of_law', self.get_default_value('RL.EST', 'default')))
