@@ -1,28 +1,41 @@
 {
   "metadata": {
     "source": "World Values Survey (WVS) - Waves 1-7",
-    "processing_date": "2024-01-15",
+    "processing_date": "2025-09-16",
     "version": "1.0",
     "update_frequency": "monthly",
     "next_scheduled_update": "2024-02-15",
     "dimensions": {
       "traditional_vs_secular": {
         "description": "Valores tradicionales (-2) vs. seculares-racionales (+2)",
-        "range": [-2, 2]
+        "range": [
+          -2,
+          2
+        ]
       },
       "survival_vs_self_expression": {
         "description": "Valores de supervivencia (-2) vs. auto-expresión (+2)",
-        "range": [-2, 2]
+        "range": [
+          -2,
+          2
+        ]
       },
       "cultural_proximity": {
         "description": "Proximidad cultural a países de referencia (0-1)",
-        "range": [0, 1]
+        "range": [
+          0,
+          1
+        ]
       },
       "social_cohesion_index": {
         "description": "Índice de cohesión social basado en valores compartidos",
-        "range": [0, 1]
+        "range": [
+          0,
+          1
+        ]
       }
-    }
+    },
+    "last_updated": "2025-09-16T20:32:55.165950"
   },
   "countries": {
     "USA": {
@@ -68,7 +81,7 @@
     "GBR": {
       "traditional_vs_secular": 0.48,
       "survival_vs_self_expression": 1.12,
-      "cultural_proximity": 0.80,
+      "cultural_proximity": 0.8,
       "social_cohesion_index": 0.67,
       "cultural_zone": "English-Speaking",
       "last_wave": 7,
@@ -88,7 +101,7 @@
     "JPN": {
       "traditional_vs_secular": 0.32,
       "survival_vs_self_expression": 0.42,
-      "cultural_proximity": 0.70,
+      "cultural_proximity": 0.7,
       "social_cohesion_index": 0.75,
       "cultural_zone": "Confucian",
       "last_wave": 7,
@@ -139,7 +152,7 @@
       "traditional_vs_secular": 0.65,
       "survival_vs_self_expression": 0.88,
       "cultural_proximity": 0.72,
-      "social_cohesion_index": 0.60,
+      "social_cohesion_index": 0.6,
       "cultural_zone": "Latin Europe",
       "last_wave": 7,
       "last_update": "2023-06-15",
@@ -159,7 +172,7 @@
       "traditional_vs_secular": -1.32,
       "survival_vs_self_expression": -1.15,
       "cultural_proximity": 0.48,
-      "social_cohesion_index": 0.40,
+      "social_cohesion_index": 0.4,
       "cultural_zone": "Islamic",
       "last_wave": 7,
       "last_update": "2023-06-15",
@@ -189,7 +202,7 @@
       "traditional_vs_secular": -1.82,
       "survival_vs_self_expression": -1.55,
       "cultural_proximity": 0.42,
-      "social_cohesion_index": 0.30,
+      "social_cohesion_index": 0.3,
       "cultural_zone": "African",
       "last_wave": 6,
       "last_update": "2020-08-22",
@@ -199,7 +212,7 @@
       "traditional_vs_secular": 0.15,
       "survival_vs_self_expression": 0.28,
       "cultural_proximity": 0.68,
-      "social_cohesion_index": 0.70,
+      "social_cohesion_index": 0.7,
       "cultural_zone": "Confucian",
       "last_wave": 7,
       "last_update": "2023-06-15",
@@ -238,8 +251,8 @@
     "SWE": {
       "traditional_vs_secular": 1.12,
       "survival_vs_self_expression": 1.72,
-      "cultural_proximity": 0.90,
-      "social_cohesion_index": 0.80,
+      "cultural_proximity": 0.9,
+      "social_cohesion_index": 0.8,
       "cultural_zone": "Protestant Europe",
       "last_wave": 7,
       "last_update": "2023-06-15",
@@ -278,7 +291,7 @@
     "COL": {
       "traditional_vs_secular": -0.35,
       "survival_vs_self_expression": -0.42,
-      "cultural_proximity": 0.60,
+      "cultural_proximity": 0.6,
       "social_cohesion_index": 0.52,
       "cultural_zone": "Latin America",
       "last_wave": 7,
@@ -299,7 +312,7 @@
       "traditional_vs_secular": -0.52,
       "survival_vs_self_expression": -0.58,
       "cultural_proximity": 0.58,
-      "social_cohesion_index": 0.50,
+      "social_cohesion_index": 0.5,
       "cultural_zone": "Latin America",
       "last_wave": 7,
       "last_update": "2023-06-15",
@@ -308,7 +321,7 @@
     "IDN": {
       "traditional_vs_secular": -1.25,
       "survival_vs_self_expression": -1.05,
-      "cultural_proximity": 0.50,
+      "cultural_proximity": 0.5,
       "social_cohesion_index": 0.42,
       "cultural_zone": "South Asian",
       "last_wave": 6,
@@ -348,8 +361,8 @@
     "ISR": {
       "traditional_vs_secular": 0.08,
       "survival_vs_self_expression": 0.65,
-      "cultural_proximity": 0.70,
-      "social_cohesion_index": 0.60,
+      "cultural_proximity": 0.7,
+      "social_cohesion_index": 0.6,
       "cultural_zone": "Jewish",
       "last_wave": 7,
       "last_update": "2023-06-15",
