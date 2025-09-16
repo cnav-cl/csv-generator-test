@@ -33,8 +33,7 @@ class WVSCulturalDataUpdater:
     def __init__(self, data_file='data/data_worldsurvey_valores.json'):
         self.data_file = data_file
         self.wvs_base_url = "https://www.worldvaluessurvey.org"
-        self.wvs_data_url = "https://www.worldvaluessurvey.org/WVSDocumentationWV7.jsp"
-        self.wvs_download_url = "https://www.worldvaluessurvey.org/WVSDownload.jsp"
+        self.wvs_data_portal = "https://www.worldvaluessurvey.org/WVSContents.jsp"
         self.current_data = self.load_current_data()
         
         # Configuración de timeouts y reintentos
@@ -75,7 +74,6 @@ class WVSCulturalDataUpdater:
     def safe_numeric_conversion(self, value: Any) -> Optional[float]:
         """
         Convierte de forma segura cualquier valor a numérico.
-        Maneja strings, None, NaN, infinitos, y otros tipos inesperados.
         """
         if value is None:
             return None
@@ -86,7 +84,6 @@ class WVSCulturalDataUpdater:
             return float(value)
         
         if isinstance(value, str):
-            # Limpiar string y convertir
             cleaned = value.strip().replace(',', '.').replace(' ', '')
             if cleaned == '' or cleaned.lower() in ['na', 'nan', 'null', 'none', 'n/a']:
                 return None
@@ -115,7 +112,7 @@ class WVSCulturalDataUpdater:
     )
     def fetch_with_retry(self, url: str, timeout: int = None) -> Optional[requests.Response]:
         """
-        Realiza una petición HTTP con reintentos exponenciales y manejo robusto de errores.
+        Realiza una petición HTTP con reintentos exponenciales.
         """
         timeout = timeout or self.timeout
         headers = {
@@ -159,7 +156,7 @@ class WVSCulturalDataUpdater:
             raise
 
     def load_current_data(self) -> Optional[Dict]:
-        """Carga los datos actuales del archivo JSON con manejo robusto de errores."""
+        """Carga los datos actuales del archivo JSON."""
         try:
             if os.path.exists(self.data_file):
                 with open(self.data_file, 'r', encoding='utf-8') as f:
@@ -177,11 +174,11 @@ class WVSCulturalDataUpdater:
             return None
 
     def check_wvs_updates(self) -> bool:
-        """Verifica si hay actualizaciones disponibles en el WVS con manejo robusto."""
+        """Verifica si hay actualizaciones disponibles en el WVS."""
         try:
             logger.info("🔍 Verificando actualizaciones en World Values Survey...")
             
-            response = self.fetch_with_retry(self.wvs_data_url)
+            response = self.fetch_with_retry(self.wvs_data_portal)
             if not response:
                 logger.warning("❌ No se pudo conectar al WVS para verificar actualizaciones")
                 return False
@@ -223,132 +220,20 @@ class WVSCulturalDataUpdater:
             return False
 
     def download_wvs_data(self) -> Optional[str]:
-        """Descarga datos reales del WVS con manejo robusto de errores."""
-        try:
-            logger.info("⬇️ Intentando descargar datos reales del WVS...")
-            
-            response = self.fetch_with_retry(self.wvs_download_url)
-            if not response:
-                logger.warning("❌ No se pudo acceder a la página de descarga del WVS")
-                return None
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
-            
-            # Buscar enlaces de descarga reales
-            download_links = []
-            for link in soup.find_all('a', href=True):
-                href = link['href'].lower()
-                text = link.get_text().lower()
-                
-                # Filtrar enlaces de descarga relevantes
-                if any(x in href or x in text for x in ['csv', 'spss', 'data', 'download', 'wvs']):
-                    full_url = href if href.startswith('http') else f"{self.wvs_base_url}/{href.lstrip('/')}"
-                    download_links.append(full_url)
-            
-            logger.info(f"🔗 Encontrados {len(download_links)} enlaces de descarga potenciales")
-            
-            # Intentar descargar de cada enlace
-            for i, url in enumerate(download_links[:5]):
-                try:
-                    logger.info(f"📥 Intentando descarga {i+1}: {url}")
-                    dl_response = self.fetch_with_retry(url, timeout=120)
-                    
-                    if dl_response and dl_response.status_code == 200:
-                        # Determinar tipo de archivo
-                        content_type = dl_response.headers.get('content-type', '')
-                        if any(x in content_type.lower() for x in ['csv', 'text', 'data']) or url.endswith('.csv'):
-                            temp_file = f"temp_wvs_data_{int(time.time())}.csv"
-                            with open(temp_file, 'wb') as f:
-                                f.write(dl_response.content)
-                            logger.info(f"✅ Datos descargados en: {temp_file}")
-                            return temp_file
-                        else:
-                            logger.warning(f"⚠️ Tipo de contenido no compatible: {content_type}")
-                    
-                except Exception as e:
-                    logger.warning(f"⚠️ Error en descarga {i+1}: {e}")
-                    continue
-            
-            logger.warning("❌ No se pudieron descargar datos del WVS")
-            return None
-            
-        except Exception as e:
-            logger.error(f"💥 Error en el proceso de descarga: {e}")
-            return None
+        """
+        Intenta descargar datos del WVS, pero como requiere autenticación,
+        este método ahora solo simula la descarga y usa datos académicos.
+        """
+        logger.info("ℹ️ El WVS requiere autenticación. Usando datos académicos de referencia.")
+        return None
 
     def process_real_wvs_data(self, file_path: str) -> Optional[Dict]:
-        """Procesa datos reales del WVS con manejo robusto de errores."""
-        try:
-            logger.info(f"🔍 Procesando archivo WVS: {file_path}")
-            
-            # Leer el archivo con manejo de errores
-            try:
-                df = pd.read_csv(file_path, encoding='latin-1', low_memory=False, on_bad_lines='skip')
-            except Exception as e:
-                logger.warning(f"⚠️ Error leyendo CSV, intentando con diferentes parámetros: {e}")
-                try:
-                    df = pd.read_csv(file_path, encoding='utf-8', low_memory=False, on_bad_lines='skip', sep=None, engine='python')
-                except Exception as e2:
-                    logger.error(f"❌ Error crítico leyendo CSV: {e2}")
-                    return None
-            
-            logger.info(f"📊 Datos cargados: {df.shape[0]} filas, {df.shape[1]} columnas")
-            
-            # Identificar columna de país
-            country_columns = ['country', 'nation', 's002', 's003', 'wave', 'cntry']
-            available_country_cols = [col for col in country_columns if col in df.columns]
-            
-            if not available_country_cols:
-                logger.error("❌ No se encontraron columnas de país en los datos")
-                return None
-            
-            country_col = available_country_cols[0]
-            logger.info(f"📍 Usando columna de país: {country_col}")
-            
-            # Procesar datos por país
-            processed_data = {}
-            unique_countries = df[country_col].dropna().unique()
-            logger.info(f"🌍 Países encontrados en datos: {len(unique_countries)}")
-            
-            for country_name in unique_countries:
-                try:
-                    country_str = str(country_name)
-                    country_code = self.wvs_country_mapping.get(country_str)
-                    if not country_code:
-                        logger.debug(f"⚠️ País no mapeado: {country_str}")
-                        continue
-                    
-                    country_mask = df[country_col] == country_name
-                    country_df = df[country_mask]
-                    
-                    if len(country_df) < 10:  # Mínimo de registros para procesar
-                        logger.debug(f"⚠️ Pocos datos para {country_code}: {len(country_df)} registros")
-                        continue
-                    
-                    # Calcular dimensiones culturales
-                    cultural_values = self.calculate_cultural_dimensions(country_df)
-                    if cultural_values:
-                        processed_data[country_code] = cultural_values
-                        logger.info(f"✅ Procesado: {country_code} - Muestras: {len(country_df)}")
-                    
-                except Exception as e:
-                    logger.warning(f"⚠️ Error procesando país {country_name}: {e}")
-                    continue
-            
-            logger.info(f"📈 Datos procesados para {len(processed_data)} países")
-            return processed_data
-            
-        except Exception as e:
-            logger.error(f"💥 Error procesando datos WVS: {e}")
-            return None
-        finally:
-            # Limpiar archivo temporal
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                    logger.info("🧹 Archivo temporal eliminado")
-            except Exception as e:
-                logger.warning(f"⚠️ Error eliminando archivo temporal: {e}")
+        """
+        Procesa datos del WVS. Como no podemos descargar datos reales,
+        este método ahora devuelve None para usar datos académicos.
+        """
+        logger.info("ℹ️ No se pueden procesar datos reales del WVS (requiere autenticación)")
+        return None
 
     def calculate_cultural_dimensions(self, df: pd.DataFrame) -> Optional[Dict]:
         """Calcula dimensiones culturales con manejo robusto de errores."""
@@ -505,43 +390,32 @@ class WVSCulturalDataUpdater:
         return enhanced_data
 
     def update_cultural_data(self) -> bool:
-        """Actualiza los datos culturales basado en verificaciones reales."""
+        """Actualiza los datos culturales usando datos académicos."""
         try:
-            # Verificar actualizaciones del WVS
-            has_updates = self.check_wvs_updates()
-            new_data = None
+            logger.info("🎯 Usando datos académicos de referencia (WVS requiere autenticación)")
             
-            if has_updates:
-                logger.info("🎯 Actualizaciones disponibles, descargando datos del WVS...")
-                # Descargar y procesar datos reales
-                temp_file = self.download_wvs_data()
-                if temp_file:
-                    new_data = self.process_real_wvs_data(temp_file)
-                    if new_data:
-                        logger.info(f"✅ Datos WVS procesados: {len(new_data)} países")
-            
-            # Mejorar datos existentes
-            updated_countries = self.enhance_existing_data(new_data)
+            # Obtener datos académicos
+            academic_data = self.get_academic_cultural_data()
             
             # Preparar metadatos
             metadata = {
-                "source": "World Values Survey y datos académicos complementarios",
+                "source": "Datos académicos de referencia basados en World Values Survey",
                 "processing_date": datetime.now().strftime('%Y-%m-%d'),
                 "last_updated": datetime.now().isoformat(),
                 "version": "2.1",
                 "update_frequency": "monthly",
-                "wvs_wave": "Wave 7 (2017-2022) con datos complementarios",
-                "data_points": len(updated_countries),
+                "data_points": len(academic_data),
                 "next_scheduled_update": (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'),
-                "countries_covered": len(updated_countries),
-                "update_type": "incremental_enhancement",
-                "wvs_data_available": new_data is not None
+                "countries_covered": len(academic_data),
+                "update_type": "academic_reference",
+                "wvs_data_available": False,
+                "note": "Datos basados en investigaciones académicas. El WVS requiere autenticación para acceso completo."
             }
             
             # Crear estructura final
             final_data = {
                 "metadata": metadata,
-                "countries": updated_countries
+                "countries": academic_data
             }
             
             # Guardar datos
@@ -550,7 +424,7 @@ class WVSCulturalDataUpdater:
                 json.dump(final_data, f, indent=2, ensure_ascii=False)
                 
             logger.info(f"💾 Datos guardados en: {self.data_file}")
-            logger.info(f"🌍 Total países: {len(updated_countries)}")
+            logger.info(f"🌍 Total países: {len(academic_data)}")
             
             return True
             
