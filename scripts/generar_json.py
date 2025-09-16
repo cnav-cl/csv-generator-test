@@ -355,7 +355,7 @@ class CliodynamicDataProcessor:
                         logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
         return historical_data
 
-    def _fetch_happiness_data(self, country_code: str) -> Optional[float]:
+    def _fetch_happiness_data(self, country_code: str) -> float:
         """
         Obtiene los datos del World Happiness Report desde un archivo CSV público.
         """
@@ -407,6 +407,7 @@ class CliodynamicDataProcessor:
             api_url = f"https://api.gdeltproject.org/api/v2/doc/doc?query={query_string}&mode=TimelineVol&country={country_gdelt_code}&format=json&timespan=30days&timezoom=yes"
             response = requests.get(api_url, timeout=10)
             response.raise_for_status()
+            time.sleep(1) # Añadido para evitar el error 429
             data = response.json()
             
             timeline = data.get('timeline', [])
