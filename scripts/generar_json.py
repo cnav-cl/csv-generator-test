@@ -104,10 +104,10 @@ class CliodynamicDataProcessor:
             'regulatory_quality': 'RQ.EST'
         }
         self.imf_indicators = {
-            'inflation_annual': 'PCPI_A_SA_X_PCT', # FMI: Consumer Price Index, Annual Percentage Change
-            'gdp_per_capita': 'NGDPDPC_SA_XDC', # FMI: GDP per Capita
-            'unemployment_rate': 'LUR_SA_X_PT', # FMI: Unemployment Rate
-            'real_gdp_growth': 'NGDP_RPCH' # FMI: Real GDP Growth
+            'inflation_annual': 'PCPI_A_SA_X_PCT',
+            'gdp_per_capita': 'NGDPDPC_SA_XDC',
+            'unemployment_rate': 'LUR_SA_X_PT',
+            'real_gdp_growth': 'NGDP_RPCH'
         }
         self.default_indicator_values = {
             'GINI': {'USA': 40.0, 'default': 40.0},
@@ -229,35 +229,33 @@ class CliodynamicDataProcessor:
             return float(self.default_indicator_values[default_key].get(country_code, self.default_indicator_values[default_key].get('default', 0.0)))
         return 0.0
     
-    def fetch_imf_data(self, country_code: str, indicator_code: str, end_year: int) -> Optional[float]:
+    def fetch_imf_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
         """
-        Fetches the most recent data from the IMF API for a given indicator.
+        Fetches historical data from the IMF API for a given indicator within a year range.
+        Returns a dictionary mapping year to value.
         """
-        api_url = f"https://www.imf.org/external/datamapper/api/v1/{indicator_code}/{country_code}?periods={end_year}"
+        api_url = f"https://www.imf.org/external/datamapper/api/v1/{indicator_code}/{country_code}?periods={start_year}:{end_year}"
         headers = {'User-Agent': 'Mozilla/5.0'}
-        
+        historical_data = {}
+
         for i in range(3):
             try:
                 response = requests.get(api_url, headers=headers, timeout=30)
                 response.raise_for_status()
                 data = response.json()
                 
-                # Acceso a los datos en el formato del FMI
                 series_data = data.get('values', {}).get(indicator_code, {}).get(country_code, {})
                 if series_data:
-                    # El API del FMI puede retornar datos para el año actual o un año proyectado.
-                    # Tomamos el valor más reciente disponible.
-                    most_recent_year = max(series_data.keys(), default=None)
-                    if most_recent_year and series_data[most_recent_year] is not None:
-                        logging.info(f"Found data for {indicator_code} in {country_code} from IMF for year {most_recent_year}.")
-                        return float(series_data[most_recent_year])
+                    for year_str, value in series_data.items():
+                        if value is not None:
+                            historical_data[int(year_str)] = float(value)
+                    logging.info(f"✅ Found historical data for {indicator_code} from IMF.")
+                    break
             except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
-                logging.warning(f"Attempt {i+1} failed for {indicator_code} in {country_code} from IMF: {e}")
+                logging.warning(f"❌ Attempt {i+1} failed for {indicator_code} in {country_code} from IMF: {e}")
                 if i < 2:
                     time.sleep(2 ** i)
-                else:
-                    logging.warning(f"Max retries reached for {indicator_code} in {country_code} from IMF. Skipping IMF fetch.")
-        return None
+        return historical_data
 
     def fetch_world_bank_data(self, country_code: str, indicator_code: str, start_year: int, end_year: int) -> Dict:
         """
@@ -265,65 +263,36 @@ class CliodynamicDataProcessor:
         and then projects it to the current year if needed. Includes retries.
         """
         headers = {'User-Agent': 'Mozilla/5.0'}
-        default_value = self.get_default_value(indicator_code, country_code)
         historical_data = {}
 
-        for year in range(end_year, end_year - 5, -1):
+        for year in range(end_year, start_year - 1, -1):
             api_url = f"http://api.worldbank.org/v2/country/{country_code}/indicator/{indicator_code}?date={year}&format=json"
             
-            # Nuevo bloque: Retries con espera exponencial
             for i in range(3):
                 try:
-                    # Aumenta el timeout a 30 segundos
                     response = requests.get(api_url, headers=headers, timeout=30) 
                     response.raise_for_status()
                     data = response.json()
                     
                     if len(data) > 1 and data[1] and data[1][0]['value'] is not None:
                         historical_data[int(data[1][0]['date'])] = data[1][0]['value']
-                        break # Salir del bucle de reintentos
+                        break
                 except (requests.exceptions.RequestException, json.JSONDecodeError, IndexError, TypeError) as e:
-                    logging.warning(f"Attempt {i+1} failed for {indicator_code} in {country_code} for year {year}: {e}")
+                    logging.warning(f"❌ Attempt {i+1} failed for {indicator_code} in {country_code} for year {year}: {e}")
                     if i < 2:
-                        time.sleep(2 ** i) # Espera 1, 2, 4 segundos
+                        time.sleep(2 ** i)
                     else:
                         logging.warning(f"Max retries reached for {indicator_code} in {country_code}. Trying previous year.")
-            else:
-                continue # Continuar al siguiente año si los reintentos fallan
-            
-            # Si el bucle interno se rompe con éxito, romper el externo también
-            break
-
-        # Si se encuentra data histórica, realizar nowcasting
-        if historical_data:
-            most_recent_year = max(historical_data.keys())
-            most_recent_value = historical_data[most_recent_year]
-            
-            if most_recent_year < end_year:
-                try:
-                    df = pd.DataFrame(list(historical_data.items()), columns=['year', 'value']).sort_values('year')
-                    fit = SimpleExpSmoothing(df['value']).fit()
-                    forecast = fit.forecast(1)[0]
-                    logging.info(f"Projecting {indicator_code} for {country_code} from {most_recent_year} to {end_year}: {round(forecast, 2)}")
-                    return {str(end_year): float(forecast)}
-                except Exception as e:
-                    logging.error(f"Failed to forecast for {indicator_code} in {country_code}: {e}. Using most recent value.")
-                    return {str(most_recent_year): float(most_recent_value)}
-            else:
-                return {str(most_recent_year): float(most_recent_value)}
-
-        # Si no se encontró ninguna data histórica, usar el valor por defecto
-        logging.warning(f"No valid data found for {indicator_code} in {country_code} for the last 5 years. Using default value.")
-        return {str(end_year): float(default_value)}
+        return historical_data
 
 
     def calculate_indicators(self, country_code: str, year: int) -> Dict:
         """Calculates indicators, ensuring values are never None."""
         indicators = {}
-        end_year = datetime.now().year - 1
+        end_year = self.current_year
         
-        for name, code in self.indicators.items():
-            cache_key = f"{country_code}_{code}_{end_year}"
+        for name, wb_code in self.indicators.items():
+            cache_key = f"{country_code}_{wb_code}_{end_year}"
             
             value_from_cache = None
             with self.cache_lock:
@@ -332,25 +301,48 @@ class CliodynamicDataProcessor:
             
             if value_from_cache is not None:
                 indicators[name] = float(value_from_cache)
-                logging.info(f"Using cached value for {name} ({country_code})")
+                logging.info(f"✅ Using cached value for {name} ({country_code})")
                 continue
-
-            # Primero, intenta con el Banco Mundial
-            data = self.fetch_world_bank_data(country_code, code, end_year - 5, end_year)
-            value = next(iter(data.values()), None)
             
-            # Si el Banco Mundial falla, intenta con el FMI
-            if value is None and name in self.imf_indicators:
+            # Recolectar datos históricos de ambas fuentes
+            historical_data = {}
+            wb_data = self.fetch_world_bank_data(country_code, wb_code, end_year - 5, end_year)
+            historical_data.update(wb_data)
+            
+            if name in self.imf_indicators:
                 imf_code = self.imf_indicators[name]
-                value = self.fetch_imf_data(country_code, imf_code, end_year)
-
-            # Asegurar que el valor es un float antes de asignarlo
-            if value is None:
-                final_value = self.get_default_value(code, country_code)
-            else:
-                final_value = float(value)
+                imf_data = self.fetch_imf_data(country_code, imf_code, end_year - 5, end_year)
+                historical_data.update(imf_data) # Sobrescribe si el dato del FMI es más reciente
             
-            indicators[name] = final_value
+            final_value = None
+            if historical_data:
+                # Convertir a DataFrame, ordenar y eliminar duplicados de año (manteniendo el último)
+                df = pd.DataFrame(historical_data.items(), columns=['year', 'value']).sort_values('year').drop_duplicates(subset=['year'], keep='last')
+                
+                most_recent_year = df['year'].max()
+                most_recent_value = df.loc[df['year'] == most_recent_year, 'value'].iloc[0]
+
+                if most_recent_year >= end_year - 1: # Si el dato es del año actual o el anterior
+                    final_value = most_recent_value
+                    logging.info(f"✅ Found recent data for {name} ({country_code}) for year {most_recent_year}.")
+                elif len(df) >= 2:
+                    try:
+                        fit = SimpleExpSmoothing(df['value']).fit()
+                        forecast = fit.forecast(1)[0]
+                        final_value = float(forecast)
+                        logging.info(f"🔄 Projecting {name} for {country_code} from {most_recent_year} to {end_year} using combined data: {round(final_value, 2)}")
+                    except Exception as e:
+                        logging.error(f"❌ Failed to forecast for {name} in {country_code}: {e}. Using most recent value instead.")
+                        final_value = most_recent_value
+                else:
+                    final_value = most_recent_value
+                    logging.warning(f"⚠️ Not enough data points for {name} in {country_code} for a proper forecast. Using most recent value: {final_value}")
+            
+            if final_value is None:
+                final_value = self.get_default_value(wb_code, country_code)
+                logging.warning(f"⚠️ No valid data found for {name} in {country_code}. Using default value: {final_value}")
+
+            indicators[name] = float(final_value)
                 
             with self.cache_lock:
                 self.temp_cache[cache_key] = {
@@ -423,7 +415,6 @@ class CliodynamicDataProcessor:
         """
         Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        # Validaciones robustas para asegurar que los valores sean flotantes
         gov_eff = float(indicators.get('government_effectiveness', 0.0))
         pol_stab = float(indicators.get('political_stability', 0.0))
         rule_of_law = float(indicators.get('rule_of_law', 0.0))
@@ -485,7 +476,7 @@ class CliodynamicDataProcessor:
         start_time = time.time()
         logging.info("Starting main data processing - First Pass (Internal Instability)")
         
-        end_year = datetime.now().year - 1
+        end_year = self.current_year
         
         initial_results = {}
         countries = self.country_codes
