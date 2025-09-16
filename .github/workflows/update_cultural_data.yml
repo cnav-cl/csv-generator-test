@@ -1,37 +1,52 @@
-name: Update Cultural Data Deepseek
+name: Update Cultural Data
 
 on:
   schedule:
-    # Se ejecuta a las 12:00 PM (mediodía) del primer día de cada mes
-    - cron: '0 12 1 * *'
-  workflow_dispatch:
-    # Esto permite ejecutar el flujo de trabajo manualmente desde la interfaz de GitHub
+    - cron: '0 0 1 * *'  # Ejecutar mensualmente el día 1
+  workflow_dispatch:       # Permitir ejecución manual
 
 jobs:
-  update-data:
+  update-cultural-data:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-          
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas requests
-          
-      - name: Run data update script
-        run: python scripts/update_cultural_data.py
-        
-      - name: Commit and push changes
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add data/cultural_data.json
-          git commit -m "🤖 Actualización automática de datos culturales de Inglehart-Welzel" || echo "No hay cambios para hacer commit"
-          git push
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Verify data file exists
+      id: check_file
+      run: |
+        if [ -f "data/data_worldsurvey_valores.json" ]; then
+          echo "File exists"
+          echo "file_exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "File does not exist, creating it..."
+          echo "file_exists=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create file if it doesn't exist
+      if: steps.check_file.outputs.file_exists == 'false'
+      run: |
+        mkdir -p data
+        echo '{"metadata": {"source": "World Values Survey", "processing_date": "'$(date +%Y-%m-%d)'", "countries": {}}}' > data/data_worldsurvey_valores.json
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Run update script
+      run: python scripts/update_cultural_data.py
+
+    - name: Commit and push if changed
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add data/data_worldsurvey_valores.json
+        git diff --staged --quiet || git commit -m "Update cultural data [skip ci]"
+        git push
