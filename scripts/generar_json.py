@@ -327,6 +327,10 @@ class CliodynamicDataProcessor:
                     logging.info(f"✅ Found recent data for {name} ({country_code}) for year {most_recent_year}.")
                 elif len(df) >= 2:
                     try:
+                        # Convertir el 'year' a un índice de fecha para el modelo de series de tiempo
+                        df['year'] = pd.to_datetime(df['year'], format='%Y')
+                        df = df.set_index('year')
+                        
                         fit = SimpleExpSmoothing(df['value']).fit()
                         forecast = fit.forecast(1)[0]
                         final_value = float(forecast)
@@ -381,6 +385,8 @@ class CliodynamicDataProcessor:
         Calcula la inestabilidad según un modelo simplificado de Turchin,
         incluyendo la presión fronteriza.
         """
+        # Aseguramos que cada valor sea un float, incluso si el diccionario 'indicators'
+        # contiene un valor inesperado como None.
         wealth_concentration = float(indicators.get('wealth_concentration', self.get_default_value('WEALTH_CONCENTRATION', 'default')))
         youth_unemployment = float(indicators.get('youth_unemployment', self.get_default_value('SL.UEM.1524.ZS', 'default')))
         inflation_annual = float(indicators.get('inflation_annual', self.get_default_value('FP.CPI.TOTL.ZG', 'default')))
@@ -415,9 +421,10 @@ class CliodynamicDataProcessor:
         """
         Calcula la estabilidad institucional según un modelo simplificado de Jiang.
         """
-        gov_eff = float(indicators.get('government_effectiveness', 0.0))
-        pol_stab = float(indicators.get('political_stability', 0.0))
-        rule_of_law = float(indicators.get('rule_of_law', 0.0))
+        # Aseguramos que cada valor sea un float.
+        gov_eff = float(indicators.get('government_effectiveness', self.get_default_value('GE.EST', 'default')))
+        pol_stab = float(indicators.get('political_stability', self.get_default_value('PV.EST', 'default')))
+        rule_of_law = float(indicators.get('rule_of_law', self.get_default_value('RL.EST', 'default')))
 
         gov_eff_norm = (gov_eff + 2.5) / 5.0
         pol_stab_norm = (pol_stab + 2.5) / 5.0
