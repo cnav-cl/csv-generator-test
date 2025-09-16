@@ -1,16 +1,16 @@
 {
   "metadata": {
-    "source": "World Values Survey y datos académicos complementarios",
+    "source": "Datos académicos de referencia basados en World Values Survey",
     "processing_date": "2025-09-16",
-    "last_updated": "2025-09-16T22:13:04.350472",
+    "last_updated": "2025-09-16T22:55:49.524145",
     "version": "2.1",
     "update_frequency": "monthly",
-    "wvs_wave": "Wave 7 (2017-2022) con datos complementarios",
     "data_points": 52,
     "next_scheduled_update": "2025-10-16",
     "countries_covered": 52,
-    "update_type": "incremental_enhancement",
-    "wvs_data_available": false
+    "update_type": "academic_reference",
+    "wvs_data_available": false,
+    "note": "Datos basados en investigaciones académicas. El WVS requiere autenticación para acceso completo."
   },
   "countries": {
     "USA": {
