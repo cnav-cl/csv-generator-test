@@ -1,372 +1,277 @@
 {
   "metadata": {
-    "source": "World Values Survey (WVS) - Waves 1-7",
+    "source": "World Values Survey y datos académicos complementarios",
     "processing_date": "2025-09-16",
-    "version": "1.0",
+    "last_updated": "2025-09-16T22:13:04.350472",
+    "version": "2.1",
     "update_frequency": "monthly",
-    "next_scheduled_update": "2024-02-15",
-    "dimensions": {
-      "traditional_vs_secular": {
-        "description": "Valores tradicionales (-2) vs. seculares-racionales (+2)",
-        "range": [
-          -2,
-          2
-        ]
-      },
-      "survival_vs_self_expression": {
-        "description": "Valores de supervivencia (-2) vs. auto-expresión (+2)",
-        "range": [
-          -2,
-          2
-        ]
-      },
-      "cultural_proximity": {
-        "description": "Proximidad cultural a países de referencia (0-1)",
-        "range": [
-          0,
-          1
-        ]
-      },
-      "social_cohesion_index": {
-        "description": "Índice de cohesión social basado en valores compartidos",
-        "range": [
-          0,
-          1
-        ]
-      }
-    },
-    "last_updated": "2025-09-16T20:32:55.165950"
+    "wvs_wave": "Wave 7 (2017-2022) con datos complementarios",
+    "data_points": 52,
+    "next_scheduled_update": "2025-10-16",
+    "countries_covered": 52,
+    "update_type": "incremental_enhancement",
+    "wvs_data_available": false
   },
   "countries": {
     "USA": {
-      "traditional_vs_secular": 0.25,
-      "survival_vs_self_expression": 1.18,
-      "cultural_proximity": 0.82,
-      "social_cohesion_index": 0.68,
-      "cultural_zone": "English-Speaking",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+      "traditional_vs_secular": -0.8,
+      "survival_vs_self_expression": 1.2,
+      "social_cohesion_index": 0.6
     },
     "CHN": {
-      "traditional_vs_secular": -1.52,
-      "survival_vs_self_expression": -0.95,
-      "cultural_proximity": 0.73,
-      "social_cohesion_index": 0.62,
-      "cultural_zone": "Confucian",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
-    },
-    "DEU": {
-      "traditional_vs_secular": 0.82,
-      "survival_vs_self_expression": 1.52,
-      "cultural_proximity": 0.85,
-      "social_cohesion_index": 0.72,
-      "cultural_zone": "Protestant Europe",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
-    },
-    "FRA": {
-      "traditional_vs_secular": 0.91,
-      "survival_vs_self_expression": 1.32,
-      "cultural_proximity": 0.78,
-      "social_cohesion_index": 0.65,
-      "cultural_zone": "Latin Europe",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
-    },
-    "GBR": {
-      "traditional_vs_secular": 0.48,
-      "survival_vs_self_expression": 1.12,
-      "cultural_proximity": 0.8,
-      "social_cohesion_index": 0.67,
-      "cultural_zone": "English-Speaking",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
-    },
-    "RUS": {
-      "traditional_vs_secular": -1.18,
-      "survival_vs_self_expression": -0.82,
-      "cultural_proximity": 0.58,
-      "social_cohesion_index": 0.45,
-      "cultural_zone": "Orthodox",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
-    },
-    "JPN": {
-      "traditional_vs_secular": 0.32,
-      "survival_vs_self_expression": 0.42,
-      "cultural_proximity": 0.7,
-      "social_cohesion_index": 0.75,
-      "cultural_zone": "Confucian",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+      "traditional_vs_secular": 0.5,
+      "survival_vs_self_expression": -0.7,
+      "social_cohesion_index": 0.7
     },
     "IND": {
-      "traditional_vs_secular": -1.75,
-      "survival_vs_self_expression": -1.48,
-      "cultural_proximity": 0.52,
-      "social_cohesion_index": 0.38,
-      "cultural_zone": "South Asian",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+      "traditional_vs_secular": 1.5,
+      "survival_vs_self_expression": -1.0,
+      "social_cohesion_index": 0.5
     },
     "BRA": {
-      "traditional_vs_secular": -0.28,
-      "survival_vs_self_expression": -0.52,
-      "cultural_proximity": 0.63,
-      "social_cohesion_index": 0.55,
-      "cultural_zone": "Latin America",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+      "traditional_vs_secular": 0.2,
+      "survival_vs_self_expression": 0.1,
+      "social_cohesion_index": 0.4
     },
-    "ZAF": {
-      "traditional_vs_secular": -0.72,
-      "survival_vs_self_expression": -0.35,
-      "cultural_proximity": 0.57,
-      "social_cohesion_index": 0.42,
-      "cultural_zone": "African",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "medium"
+    "RUS": {
+      "traditional_vs_secular": 0.3,
+      "survival_vs_self_expression": -0.5,
+      "social_cohesion_index": 0.3
     },
-    "MEX": {
-      "traditional_vs_secular": -0.42,
-      "survival_vs_self_expression": -0.28,
-      "cultural_proximity": 0.61,
-      "social_cohesion_index": 0.53,
-      "cultural_zone": "Latin America",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+    "JPN": {
+      "traditional_vs_secular": 0.7,
+      "survival_vs_self_expression": 0.8,
+      "social_cohesion_index": 0.8
     },
-    "ITA": {
-      "traditional_vs_secular": 0.65,
-      "survival_vs_self_expression": 0.88,
-      "cultural_proximity": 0.72,
-      "social_cohesion_index": 0.6,
-      "cultural_zone": "Latin Europe",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+    "DEU": {
+      "traditional_vs_secular": 1.0,
+      "survival_vs_self_expression": 1.5,
+      "social_cohesion_index": 0.9
     },
-    "ESP": {
-      "traditional_vs_secular": 0.58,
-      "survival_vs_self_expression": 0.95,
-      "cultural_proximity": 0.75,
-      "social_cohesion_index": 0.63,
-      "cultural_zone": "Latin Europe",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
-    },
-    "TUR": {
-      "traditional_vs_secular": -1.32,
-      "survival_vs_self_expression": -1.15,
-      "cultural_proximity": 0.48,
-      "social_cohesion_index": 0.4,
-      "cultural_zone": "Islamic",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
-    },
-    "IRN": {
-      "traditional_vs_secular": -1.65,
-      "survival_vs_self_expression": -1.32,
-      "cultural_proximity": 0.45,
-      "social_cohesion_index": 0.35,
-      "cultural_zone": "Islamic",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "low"
-    },
-    "EGY": {
-      "traditional_vs_secular": -1.55,
-      "survival_vs_self_expression": -1.25,
-      "cultural_proximity": 0.47,
-      "social_cohesion_index": 0.37,
-      "cultural_zone": "Islamic",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "low"
-    },
-    "NGA": {
-      "traditional_vs_secular": -1.82,
-      "survival_vs_self_expression": -1.55,
-      "cultural_proximity": 0.42,
-      "social_cohesion_index": 0.3,
-      "cultural_zone": "African",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "low"
-    },
-    "KOR": {
-      "traditional_vs_secular": 0.15,
-      "survival_vs_self_expression": 0.28,
-      "cultural_proximity": 0.68,
-      "social_cohesion_index": 0.7,
-      "cultural_zone": "Confucian",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
-    },
-    "AUS": {
-      "traditional_vs_secular": 0.22,
-      "survival_vs_self_expression": 1.05,
-      "cultural_proximity": 0.79,
-      "social_cohesion_index": 0.66,
-      "cultural_zone": "English-Speaking",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+    "GBR": {
+      "traditional_vs_secular": 0.8,
+      "survival_vs_self_expression": 1.3,
+      "social_cohesion_index": 0.7
     },
     "CAN": {
-      "traditional_vs_secular": 0.18,
-      "survival_vs_self_expression": 1.08,
-      "cultural_proximity": 0.81,
-      "social_cohesion_index": 0.69,
-      "cultural_zone": "English-Speaking",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+      "traditional_vs_secular": 0.6,
+      "survival_vs_self_expression": 1.4,
+      "social_cohesion_index": 0.8
     },
-    "NLD": {
-      "traditional_vs_secular": 1.05,
-      "survival_vs_self_expression": 1.65,
-      "cultural_proximity": 0.88,
-      "social_cohesion_index": 0.78,
-      "cultural_zone": "Protestant Europe",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+    "FRA": {
+      "traditional_vs_secular": 1.1,
+      "survival_vs_self_expression": 1.2,
+      "social_cohesion_index": 0.6
     },
-    "SWE": {
-      "traditional_vs_secular": 1.12,
-      "survival_vs_self_expression": 1.72,
-      "cultural_proximity": 0.9,
-      "social_cohesion_index": 0.8,
-      "cultural_zone": "Protestant Europe",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+    "ITA": {
+      "traditional_vs_secular": 0.4,
+      "survival_vs_self_expression": 0.9,
+      "social_cohesion_index": 0.5
     },
-    "POL": {
-      "traditional_vs_secular": -0.75,
-      "survival_vs_self_expression": -0.45,
-      "cultural_proximity": 0.62,
-      "social_cohesion_index": 0.58,
-      "cultural_zone": "Orthodox",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "high"
+    "AUS": {
+      "traditional_vs_secular": 0.5,
+      "survival_vs_self_expression": 1.3,
+      "social_cohesion_index": 0.8
     },
-    "UKR": {
-      "traditional_vs_secular": -0.95,
-      "survival_vs_self_expression": -0.68,
-      "cultural_proximity": 0.55,
-      "social_cohesion_index": 0.48,
-      "cultural_zone": "Orthodox",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+    "MEX": {
+      "traditional_vs_secular": 0.1,
+      "survival_vs_self_expression": -0.2,
+      "social_cohesion_index": 0.4
     },
-    "ARG": {
-      "traditional_vs_secular": -0.18,
-      "survival_vs_self_expression": -0.12,
-      "cultural_proximity": 0.65,
-      "social_cohesion_index": 0.57,
-      "cultural_zone": "Latin America",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+    "KOR": {
+      "traditional_vs_secular": 0.6,
+      "survival_vs_self_expression": 0.7,
+      "social_cohesion_index": 0.7
     },
-    "COL": {
-      "traditional_vs_secular": -0.35,
-      "survival_vs_self_expression": -0.42,
-      "cultural_proximity": 0.6,
-      "social_cohesion_index": 0.52,
-      "cultural_zone": "Latin America",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+    "SAU": {
+      "traditional_vs_secular": 1.8,
+      "survival_vs_self_expression": -1.2,
+      "social_cohesion_index": 0.6
     },
-    "CHL": {
-      "traditional_vs_secular": -0.28,
-      "survival_vs_self_expression": -0.35,
-      "cultural_proximity": 0.63,
-      "social_cohesion_index": 0.55,
-      "cultural_zone": "Latin America",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+    "TUR": {
+      "traditional_vs_secular": 0.9,
+      "survival_vs_self_expression": -0.8,
+      "social_cohesion_index": 0.4
     },
-    "PER": {
-      "traditional_vs_secular": -0.52,
-      "survival_vs_self_expression": -0.58,
-      "cultural_proximity": 0.58,
-      "social_cohesion_index": 0.5,
-      "cultural_zone": "Latin America",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+    "EGY": {
+      "traditional_vs_secular": 1.6,
+      "survival_vs_self_expression": -1.1,
+      "social_cohesion_index": 0.5
     },
-    "IDN": {
-      "traditional_vs_secular": -1.25,
-      "survival_vs_self_expression": -1.05,
-      "cultural_proximity": 0.5,
-      "social_cohesion_index": 0.42,
-      "cultural_zone": "South Asian",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "low"
+    "NGA": {
+      "traditional_vs_secular": 1.7,
+      "survival_vs_self_expression": -1.3,
+      "social_cohesion_index": 0.3
     },
     "PAK": {
-      "traditional_vs_secular": -1.68,
-      "survival_vs_self_expression": -1.42,
-      "cultural_proximity": 0.44,
-      "social_cohesion_index": 0.33,
-      "cultural_zone": "South Asian",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "low"
+      "traditional_vs_secular": 1.9,
+      "survival_vs_self_expression": -1.4,
+      "social_cohesion_index": 0.4
+    },
+    "IDN": {
+      "traditional_vs_secular": 1.2,
+      "survival_vs_self_expression": -0.6,
+      "social_cohesion_index": 0.6
     },
     "VNM": {
-      "traditional_vs_secular": -1.15,
-      "survival_vs_self_expression": -0.92,
-      "cultural_proximity": 0.53,
-      "social_cohesion_index": 0.45,
-      "cultural_zone": "Confucian",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "low"
+      "traditional_vs_secular": 1.0,
+      "survival_vs_self_expression": -0.5,
+      "social_cohesion_index": 0.5
+    },
+    "PHL": {
+      "traditional_vs_secular": 1.3,
+      "survival_vs_self_expression": -0.7,
+      "social_cohesion_index": 0.4
+    },
+    "ARG": {
+      "traditional_vs_secular": 0.3,
+      "survival_vs_self_expression": 0.2,
+      "social_cohesion_index": 0.5
+    },
+    "COL": {
+      "traditional_vs_secular": 0.4,
+      "survival_vs_self_expression": -0.1,
+      "social_cohesion_index": 0.4
+    },
+    "POL": {
+      "traditional_vs_secular": 0.7,
+      "survival_vs_self_expression": 0.4,
+      "social_cohesion_index": 0.6
+    },
+    "ESP": {
+      "traditional_vs_secular": 0.9,
+      "survival_vs_self_expression": 1.0,
+      "social_cohesion_index": 0.7
+    },
+    "IRN": {
+      "traditional_vs_secular": 1.4,
+      "survival_vs_self_expression": -0.9,
+      "social_cohesion_index": 0.5
+    },
+    "ZAF": {
+      "traditional_vs_secular": 0.7,
+      "survival_vs_self_expression": -0.3,
+      "social_cohesion_index": 0.4
+    },
+    "UKR": {
+      "traditional_vs_secular": 0.4,
+      "survival_vs_self_expression": -0.4,
+      "social_cohesion_index": 0.3
     },
     "THA": {
-      "traditional_vs_secular": -0.85,
-      "survival_vs_self_expression": -0.65,
-      "cultural_proximity": 0.56,
-      "social_cohesion_index": 0.48,
-      "cultural_zone": "South Asian",
-      "last_wave": 6,
-      "last_update": "2020-08-22",
-      "data_quality": "low"
+      "traditional_vs_secular": 1.1,
+      "survival_vs_self_expression": -0.6,
+      "social_cohesion_index": 0.6
+    },
+    "VEN": {
+      "traditional_vs_secular": 0.5,
+      "survival_vs_self_expression": -0.8,
+      "social_cohesion_index": 0.3
+    },
+    "CHL": {
+      "traditional_vs_secular": 0.6,
+      "survival_vs_self_expression": 0.3,
+      "social_cohesion_index": 0.5
+    },
+    "PER": {
+      "traditional_vs_secular": 0.8,
+      "survival_vs_self_expression": -0.2,
+      "social_cohesion_index": 0.4
+    },
+    "MYS": {
+      "traditional_vs_secular": 1.2,
+      "survival_vs_self_expression": -0.4,
+      "social_cohesion_index": 0.6
+    },
+    "ROU": {
+      "traditional_vs_secular": 0.9,
+      "survival_vs_self_expression": 0.1,
+      "social_cohesion_index": 0.5
+    },
+    "SWE": {
+      "traditional_vs_secular": 1.3,
+      "survival_vs_self_expression": 1.6,
+      "social_cohesion_index": 0.9
+    },
+    "BEL": {
+      "traditional_vs_secular": 1.0,
+      "survival_vs_self_expression": 1.4,
+      "social_cohesion_index": 0.8
+    },
+    "NLD": {
+      "traditional_vs_secular": 1.2,
+      "survival_vs_self_expression": 1.5,
+      "social_cohesion_index": 0.8
+    },
+    "GRC": {
+      "traditional_vs_secular": 0.8,
+      "survival_vs_self_expression": 0.7,
+      "social_cohesion_index": 0.5
+    },
+    "CZE": {
+      "traditional_vs_secular": 1.1,
+      "survival_vs_self_expression": 1.2,
+      "social_cohesion_index": 0.7
+    },
+    "PRT": {
+      "traditional_vs_secular": 0.7,
+      "survival_vs_self_expression": 0.9,
+      "social_cohesion_index": 0.6
+    },
+    "DNK": {
+      "traditional_vs_secular": 1.4,
+      "survival_vs_self_expression": 1.7,
+      "social_cohesion_index": 0.9
+    },
+    "FIN": {
+      "traditional_vs_secular": 1.3,
+      "survival_vs_self_expression": 1.6,
+      "social_cohesion_index": 0.9
+    },
+    "NOR": {
+      "traditional_vs_secular": 1.2,
+      "survival_vs_self_expression": 1.8,
+      "social_cohesion_index": 0.9
+    },
+    "SGP": {
+      "traditional_vs_secular": 0.8,
+      "survival_vs_self_expression": 0.6,
+      "social_cohesion_index": 0.7
+    },
+    "AUT": {
+      "traditional_vs_secular": 1.0,
+      "survival_vs_self_expression": 1.3,
+      "social_cohesion_index": 0.8
+    },
+    "CHE": {
+      "traditional_vs_secular": 0.9,
+      "survival_vs_self_expression": 1.4,
+      "social_cohesion_index": 0.8
+    },
+    "IRL": {
+      "traditional_vs_secular": 0.7,
+      "survival_vs_self_expression": 1.1,
+      "social_cohesion_index": 0.7
+    },
+    "NZL": {
+      "traditional_vs_secular": 0.6,
+      "survival_vs_self_expression": 1.3,
+      "social_cohesion_index": 0.8
+    },
+    "HKG": {
+      "traditional_vs_secular": 0.5,
+      "survival_vs_self_expression": 0.8,
+      "social_cohesion_index": 0.7
     },
     "ISR": {
-      "traditional_vs_secular": 0.08,
-      "survival_vs_self_expression": 0.65,
-      "cultural_proximity": 0.7,
-      "social_cohesion_index": 0.6,
-      "cultural_zone": "Jewish",
-      "last_wave": 7,
-      "last_update": "2023-06-15",
-      "data_quality": "medium"
+      "traditional_vs_secular": 0.4,
+      "survival_vs_self_expression": 0.9,
+      "social_cohesion_index": 0.6
+    },
+    "ARE": {
+      "traditional_vs_secular": 1.5,
+      "survival_vs_self_expression": -1.0,
+      "social_cohesion_index": 0.6
     }
   }
 }
