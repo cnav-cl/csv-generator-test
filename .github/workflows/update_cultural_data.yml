@@ -37,8 +37,8 @@ jobs:
       with:
         python-version: '3.10'
 
-    - name: Install dependencies from requirements.txt
-      run: pip install -r requirements.txt
+    - name: Install dependencies
+      run: pip install requests backoff pandas numpy
 
     - name: Run update script
       run: python scripts/update_cultural_data.py
