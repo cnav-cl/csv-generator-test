@@ -18,7 +18,7 @@ class EudaimoniaPredictorGenerator:
     Para todos los países de la lista.
     """
     DATA_DIR = 'data'
-    OUTPUT_FILE = os.path.join(DATA_DIR, 'data_indices.json')
+    OUTPUT_FILE = os.path.join(DATA_DIR, 'data_indices_eudaimonia.json')
     
     # URL para CPI histórico (Wikipedia scraping para lo más reciente)
     CPI_URL = "https://en.wikipedia.org/wiki/Corruption_Perceptions_Index"
@@ -247,4 +247,4 @@ if __name__ == "__main__":
     
     generator = EudaimoniaPredictorGenerator(country_list)
     # Proporciona keys para datos frescos
-    generator.generate_indices_json(media_cloud_key='TU_MEDIA_CLOUD_KEY', newsapi_key='TU_NEWSAPI_KEY')  # Reemplaza con tus keys o None para solo histórico
+    generator.generate_indices_json(media_cloud_key='510d87d1bd34bab035ce9b4d5d12ca2e343a078c', newsapi_key='TU_NEWSAPI_KEY')  # Reemplaza con tus keys o None para solo histórico
