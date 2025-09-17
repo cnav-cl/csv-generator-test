@@ -291,6 +291,9 @@ class EudaimoniaPredictorGenerator:
             country_data = all_data.get(code, {})
             if "daily_data" not in country_data:
                 country_data["daily_data"] = {}
+
+            if "historical" not in country_data:
+                country_data["historical"] = {}
             
             # ✅ Nueva lógica: Verificar si los datos frescos ya están disponibles para la fecha
             daily_data_entry = country_data["daily_data"].get(from_date_str)
