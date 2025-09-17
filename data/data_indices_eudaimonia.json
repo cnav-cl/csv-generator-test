@@ -1,7 +1,7 @@
 {
   "metadata": {
     "purpose": "Predictors for Eudaimonia with historical context and fresh data",
-    "processing_date": "2025-09-17T02:11:50.364238",
+    "processing_date": "2025-09-17T02:14:10.333730",
     "time_range_fresh": "2025-09-15",
     "time_range_historical": "2024-2025 annual data",
     "fresh_data_available": "510d87d1bd34bab035ce9b4d5d12ca2e343a078c",
@@ -11,15 +11,22 @@
     "USA": {
       "historical": {
         "corruption_index": null,
-        "tension_index": null
+        "tension_index": 1.0
       },
       "fresh": {
         "corruption_index": 0,
         "tension_index": 0,
         "data_available": false
       },
-      "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "eudaimonia_predictor": 80.0,
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "CHN": {
       "historical": {
@@ -32,7 +39,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "IND": {
       "historical": {
@@ -45,7 +59,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "BRA": {
       "historical": {
@@ -58,7 +79,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "RUS": {
       "historical": {
@@ -71,7 +99,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "JPN": {
       "historical": {
@@ -84,7 +119,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "DEU": {
       "historical": {
@@ -97,7 +139,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "GBR": {
       "historical": {
@@ -110,7 +159,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "CAN": {
       "historical": {
@@ -123,7 +179,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "FRA": {
       "historical": {
@@ -136,7 +199,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "ITA": {
       "historical": {
@@ -149,7 +219,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "AUS": {
       "historical": {
@@ -162,7 +239,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "MEX": {
       "historical": {
@@ -175,7 +259,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "KOR": {
       "historical": {
@@ -188,7 +279,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "SAU": {
       "historical": {
@@ -201,7 +299,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "TUR": {
       "historical": {
@@ -214,7 +319,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "EGY": {
       "historical": {
@@ -227,20 +339,34 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "NGA": {
       "historical": {
         "corruption_index": null,
-        "tension_index": null
+        "tension_index": 2.0
       },
       "fresh": {
         "corruption_index": 0,
         "tension_index": 0,
         "data_available": false
       },
-      "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "eudaimonia_predictor": 60.0,
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "PAK": {
       "historical": {
@@ -253,20 +379,34 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "IDN": {
       "historical": {
         "corruption_index": null,
-        "tension_index": null
+        "tension_index": 4.0
       },
       "fresh": {
         "corruption_index": 0,
         "tension_index": 0,
         "data_available": false
       },
-      "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "eudaimonia_predictor": 20.0,
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "VNM": {
       "historical": {
@@ -279,7 +419,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "PHL": {
       "historical": {
@@ -292,7 +439,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "ARG": {
       "historical": {
@@ -305,7 +459,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "COL": {
       "historical": {
@@ -318,7 +479,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "POL": {
       "historical": {
@@ -331,7 +499,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "ESP": {
       "historical": {
@@ -344,7 +519,14 @@
         "data_available": false
       },
       "eudaimonia_predictor": 100,
-      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+      "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
+      "daily_data": {
+        "2025-09-15": {
+          "corruption_index": 0,
+          "tension_index": 0,
+          "data_available": false
+        }
+      }
     },
     "IRN": {
       "historical": {
