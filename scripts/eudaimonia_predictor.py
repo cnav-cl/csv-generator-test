@@ -296,7 +296,7 @@ class EudaimoniaPredictorGenerator:
             name = self.country_names.get(code, code)
             logging.info(f"📊 Processing data for {name} ({code})...")
 
-            # Inicializar la estructura de datos para el país si no existe
+            # ✅ Solución: Inicializar la estructura de datos para el país si no existe
             if code not in all_data:
                 all_data[code] = {
                     "historical": {},
@@ -304,6 +304,8 @@ class EudaimoniaPredictorGenerator:
                     "eudaimonia_predictor": 0,
                     "data_source": ""
                 }
+            elif "daily_data" not in all_data[code]:
+                all_data[code]["daily_data"] = {}
             
             # Histórico para contexto
             hist_cpi_score = historical_cpi.get(name, {}).get('score')
