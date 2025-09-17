@@ -356,8 +356,8 @@ if __name__ == "__main__":
     ]
     
     # Obtener API keys de variables de entorno
-    media_cloud_key = os.environ.get('510d87d1bd34bab035ce9b4d5d12ca2e343a078c')
-    newsapi_key = os.environ.get('pub_5e95265aba1e4044863ba62e82d7d44e')
+    media_cloud_key = os.environ.get('MEDIA_CLOUD_KEY')
+    newsapi_key = os.environ.get('NEWSAPI_KEY')
     
     generator = EudaimoniaPredictorGenerator(country_list)
     result = generator.generate_indices_json(
