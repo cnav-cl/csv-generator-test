@@ -1,298 +1,329 @@
 {
   "metadata": {
     "source": "GDELT Project API",
-    "purpose": "Proxy para medir transgresión y opacidad",
-    "processing_date": "2025-09-16T23:56:53.914381",
-    "query_terms_per_language": {
-      "ESP": [
-        "corrupción",
-        "escándalo",
-        "soborno",
-        "lavado de dinero",
-        "abuso de poder"
-      ],
-      "CHN": [
-        "腐败",
-        "丑闻",
-        "贿赂",
-        "洗钱"
-      ],
-      "RUS": [
-        "коррупция",
-        "скандал",
-        "взяточничество",
-        "отмывание денег"
-      ],
-      "DEU": [
-        "Korruption",
-        "Skandal",
-        "Bestechung",
-        "Geldwäsche"
-      ],
-      "FRA": [
-        "corruption",
-        "scandale",
-        "pot-de-vin",
-        "blanchiment d'argent"
-      ],
-      "ITA": [
-        "corruzione",
-        "scandalo",
-        "tangenti",
-        "riciclaggio di denaro"
-      ],
-      "PRT": [
-        "corrupção",
-        "escândalo",
-        "suborno",
-        "lavagem de dinheiro"
-      ],
-      "KOR": [
-        "부패",
-        "스캔들",
-        "뇌물",
-        "돈세탁"
-      ],
-      "JPN": [
-        "汚職",
-        "スキャンダル",
-        "賄賂",
-        "マネーロンダリング"
-      ],
-      "SAU": [
-        "فساد",
-        "فضيحة",
-        "رشوة",
-        "غسيل أموال"
-      ],
-      "TUR": [
-        "yolsuzluk",
-        "skandal",
-        "rüşvet",
-        "kara para aklama"
-      ],
-      "VNM": [
-        "tham nhũng",
-        "bê bối",
-        "hối lộ",
-        "rửa tiền"
-      ],
-      "THA": [
-        "การทุจริต",
-        "เรื่องอื้อฉาว",
-        "การติดสินบน",
-        "การฟอกเงิน"
-      ]
-    },
-    "time_range": "2024-09-16 a 2025-09-16"
+    "purpose": "Proxy para medir transgresión y opacidad con datos normalizados por país",
+    "processing_date": "2025-09-17T00:07:35.129730",
+    "query_terms": [
+      "corruption",
+      "scandal",
+      "bribery",
+      "money laundering",
+      "abuse of power"
+    ],
+    "normalization": "Porcentaje de artículos del país que mencionan términos de escándalo (basado en traducciones al inglés)",
+    "time_range": "2025-06-19 a 2025-09-17"
   },
   "results": {
-    "USA": {
-      "scandal_events_last_year": 0,
+    "US": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "CHN": {
-      "scandal_events_last_year": 0,
+    "CH": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "IND": {
-      "scandal_events_last_year": 0,
+    "IN": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "BRA": {
-      "scandal_events_last_year": 0,
+    "BR": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "RUS": {
-      "scandal_events_last_year": 0,
+    "RS": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "JPN": {
-      "scandal_events_last_year": 0,
+    "JA": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "DEU": {
-      "scandal_events_last_year": 0,
+    "GM": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "GBR": {
-      "scandal_events_last_year": 0,
+    "UK": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "CAN": {
-      "scandal_events_last_year": 0,
+    "CA": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "FRA": {
-      "scandal_events_last_year": 0,
+    "FR": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "ITA": {
-      "scandal_events_last_year": 0,
+    "IT": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "AUS": {
-      "scandal_events_last_year": 0,
+    "AS": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "MEX": {
-      "scandal_events_last_year": 0,
+    "MX": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "KOR": {
-      "scandal_events_last_year": 0,
+    "KS": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "SAU": {
-      "scandal_events_last_year": 0,
+    "SA": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "TUR": {
-      "scandal_events_last_year": 0,
+    "TU": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "EGY": {
-      "scandal_events_last_year": 0,
+    "EG": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "NGA": {
-      "scandal_events_last_year": 0,
+    "NI": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "PAK": {
-      "scandal_events_last_year": 0,
+    "PK": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "IDN": {
-      "scandal_events_last_year": 0,
+    "ID": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "VNM": {
-      "scandal_events_last_year": 0,
+    "VM": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "PHL": {
-      "scandal_events_last_year": 0,
+    "RP": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "ARG": {
-      "scandal_events_last_year": 0,
+    "AR": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "COL": {
-      "scandal_events_last_year": 0,
+    "CO": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "POL": {
-      "scandal_events_last_year": 0,
+    "PL": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "ESP": {
-      "scandal_events_last_year": 0,
+    "SP": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "IRN": {
-      "scandal_events_last_year": 0,
+    "IR": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "ZAF": {
-      "scandal_events_last_year": 0,
+    "SF": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "UKR": {
-      "scandal_events_last_year": 0,
+    "UP": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "THA": {
-      "scandal_events_last_year": 0,
+    "TH": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "VEN": {
-      "scandal_events_last_year": 0,
+    "VE": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "CHL": {
-      "scandal_events_last_year": 0,
+    "CI": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "PER": {
-      "scandal_events_last_year": 0,
+    "PE": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "MYS": {
-      "scandal_events_last_year": 0,
+    "MY": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "ROU": {
-      "scandal_events_last_year": 0,
+    "RO": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "SWE": {
-      "scandal_events_last_year": 0,
+    "SW": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "BEL": {
-      "scandal_events_last_year": 0,
+    "BE": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "NLD": {
-      "scandal_events_last_year": 0,
+    "NL": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "GRC": {
-      "scandal_events_last_year": 0,
+    "GR": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "CZE": {
-      "scandal_events_last_year": 0,
+    "EZ": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "PRT": {
-      "scandal_events_last_year": 0,
+    "PO": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "DNK": {
-      "scandal_events_last_year": 0,
+    "DA": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "FIN": {
-      "scandal_events_last_year": 0,
+    "FI": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "NOR": {
-      "scandal_events_last_year": 0,
+    "NO": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "SGP": {
-      "scandal_events_last_year": 0,
+    "SN": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "AUT": {
-      "scandal_events_last_year": 0,
+    "AU": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "CHE": {
-      "scandal_events_last_year": 0,
+    "SZ": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "IRL": {
-      "scandal_events_last_year": 0,
+    "EI": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "NZL": {
-      "scandal_events_last_year": 0,
+    "NZ": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "HKG": {
-      "scandal_events_last_year": 0,
+    "HK": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "ISR": {
-      "scandal_events_last_year": 0,
+    "IS": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     },
-    "ARE": {
-      "scandal_events_last_year": 0,
+    "AE": {
+      "scandal_article_count_last_3_months": 0,
+      "total_article_count_last_3_months": 0,
+      "scandal_percentage": 0,
       "data_source": "GDELT"
     }
   }
