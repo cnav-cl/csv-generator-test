@@ -5,7 +5,6 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from bs4 import BeautifulSoup
-import pdfplumber
 import time
 
 # Configuración de logging
@@ -21,11 +20,9 @@ class EudaimoniaPredictorGenerator:
     DATA_DIR = 'data'
     OUTPUT_FILE = os.path.join(DATA_DIR, 'data_indices_eudaimonia.json')
     
-    # URL para CPI histórico (Wikipedia scraping para lo más reciente)
-    CPI_URL = "https://en.wikipedia.org/wiki/Corruption_Perceptions_Index"
-    
-    # URL para GPI (PDF anual, ajusta año si necesario)
-    GPI_URL = "https://www.visionofhumanity.org/wp-content/uploads/2025/06/Global-Peace-Index-2025-web.pdf"
+    # Usar la API de Our World in Data para ambos indicadores históricos
+    CPI_URL = "https://ourworldindata.org/grapher/data/variables/corruption-perception-index.json"
+    GPI_URL = "https://ourworldindata.org/grapher/data/variables/global-peace-index.json"
     
     def __init__(self, country_codes: list):
         self.country_codes = country_codes
@@ -92,133 +89,110 @@ class EudaimoniaPredictorGenerator:
         
     def _fetch_historical_cpi(self) -> Dict[str, Any]:
         """
-        Fetch CPI histórico/más reciente via scraping Wikipedia.
+        Fetch CPI histórico/más reciente usando la API de Our World in Data.
         """
         try:
+            logging.info("⏳ Fetching CPI data from Our World in Data API...")
             response = requests.get(self.CPI_URL)
-            soup = BeautifulSoup(response.text, 'lxml')
-            table = soup.find('table', {'class': 'wikitable sortable'})
+            response.raise_for_status() # Lanza un error si la petición falla
+            data = response.json()
+            
             cpi_data = {}
-            if table:
-                for row in table.find_all('tr')[1:]:
-                    cells = row.find_all('td')
-                    if len(cells) >= 3:
-                        rank = cells[0].text.strip()
-                        country = cells[1].text.strip()
-                        score = cells[2].text.strip()
-                        cpi_data[country] = {'score': int(score) if score.isdigit() else None, 'rank': int(rank) if rank.isdigit() else None}
-            logging.info("✅ CPI histórico fetched")
+            # La estructura del JSON de OWID es un poco compleja, navegamos hasta los datos.
+            entities = data.get('entities', {})
+            variables = data.get('variables', {})
+            
+            # Obtener el ID de la variable principal del CPI
+            variable_id = list(variables.keys())[0] if variables else None
+            if not variable_id:
+                logging.error("❌ Could not find CPI variable in OWID data.")
+                return {}
+            
+            # Obtener los datos del CPI
+            values = variables[variable_id].get('values', [])
+            entities_ids = variables[variable_id].get('entities', [])
+            
+            # Crear un mapeo de ID de entidad a nombre de país
+            entity_name_map = {int(k): v.get('name') for k, v in entities.items()}
+            
+            # Navegar por los datos para encontrar la última puntuación por país
+            for i, entity_id in enumerate(entities_ids):
+                country_name = entity_name_map.get(entity_id)
+                if country_name:
+                    latest_score = values[i]
+                    cpi_data[country_name] = {'score': latest_score, 'rank': None}
+
+            logging.info(f"✅ CPI data fetched from OWID for {len(cpi_data)} countries.")
             return cpi_data
+        except requests.exceptions.RequestException as e:
+            logging.error(f"❌ Error fetching CPI from OWID API: {e}")
+            return {}
         except Exception as e:
-            logging.error(f"❌ Error fetching CPI: {e}")
+            logging.error(f"❌ Unexpected error processing OWID CPI data: {e}")
             return {}
 
     def _fetch_historical_gpi(self) -> Dict[str, Any]:
         """
-        Fetch GPI histórico/más reciente via PDF parsing.
+        Fetch GPI histórico/más reciente usando la API de Our World in Data.
         """
         try:
-            response = requests.get(self.GPI_URL, stream=True)
-            with open('temp_gpi.pdf', 'wb') as f:
-                f.write(response.content)
+            logging.info("⏳ Fetching GPI data from Our World in Data API...")
+            response = requests.get(self.GPI_URL)
+            response.raise_for_status()
+            data = response.json()
+            
             gpi_data = {}
-            with pdfplumber.open('temp_gpi.pdf') as pdf:
-                for page in pdf.pages[10:20]:  # Ajusta páginas donde está la tabla (inspecciona PDF)
-                    table = page.extract_table()
-                    if table:
-                        for row in table[1:]:
-                            if len(row) >= 3:
-                                country = row[0].strip()
-                                try:
-                                    score = float(row[1].strip()) if row[1].strip() else None
-                                    rank = int(row[2].strip()) if row[2].strip().isdigit() else None
-                                    gpi_data[country] = {'score': score, 'rank': rank}
-                                except (ValueError, IndexError):
-                                    # Esto ignorará las filas que no tienen un número en la columna del score,
-                                    # como las que solo tienen nombres de países.
-                                    continue
-            os.remove('temp_gpi.pdf')
-            logging.info("✅ GPI histórico fetched")
+            entities = data.get('entities', {})
+            variables = data.get('variables', {})
+            
+            variable_id = list(variables.keys())[0] if variables else None
+            if not variable_id:
+                logging.error("❌ Could not find GPI variable in OWID data.")
+                return {}
+            
+            values = variables[variable_id].get('values', [])
+            entities_ids = variables[variable_id].get('entities', [])
+            
+            entity_name_map = {int(k): v.get('name') for k, v in entities.items()}
+            
+            for i, entity_id in enumerate(entities_ids):
+                country_name = entity_name_map.get(entity_id)
+                if country_name:
+                    latest_score = values[i]
+                    gpi_data[country_name] = {'score': latest_score, 'rank': None}
+
+            logging.info(f"✅ GPI data fetched from OWID for {len(gpi_data)} countries.")
             return gpi_data
+        except requests.exceptions.RequestException as e:
+            logging.error(f"❌ Error fetching GPI from OWID API: {e}")
+            return {}
         except Exception as e:
-            logging.error(f"❌ Error fetching GPI: {e}")
+            logging.error(f"❌ Unexpected error processing OWID GPI data: {e}")
             return {}
 
-    def _fetch_media_cloud_articles(self, country_name: str, query: str, media_cloud_key: str) -> Optional[list]:
-        """
-        Fetch artículos frescos usando Media Cloud API y devuelve la lista de artículos.
-        """
-        try:
-            params = {
-                'q': query,
-                'fq': f'publish_date:[{self.start_date.strftime("%Y-%m-%d")}T00:00:00Z TO {self.end_date.strftime("%Y-%m-%d")}T23:59:59Z] AND (tags_id_media:1 OR tags_id_media:2)'
-            }
-            
-            headers = {
-                'Accept': 'application/json',
-                'Authorization': f'Token {media_cloud_key}'
-            }
-            
-            response = requests.get(
-                'https://api.mediacloud.org/api/v2/stories_public',
-                params=params,
-                headers=headers,
-                timeout=30
-            )
-            
-            if response.status_code == 200:
-                data = response.json()
-                articles = data.get('stories', [])
-                logging.info(f"✅ Media Cloud query for {country_name}: {query} -> {len(articles)} articles")
-                return articles
-            else:
-                logging.warning(f"⚠️ Media Cloud API error for {country_name}: {response.status_code} - {response.text}")
-                return None
-                
-        except requests.exceptions.Timeout:
-            logging.error(f"❌ Timeout fetching Media Cloud data for {country_name}")
-            return None
-        except requests.exceptions.RequestException as e:
-            logging.error(f"❌ Request error fetching Media Cloud data for {country_name}: {e}")
-            return None
-        except Exception as e:
-            logging.error(f"❌ Unexpected error with Media Cloud API for {country_name}: {e}")
-            return None
 
-    def _fetch_newsapi_articles(self, country_name: str, query: str, newsapi_key: str) -> Optional[list]:
+    def _fetch_media_articles(self, country_name: str, query: str, api_key: str, api_url: str, params: Dict[str, Any], headers: Dict[str, Any]) -> Optional[list]:
         """
-        Fetch artículos frescos usando NewsAPI y devuelve la lista de artículos.
+        Función genérica para hacer peticiones a APIs de medios.
         """
         try:
-            url = 'https://newsapi.org/v2/everything'
-            params = {
-                'q': f'{query}',
-                'from': self.start_date.strftime('%Y-%m-%d'),
-                'to': self.end_date.strftime('%Y-%m-%d'),
-                'apiKey': newsapi_key,
-                'sortBy': 'publishedAt',
-                'pageSize': 100  # Máximo 100 artículos en el plan gratuito
-            }
-            
-            response = requests.get(url, params=params, timeout=30)
-            
+            response = requests.get(api_url, params=params, headers=headers, timeout=30)
             if response.status_code == 200:
                 data = response.json()
-                articles = data.get('articles', [])
-                logging.info(f"✅ NewsAPI query for {country_name}: {query} -> {len(articles)} articles")
+                articles = data.get('stories', []) if 'mediacloud' in api_url else data.get('articles', [])
+                logging.info(f"✅ {api_url.split('/')[2]} query for {country_name}: {query} -> {len(articles)} articles")
                 return articles
             else:
-                logging.warning(f"⚠️ NewsAPI error for {country_name}: {response.status_code} - {response.text}")
+                logging.warning(f"⚠️ {api_url.split('/')[2]} API error for {country_name}: {response.status_code} - {response.text}")
                 return None
-                
         except requests.exceptions.Timeout:
-            logging.error(f"❌ Timeout fetching NewsAPI data for {country_name}")
+            logging.error(f"❌ Timeout fetching data for {country_name} from {api_url.split('/')[2]}")
             return None
         except requests.exceptions.RequestException as e:
-            logging.error(f"❌ Request error fetching NewsAPI data for {country_name}: {e}")
+            logging.error(f"❌ Request error fetching data for {country_name} from {api_url.split('/')[2]}: {e}")
             return None
         except Exception as e:
-            logging.error(f"❌ Unexpected error with NewsAPI for {country_name}: {e}")
+            logging.error(f"❌ Unexpected error with {api_url.split('/')[2]} API for {country_name}: {e}")
             return None
 
     def _fetch_fresh_media_articles(self, country_name: str, query: str, media_cloud_key: str = None, newsapi_key: str = None) -> list:
@@ -230,7 +204,15 @@ class EudaimoniaPredictorGenerator:
         
         # Primero intentar con Media Cloud si tenemos key
         if media_cloud_key:
-            media_cloud_articles = self._fetch_media_cloud_articles(country_name, query, media_cloud_key)
+            params = {
+                'q': query,
+                'fq': f'publish_date:[{self.start_date.strftime("%Y-%m-%d")}T00:00:00Z TO {self.end_date.strftime("%Y-%m-%d")}T23:59:59Z] AND (tags_id_media:1 OR tags_id_media:2)'
+            }
+            headers = {
+                'Accept': 'application/json',
+                'Authorization': f'Token {media_cloud_key}'
+            }
+            media_cloud_articles = self._fetch_media_articles(country_name, query, media_cloud_key, 'https://api.mediacloud.org/api/v2/stories_public', params, headers)
             if media_cloud_articles is not None:
                 return media_cloud_articles
             else:
@@ -238,7 +220,15 @@ class EudaimoniaPredictorGenerator:
         
         # Fallback a NewsAPI si Media Cloud falla o no tenemos key
         if newsapi_key:
-            newsapi_articles = self._fetch_newsapi_articles(country_name, query, newsapi_key)
+            params = {
+                'q': f'{query}',
+                'from': self.start_date.strftime('%Y-%m-%d'),
+                'to': self.end_date.strftime('%Y-%m-%d'),
+                'apiKey': newsapi_key,
+                'sortBy': 'publishedAt',
+                'pageSize': 100  # Máximo 100 artículos en el plan gratuito
+            }
+            newsapi_articles = self._fetch_media_articles(country_name, query, newsapi_key, 'https://newsapi.org/v2/everything', params, {})
             if newsapi_articles is not None:
                 return newsapi_articles
         
@@ -296,7 +286,7 @@ class EudaimoniaPredictorGenerator:
             name = self.country_names.get(code, code)
             logging.info(f"📊 Processing data for {name} ({code})...")
 
-            # ✅ Solución: Inicializar la estructura de datos para el país si no existe
+            # Inicializar la estructura de datos para el país si no existe
             if code not in all_data:
                 all_data[code] = {
                     "historical": {},
@@ -307,52 +297,57 @@ class EudaimoniaPredictorGenerator:
             elif "daily_data" not in all_data[code]:
                 all_data[code]["daily_data"] = {}
             
+            # ✅ Nueva lógica: Verificar si los datos frescos ya están disponibles para la fecha
+            if from_date_str in all_data[code]['daily_data'] and all_data[code]['daily_data'][from_date_str].get('data_available'):
+                logging.info(f"✅ Data for {name} on {from_date_str} already exists. Skipping fresh data fetch.")
+                
+            else:
+                # Inicializar valores frescos
+                fresh_corruption_index = 0
+                fresh_tension_index = 0
+                
+                # Obtener datos frescos del día (si hay API keys)
+                if has_fresh_data_source:
+                    try:
+                        query_terms = f"{name} OR {self.corruption_terms} OR {self.tension_terms}"
+                        articles = self._fetch_fresh_media_articles(name, query_terms, media_cloud_key, newsapi_key)
+                        
+                        if articles:
+                            # Contar los términos localmente
+                            corruption_count = sum(1 for article in articles if any(term in (article.get('title', '') + article.get('description', '')).lower() for term in self.corruption_terms.split(' OR ')))
+                            tension_count = sum(1 for article in articles if any(term in (article.get('title', '') + article.get('description', '')).lower() for term in self.tension_terms.split(' OR ')))
+                            total_count = len(articles)
+                            
+                            if total_count > 0:
+                                fresh_corruption_index = (corruption_count / total_count * 100)
+                                fresh_tension_index = (tension_count / total_count * 100)
+                    except Exception as e:
+                        logging.error(f"❌ Error processing fresh data for {name}: {e}")
+                else:
+                    logging.info(f"ℹ️  Skipping fresh data for {name} (no API keys)")
+
+                # Guardar los datos frescos del día
+                daily_entry = {
+                    "corruption_index": round(fresh_corruption_index, 2),
+                    "tension_index": round(fresh_tension_index, 2),
+                    "data_available": has_fresh_data_source and (fresh_corruption_index > 0 or fresh_tension_index > 0)
+                }
+                all_data[code]["daily_data"][from_date_str] = daily_entry
+
             # Histórico para contexto
             hist_cpi_score = historical_cpi.get(name, {}).get('score')
             hist_gpi_score = historical_gpi.get(name, {}).get('score')
-            hist_corruption = 100 - hist_cpi_score if hist_cpi_score else None
-            hist_tension = hist_gpi_score if hist_gpi_score else None
-            
-            # Inicializar valores frescos
-            fresh_corruption_index = 0
-            fresh_tension_index = 0
-            
-            # Obtener datos frescos del día (si hay API keys)
-            if has_fresh_data_source:
-                try:
-                    query_terms = f"{name} OR {self.corruption_terms} OR {self.tension_terms}"
-                    articles = self._fetch_fresh_media_articles(name, query_terms, media_cloud_key, newsapi_key)
-                    
-                    if articles:
-                        # Contar los términos localmente
-                        corruption_count = sum(1 for article in articles if any(term in (article.get('title', '') + article.get('description', '')).lower() for term in self.corruption_terms.split(' OR ')))
-                        tension_count = sum(1 for article in articles if any(term in (article.get('title', '') + article.get('description', '')).lower() for term in self.tension_terms.split(' OR ')))
-                        total_count = len(articles)
-                        
-                        if total_count > 0:
-                            fresh_corruption_index = (corruption_count / total_count * 100)
-                            fresh_tension_index = (tension_count / total_count * 100)
-                except Exception as e:
-                    logging.error(f"❌ Error processing fresh data for {name}: {e}")
-            else:
-                logging.info(f"ℹ️  Skipping fresh data for {name} (no API keys)")
-            
-            # Actualizar datos históricos
+            hist_corruption = 100 - hist_cpi_score if hist_cpi_score is not None else None
+            hist_tension = hist_gpi_score if hist_gpi_score is not None else None
+
+            # Actualizar datos históricos (estos se obtienen una vez, no en el loop diario)
             all_data[code]["historical"]["corruption_index"] = hist_corruption
             all_data[code]["historical"]["tension_index"] = hist_tension
-
-            # Guardar los datos frescos del día
-            daily_entry = {
-                "corruption_index": round(fresh_corruption_index, 2),
-                "tension_index": round(fresh_tension_index, 2),
-                "data_available": has_fresh_data_source and (fresh_corruption_index > 0 or fresh_tension_index > 0)
-            }
-            all_data[code]["daily_data"][from_date_str] = daily_entry
 
             # Calcular el predictor de Eudaimonia con la media de los últimos 30 días
             recent_data_points = [
                 entry for entry in all_data[code]["daily_data"].values()
-                if entry["data_available"]
+                if entry.get("data_available")
             ]
 
             if recent_data_points:
@@ -362,8 +357,8 @@ class EudaimoniaPredictorGenerator:
                 norm_ten = avg_ten / 100
             else:
                 # Fallback a datos históricos si no hay datos frescos recientes
-                norm_cor = (hist_corruption / 100) if hist_corruption else 0
-                norm_ten = (hist_tension / 2.5) if hist_tension else 0 # Normalizando GPI de 1-5 a 0-1
+                norm_cor = (hist_corruption / 100) if hist_corruption is not None else 0
+                norm_ten = (hist_tension / 2.5) if hist_tension is not None else 0 # Normalizando GPI de 1-5 a 0-1
 
             eudaimonia_predictor = 100 - (((norm_cor + norm_ten) / 2) * 100)
             eudaimonia_predictor = round(max(0, min(100, eudaimonia_predictor)), 2)
@@ -421,7 +416,7 @@ if __name__ == "__main__":
     
     # Resumen de procesamiento
     countries_with_fresh_data = sum(1 for code, data in result['results'].items() 
-                                  if 'daily_data' in data and any(d['data_available'] for d in data['daily_data'].values()))
+                                  if 'daily_data' in data and any(d.get('data_available') for d in data['daily_data'].values()))
     
     logging.info(f"📈 Procesamiento completado:")
     logging.info(f"   - Países procesados: {len(result['results'])}")
