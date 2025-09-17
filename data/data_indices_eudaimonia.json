@@ -1,7 +1,7 @@
 {
   "metadata": {
     "purpose": "Predictors for Eudaimonia with historical context and fresh data",
-    "processing_date": "2025-09-17T02:14:10.333730",
+    "processing_date": "2025-09-17T02:29:16.939812",
     "time_range_fresh": "2025-09-15",
     "time_range_historical": "2024-2025 annual data",
     "fresh_data_available": "510d87d1bd34bab035ce9b4d5d12ca2e343a078c",
@@ -11,14 +11,14 @@
     "USA": {
       "historical": {
         "corruption_index": null,
-        "tension_index": 1.0
+        "tension_index": null
       },
       "fresh": {
         "corruption_index": 0,
         "tension_index": 0,
         "data_available": false
       },
-      "eudaimonia_predictor": 80.0,
+      "eudaimonia_predictor": 100,
       "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
       "daily_data": {
         "2025-09-15": {
@@ -351,14 +351,14 @@
     "NGA": {
       "historical": {
         "corruption_index": null,
-        "tension_index": 2.0
+        "tension_index": null
       },
       "fresh": {
         "corruption_index": 0,
         "tension_index": 0,
         "data_available": false
       },
-      "eudaimonia_predictor": 60.0,
+      "eudaimonia_predictor": 100,
       "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
       "daily_data": {
         "2025-09-15": {
@@ -391,14 +391,14 @@
     "IDN": {
       "historical": {
         "corruption_index": null,
-        "tension_index": 4.0
+        "tension_index": null
       },
       "fresh": {
         "corruption_index": 0,
         "tension_index": 0,
         "data_available": false
       },
-      "eudaimonia_predictor": 20.0,
+      "eudaimonia_predictor": 100,
       "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)",
       "daily_data": {
         "2025-09-15": {
