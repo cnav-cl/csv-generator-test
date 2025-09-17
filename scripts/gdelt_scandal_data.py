@@ -1,23 +1,36 @@
 import requests
 import json
+import os
+import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any
-import logging
+from bs4 import BeautifulSoup
+import pdfplumber  # pip install pdfplumber
 
 # Configuración de logging
-logging.basicBasic(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class EudaimoniaPredictorGenerator:
     """
-    Genera un archivo JSON con índices de corrupción, tensión y predictor de Eudaimonia basados en datos frescos de CPI y GPI.
-    Para datos frescos, se consulta las fuentes oficiales via API o scraping simple. Nota: Para Media Cloud, requiere API key y tag ids; aquí usamos fuentes públicas.
+    Genera un archivo JSON con índices de corrupción, tensión y predictor de Eudaimonia.
+    Incorpora datos históricos para contexto y datos frescos de los últimos 3 meses para predicción.
+    Fuentes: Media Cloud (fresco, requiere key), NewsAPI (fresco, requiere key), CPI/GPI (histórico/anual).
+    Para todos los países de la lista.
     """
     DATA_DIR = 'data'
     OUTPUT_FILE = os.path.join(DATA_DIR, 'data_indices.json')
     
+    # URL para CPI histórico (Wikipedia scraping para lo más reciente)
+    CPI_URL = "https://en.wikipedia.org/wiki/Corruption_Perceptions_Index"
+    
+    # URL para GPI (PDF anual, ajusta año si necesario)
+    GPI_URL = "https://www.visionofhumanity.org/wp-content/uploads/2025/06/Global-Peace-Index-2025-web.pdf"
+    
     def __init__(self, country_codes: list):
         self.country_codes = country_codes
-        self.country_names = {  # Mapeo ISO3 to name for GPI
+        self.end_date = datetime.now()
+        self.start_date = self.end_date - timedelta(days=90)  # Últimos 3 meses para datos frescos
+        self.country_names = {  # Mapeo ISO3 to name for queries
             'USA': 'United States',
             'CHN': 'China',
             'IND': 'India',
@@ -71,141 +84,151 @@ class EudaimoniaPredictorGenerator:
             'ISR': 'Israel',
             'ARE': 'United Arab Emirates'
         }
+        # Términos para corrupción y tensión (frescos)
+        self.corruption_terms = 'corruption OR scandal OR bribery OR "money laundering" OR "abuse of power"'
+        self.tension_terms = 'protest OR unrest OR violence OR conflict OR crisis'
         
-    def _fetch_cpi_data(self):
-        # Fetch from Wikipedia or Transparency, here example with requests and beautifulsoup
-        # Note: Install beautifulsoup4 if needed: pip install beautifulsoup4 lxml
-        from bs4 import BeautifulSoup
-        url = "https://en.wikipedia.org/wiki/Corruption_Perceptions_Index"
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'lxml')
-        # Find the table for 2024, parse rows
-        # This is pseudo-code; adjust to actual table class/id
-        table = soup.find('table', {'class': 'wikitable'})
-        cpi = {}
-        for row in table.find_all('tr'):
-            cells = row.find_all('td')
-            if len(cells) > 2:
-                country = cells[0].text.strip()
-                score = int(cells[1].text.strip())
-                rank = int(cells[2].text.strip())
-                cpi[country] = {'score': score, 'rank': rank}
-        return cpi
-    
-    def _fetch_gpi_data(self):
-        # Fetch from visionofhumanity map, but since JS, alternatively download PDF and parse, or use API if available
-        # For simplicity, use a static URL or assume CSV
-        # Alternative: Use Media Cloud for custom, with API key
-        # Here, pseudo for GPI
-        url = "https://www.visionofhumanity.org/wp-content/uploads/2025/06/Global-Peace-Index-2025-web.pdf"
-        # To parse PDF, install pdfplumber: pip install pdfplumber
-        import pdfplumber
-        with requests.get(url, stream=True) as r:
-            with open('gpi.pdf', 'wb') as f:
-                f.write(r.content)
-        with pdfplumber.open('gpi.pdf') as pdf:
-            # Parse pages with table, adjust page numbers
-            gpi = {}
-            for page in pdf.pages:
-                table = page.extract_table()
-                for row in table[1:]:  # Skip header
-                    country = row[0]
-                    score = float(row[1])
-                    rank = int(row[2])
-                    gpi[country] = {'score': score, 'rank': rank}
-        return gpi
-    
-    def generate_indices_json(self, media_cloud_api_key: str = None):
+    def _fetch_historical_cpi(self) -> Dict[str, Any]:
         """
-        Genera el JSON con los índices.
-        Para Media Cloud, si se proporciona API key, usar para datos frescos de menciones.
+        Fetch CPI histórico/más reciente via scraping Wikipedia.
         """
-        if media_cloud_api_key:
-            # Use Media Cloud for fresh media mentions
-            # First, need tag ids for countries. Assume user has a dict or fetch
-            country_tag_ids = {  # Example, user to fill or fetch
-                'USA': 34412234,  # Example for US
-                # Add for others, from https://sources.mediacloud.org/#collections/countries
+        try:
+            response = requests.get(self.CPI_URL)
+            soup = BeautifulSoup(response.text, 'lxml')
+            table = soup.find('table', {'class': 'wikitable sortable'})
+            cpi_data = {}
+            if table:
+                for row in table.find_all('tr')[1:]:
+                    cells = row.find_all('td')
+                    if len(cells) >= 3:
+                        rank = cells[0].text.strip()
+                        country = cells[1].text.strip()
+                        score = cells[2].text.strip()
+                        cpi_data[country] = {'score': int(score) if score.isdigit() else None, 'rank': int(rank) if rank.isdigit() else None}
+            logging.info("✅ CPI histórico fetched")
+            return cpi_data
+        except Exception as e:
+            logging.error(f"❌ Error fetching CPI: {e}")
+            return {}
+
+    def _fetch_historical_gpi(self) -> Dict[str, Any]:
+        """
+        Fetch GPI histórico/más reciente via PDF parsing.
+        """
+        try:
+            response = requests.get(self.GPI_URL, stream=True)
+            with open('temp_gpi.pdf', 'wb') as f:
+                f.write(response.content)
+            gpi_data = {}
+            with pdfplumber.open('temp_gpi.pdf') as pdf:
+                for page in pdf.pages[10:20]:  # Ajusta páginas donde está la tabla (inspecciona PDF)
+                    table = page.extract_table()
+                    if table:
+                        for row in table[1:]:
+                            if len(row) >= 3:
+                                country = row[0].strip()
+                                score = float(row[1].strip()) if row[1].strip() else None
+                                rank = int(row[2].strip()) if row[2].strip().isdigit() else None
+                                gpi_data[country] = {'score': score, 'rank': rank}
+            os.remove('temp_gpi.pdf')
+            logging.info("✅ GPI histórico fetched")
+            return gpi_data
+        except Exception as e:
+            logging.error(f"❌ Error fetching GPI: {e}")
+            return {}
+
+    def _fetch_fresh_media_counts(self, country_name: str, query: str, media_cloud_key: str = None, newsapi_key: str = None) -> int:
+        """
+        Fetch conteos frescos de menciones en medios usando Media Cloud o NewsAPI.
+        """
+        count = 0
+        if media_cloud_key:
+            # Media Cloud (preferido para fresco)
+            params = {
+                'q': f'{query} AND country:"{country_name}"',
+                'start_date': self.start_date.strftime('%Y-%m-%d'),
+                'end_date': self.end_date.strftime('%Y-%m-%d')
             }
-            all_data = {}
-            for code in self.country_codes:
-                tag_id = country_tag_ids.get(code)
-                if tag_id:
-                    # Query for corruption mentions
-                    query_corruption = 'corruption OR scandal OR bribery OR "money laundering" OR "abuse of power"'
-                    params = {
-                        'q': query_corruption,
-                        'tags_id': tag_id,
-                        'start_date': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
-                        'end_date': datetime.now().strftime('%Y-%m-%d')
-                    }
-                    headers = {'Authorization': f'Bearer {media_cloud_api_key}'}
-                    response = requests.get('https://api.mediacloud.org/api/v2/stories/count', params=params, headers=headers)
-                    corruption_count = response.json().get('count', 0)
-                    
-                    # Total stories for normalization
-                    params['q'] = '*'
-                    response = requests.get('https://api.mediacloud.org/api/v2/stories/count', params=params, headers=headers)
-                    total_count = response.json().get('count', 0)
-                    
-                    corruption_percentage = (corruption_count / total_count * 100) if total_count > 0 else 0
-                    
-                    # Similar for tension
-                    query_tension = 'protest OR unrest OR violence OR conflict OR crisis'
-                    params['q'] = query_tension
-                    response = requests.get('https://api.mediacloud.org/api/v2/stories/count', params=params, headers=headers)
-                    tension_count = response.json().get('count', 0)
-                    tension_percentage = (tension_count / total_count * 100) if total_count > 0 else 0
-                    
-                    # Eudaimonia predictor as inverse average
-                    avg = (corruption_percentage + tension_percentage) / 2
-                    eudaimonia = 100 - avg
-                    
-                    all_data[code] = {
-                        "corruption_index": round(corruption_percentage, 4),
-                        "tension_index": round(tension_percentage, 4),
-                        "eudaimonia_predictor": round(eudaimonia, 4),
-                        "data_source": "Media Cloud"
-                    }
-                else:
-                    logging.warning(f"Tag ID not found for {code}")
-        else:
-            # Use CPI and GPI as fallback
-            cpi = self._fetch_cpi_data()
-            gpi = self._fetch_gpi_data()
-            all_data = {}
-            for code in self.country_codes:
-                name = self.country_names.get(code, code)
-                cpi_score = cpi.get(name, {}).get('score')
-                gpi_score = gpi.get(name, {}).get('score')
-                corruption_index = 100 - cpi_score if cpi_score else None
-                tension_index = gpi_score if gpi_score else None
-                if corruption_index is not None and tension_index is not None:
-                    norm_cor = corruption_index / 100
-                    norm_ten = (tension_index - 1) / 2.5
-                    eudaimonia = 100 - (((norm_cor + norm_ten) / 2) * 100)
-                    eudaimonia = round(eudaimonia, 2)
-                else:
-                    eudaimonia = None
-                all_data[code] = {
-                    "corruption_index": corruption_index,
-                    "tension_index": tension_index,
-                    "eudaimonia_predictor": eudaimonia,
-                    "data_source": "CPI and GPI"
-                }
+            headers = {'Authorization': f'Bearer {media_cloud_key}'}
+            response = requests.get('https://api.mediacloud.org/api/v2/stories/count', params=params, headers=headers)
+            count = response.json().get('count', 0) if response.ok else 0
+        elif newsapi_key:
+            # Fallback a NewsAPI para fresco
+            url = 'https://newsapi.org/v2/everything'
+            params = {
+                'q': f'{query} {country_name}',
+                'from': self.start_date.strftime('%Y-%m-%d'),
+                'to': self.end_date.strftime('%Y-%m-%d'),
+                'apiKey': newsapi_key,
+                'sortBy': 'publishedAt'
+            }
+            response = requests.get(url, params=params)
+            count = response.json().get('totalResults', 0) if response.ok else 0
+        return count
+
+    def generate_indices_json(self, media_cloud_key: str = None, newsapi_key: str = None):
+        """
+        Genera JSON con datos históricos (contexto) y frescos (predicción).
+        Calcula índices y predictor de Eudaimonia.
+        """
+        if not os.path.exists(self.DATA_DIR):
+            os.makedirs(self.DATA_DIR)
+
+        historical_cpi = self._fetch_historical_cpi()
+        historical_gpi = self._fetch_historical_gpi()
+        all_data = {}
+
+        for code in self.country_codes:
+            name = self.country_names.get(code, code)
+            
+            # Histórico para contexto
+            hist_cpi_score = historical_cpi.get(name, {}).get('score')
+            hist_gpi_score = historical_gpi.get(name, {}).get('score')
+            hist_corruption = 100 - hist_cpi_score if hist_cpi_score else None
+            hist_tension = hist_gpi_score if hist_gpi_score else None
+            
+            # Fresco para predicción
+            fresh_corruption_count = self._fetch_fresh_media_counts(name, self.corruption_terms, media_cloud_key, newsapi_key)
+            fresh_total_count = self._fetch_fresh_media_counts(name, '*', media_cloud_key, newsapi_key)  # Total stories
+            fresh_corruption_index = (fresh_corruption_count / fresh_total_count * 100) if fresh_total_count > 0 else 0
+            
+            fresh_tension_count = self._fetch_fresh_media_counts(name, self.tension_terms, media_cloud_key, newsapi_key)
+            fresh_tension_index = (fresh_tension_count / fresh_total_count * 100) if fresh_total_count > 0 else 0
+            
+            # Predictor de Eudaimonia (usando fresco, fallback histórico si 0)
+            if fresh_corruption_index == 0 and hist_corruption:
+                norm_cor = hist_corruption / 100
+            else:
+                norm_cor = fresh_corruption_index / 100
+            if fresh_tension_index == 0 and hist_tension:
+                norm_ten = (hist_tension - 1) / 2.5 if hist_tension else 0
+            else:
+                norm_ten = fresh_tension_index / 100  # Normalize tension to 0-1 (assuming % as proxy)
+            eudaimonia_predictor = 100 - (((norm_cor + norm_ten) / 2) * 100)
+            eudaimonia_predictor = round(eudaimonia_predictor, 4)
+            
+            all_data[code] = {
+                "historical": {
+                    "corruption_index": hist_corruption,
+                    "tension_index": hist_tension
+                },
+                "fresh": {
+                    "corruption_index": round(fresh_corruption_index, 4),
+                    "tension_index": round(fresh_tension_index, 4)
+                },
+                "eudaimonia_predictor": eudaimonia_predictor,
+                "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)"
+            }
         
         final_data = {
             "metadata": {
-                "source": "Media Cloud or CPI/GPI",
-                "purpose": "Predictors for Eudaimonia",
+                "purpose": "Predictors for Eudaimonia with historical context and fresh data",
                 "processing_date": datetime.now().isoformat(),
-                "time_range": "Last 3 months for Media Cloud or 2024-2025 for CPI/GPI"
+                "time_range_fresh": f"{self.start_date.date()} to {self.end_date.date()}",
+                "time_range_historical": "2024-2025 annual data"
             },
             "results": all_data
         }
-        
-        if not os.path.exists(self.DATA_DIR):
-            os.makedirs(self.DATA_DIR)
         
         with open(self.OUTPUT_FILE, 'w', encoding='utf-8') as f:
             json.dump(final_data, f, indent=2, ensure_ascii=False)
@@ -223,5 +246,5 @@ if __name__ == "__main__":
     ]
     
     generator = EudaimoniaPredictorGenerator(country_list)
-    # Para Media Cloud, pasa tu API key
-    generator.generate_indices_json(media_cloud_api_key='510d87d1bd34bab035ce9b4d5d12ca2e343a078c')  # Reemplaza con tu key o None para fallback
+    # Proporciona keys para datos frescos
+    generator.generate_indices_json(media_cloud_key='TU_MEDIA_CLOUD_KEY', newsapi_key='TU_NEWSAPI_KEY')  # Reemplaza con tus keys o None para solo histórico
