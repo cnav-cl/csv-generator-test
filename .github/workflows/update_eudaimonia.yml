@@ -1,10 +1,10 @@
 name: Actualizar Datos de Índices para Eudaimonia
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 1 * * *'  # Primer trabajo: 01:00 AM (UTC)
-    - cron: '0 13 * * *' # Segundo trabajo: 01:00 PM (UTC), 12 horas después
+#on:
+  #workflow_dispatch:
+  #schedule:
+    #- cron: '0 1 * * *'  # Primer trabajo: 01:00 AM (UTC)
+    #- cron: '0 13 * * *' # Segundo trabajo: 01:00 PM (UTC), 12 horas después
 
 jobs:
   update-data:
