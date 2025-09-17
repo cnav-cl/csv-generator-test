@@ -23,28 +23,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 lxml pdfplumber
 
-      # Paso para verificar la conectividad DNS antes de ejecutar el script
-      - name: Check Media Cloud DNS resolution
-        id: dns_check
-        run: |
-          # Resuelve la IP usando un comando del sistema y guarda en variable de entorno
-          # Si falla, el script Python no intentará hacer la solicitud y usará los fallbacks
-          ip=$(dig +short api.mediacloud.org)
-          if [ -z "$ip" ]; then
-            echo "::warning file=gdelt_update.yml::Could not resolve IP for api.mediacloud.org. The script will use fallback data sources."
-            echo "MEDIA_CLOUD_KEY=" >> $GITHUB_ENV
-          else
-            echo "::notice file=gdelt_update.yml::Resolved IP for api.mediacloud.org. The script will proceed with Media Cloud API."
-            echo "MEDIA_CLOUD_KEY=${{ secrets.MEDIA_CLOUD_KEY }}" >> $GITHUB_ENV
-          fi
-
       - name: Create data directory
         run: |
           mkdir -p data
 
       - name: Run indices data script
         env:
-          MEDIA_CLOUD_KEY: ${{ env.MEDIA_CLOUD_KEY }}
+          MEDIA_CLOUD_KEY: ${{ secrets.MEDIA_CLOUD_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
         run: python scripts/eudaimonia_predictor.py
 
