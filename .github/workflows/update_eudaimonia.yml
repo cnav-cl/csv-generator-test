@@ -23,30 +23,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 lxml pdfplumber
 
-      # SOLUCIÓN AL PROBLEMA DE DNS - COMIENZO
-      - name: Install dnsutils (for dig)
-        run: sudo apt-get update && sudo apt-get install -y dnsutils
-
-      - name: Resolve API IP via Google DNS
-        id: dns_lookup
+      # Paso para verificar la conectividad DNS antes de ejecutar el script
+      - name: Check Media Cloud DNS resolution
+        id: dns_check
         run: |
-          # Resuelve la IP usando Google DNS y guarda en variable de entorno
-          API_IP=$(dig +short @8.8.8.8 api.mediacloud.org | head -n1)
-          echo "API_IP=$API_IP" >> $GITHUB_ENV
-          echo "Resolved IP: $API_IP"
-          
-          # Verifica que se obtuvo una IP válida
-          if [ -z "$API_IP" ]; then
-            echo "Error: No se pudo resolver la IP de api.mediacloud.org"
-            exit 1
+          # Resuelve la IP usando un comando del sistema y guarda en variable de entorno
+          # Si falla, el script Python no intentará hacer la solicitud y usará los fallbacks
+          ip=$(dig +short api.mediacloud.org)
+          if [ -z "$ip" ]; then
+            echo "::warning file=gdelt_update.yml::Could not resolve IP for api.mediacloud.org. The script will use fallback data sources."
+            echo "MEDIA_CLOUD_KEY=" >> $GITHUB_ENV
+          else
+            echo "::notice file=gdelt_update.yml::Resolved IP for api.mediacloud.org. The script will proceed with Media Cloud API."
+            echo "MEDIA_CLOUD_KEY=${{ secrets.MEDIA_CLOUD_KEY }}" >> $GITHUB_ENV
           fi
-
-      - name: Add to hosts file
-        run: |
-          echo "$API_IP api.mediacloud.org" | sudo tee -a /etc/hosts
-          echo "Hosts file updated:"
-          cat /etc/hosts | grep mediacloud
-      # SOLUCIÓN AL PROBLEMA DE DNS - FIN
 
       - name: Create data directory
         run: |
@@ -54,7 +44,7 @@ jobs:
 
       - name: Run indices data script
         env:
-          MEDIA_CLOUD_KEY: ${{ secrets.MEDIA_CLOUD_KEY }}
+          MEDIA_CLOUD_KEY: ${{ env.MEDIA_CLOUD_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
         run: python scripts/eudaimonia_predictor.py
 
