@@ -287,18 +287,15 @@ class EudaimoniaPredictorGenerator:
             logging.info(f"📊 Processing data for {name} ({code})...")
 
             # Inicializar la estructura de datos para el país si no existe
-            if code not in all_data:
-                all_data[code] = {
-                    "historical": {},
-                    "daily_data": {},
-                    "eudaimonia_predictor": 0,
-                    "data_source": ""
-                }
-            elif "daily_data" not in all_data[code]:
-                all_data[code]["daily_data"] = {}
+            # O utilizar la estructura existente de forma segura
+            country_data = all_data.get(code, {})
+            if "daily_data" not in country_data:
+                country_data["daily_data"] = {}
             
             # ✅ Nueva lógica: Verificar si los datos frescos ya están disponibles para la fecha
-            if from_date_str in all_data[code]['daily_data'] and all_data[code]['daily_data'][from_date_str].get('data_available'):
+            daily_data_entry = country_data["daily_data"].get(from_date_str)
+
+            if daily_data_entry and daily_data_entry.get('data_available'):
                 logging.info(f"✅ Data for {name} on {from_date_str} already exists. Skipping fresh data fetch.")
                 
             else:
@@ -332,21 +329,21 @@ class EudaimoniaPredictorGenerator:
                     "tension_index": round(fresh_tension_index, 2),
                     "data_available": has_fresh_data_source and (fresh_corruption_index > 0 or fresh_tension_index > 0)
                 }
-                all_data[code]["daily_data"][from_date_str] = daily_entry
+                country_data["daily_data"][from_date_str] = daily_entry
 
-            # Histórico para contexto
+            # Actualizar datos históricos
             hist_cpi_score = historical_cpi.get(name, {}).get('score')
             hist_gpi_score = historical_gpi.get(name, {}).get('score')
             hist_corruption = 100 - hist_cpi_score if hist_cpi_score is not None else None
             hist_tension = hist_gpi_score if hist_gpi_score is not None else None
 
             # Actualizar datos históricos (estos se obtienen una vez, no en el loop diario)
-            all_data[code]["historical"]["corruption_index"] = hist_corruption
-            all_data[code]["historical"]["tension_index"] = hist_tension
+            country_data["historical"]["corruption_index"] = hist_corruption
+            country_data["historical"]["tension_index"] = hist_tension
 
             # Calcular el predictor de Eudaimonia con la media de los últimos 30 días
             recent_data_points = [
-                entry for entry in all_data[code]["daily_data"].values()
+                entry for entry in country_data["daily_data"].values()
                 if entry.get("data_available")
             ]
 
@@ -363,9 +360,12 @@ class EudaimoniaPredictorGenerator:
             eudaimonia_predictor = 100 - (((norm_cor + norm_ten) / 2) * 100)
             eudaimonia_predictor = round(max(0, min(100, eudaimonia_predictor)), 2)
             
-            all_data[code]["eudaimonia_predictor"] = eudaimonia_predictor
-            all_data[code]["data_source"] = "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)" if has_fresh_data_source else "CPI/GPI (historical only)"
-        
+            country_data["eudaimonia_predictor"] = eudaimonia_predictor
+            country_data["data_source"] = "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)" if has_fresh_data_source else "CPI/GPI (historical only)"
+            
+            # Asegurar que los datos del país se guarden en el diccionario principal
+            all_data[code] = country_data
+
         # Limpiar datos viejos antes de guardar
         all_data = self._clean_old_data(all_data)
         
