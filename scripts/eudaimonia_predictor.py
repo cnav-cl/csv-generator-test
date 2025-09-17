@@ -29,8 +29,9 @@ class EudaimoniaPredictorGenerator:
     
     def __init__(self, country_codes: list):
         self.country_codes = country_codes
-        self.end_date = datetime.now()
-        self.start_date = self.end_date - timedelta(days=90)  # Últimos 3 meses para datos frescos
+        # Nuevo: Rango de fechas para el día que terminó hace 48 horas (2 días de retraso)
+        self.end_date = datetime.utcnow() - timedelta(days=2)
+        self.start_date = self.end_date
         self.country_names = {  # Mapeo ISO3 to name for queries
             'USA': 'United States',
             'CHN': 'China',
@@ -138,13 +139,11 @@ class EudaimoniaPredictorGenerator:
             logging.error(f"❌ Error fetching GPI: {e}")
             return {}
 
-    def _fetch_media_cloud_count(self, country_name: str, query: str, media_cloud_key: str) -> Optional[int]:
+    def _fetch_media_cloud_articles(self, country_name: str, query: str, media_cloud_key: str) -> Optional[list]:
         """
-        Fetch conteos frescos de menciones en medios usando Media Cloud API.
-        Según la documentación oficial: https://github.com/mediacloud/api-tutorial-notebooks
+        Fetch artículos frescos usando Media Cloud API y devuelve la lista de artículos.
         """
         try:
-            # Formato correcto según documentación de Media Cloud
             params = {
                 'q': query,
                 'fq': f'publish_date:[{self.start_date.strftime("%Y-%m-%d")}T00:00:00Z TO {self.end_date.strftime("%Y-%m-%d")}T23:59:59Z] AND (tags_id_media:1 OR tags_id_media:2)'
@@ -155,11 +154,8 @@ class EudaimoniaPredictorGenerator:
                 'Authorization': f'Token {media_cloud_key}'
             }
             
-            # Pequeña pausa para evitar rate limiting
-            time.sleep(0.1)
-            
             response = requests.get(
-                'https://api.mediacloud.org/api/v2/stories_public/count',
+                'https://api.mediacloud.org/api/v2/stories_public',
                 params=params,
                 headers=headers,
                 timeout=30
@@ -167,9 +163,9 @@ class EudaimoniaPredictorGenerator:
             
             if response.status_code == 200:
                 data = response.json()
-                count = data.get('count', 0)
-                logging.info(f"✅ Media Cloud query for {country_name}: {query} -> {count} results")
-                return count
+                articles = data.get('stories', [])
+                logging.info(f"✅ Media Cloud query for {country_name}: {query} -> {len(articles)} articles")
+                return articles
             else:
                 logging.warning(f"⚠️ Media Cloud API error for {country_name}: {response.status_code} - {response.text}")
                 return None
@@ -184,28 +180,28 @@ class EudaimoniaPredictorGenerator:
             logging.error(f"❌ Unexpected error with Media Cloud API for {country_name}: {e}")
             return None
 
-    def _fetch_newsapi_count(self, country_name: str, query: str, newsapi_key: str) -> Optional[int]:
+    def _fetch_newsapi_articles(self, country_name: str, query: str, newsapi_key: str) -> Optional[list]:
         """
-        Fetch conteos frescos de menciones en medios usando NewsAPI.
+        Fetch artículos frescos usando NewsAPI y devuelve la lista de artículos.
         """
         try:
             url = 'https://newsapi.org/v2/everything'
             params = {
-                'q': f'{query} {country_name}',
+                'q': f'{query}',
                 'from': self.start_date.strftime('%Y-%m-%d'),
                 'to': self.end_date.strftime('%Y-%m-%d'),
                 'apiKey': newsapi_key,
                 'sortBy': 'publishedAt',
-                'pageSize': 1  # Solo necesitamos el total, no los artículos
+                'pageSize': 100  # Máximo 100 artículos en el plan gratuito
             }
             
             response = requests.get(url, params=params, timeout=30)
             
             if response.status_code == 200:
                 data = response.json()
-                count = data.get('totalResults', 0)
-                logging.info(f"✅ NewsAPI query for {country_name}: {query} -> {count} results")
-                return count
+                articles = data.get('articles', [])
+                logging.info(f"✅ NewsAPI query for {country_name}: {query} -> {len(articles)} articles")
+                return articles
             else:
                 logging.warning(f"⚠️ NewsAPI error for {country_name}: {response.status_code} - {response.text}")
                 return None
@@ -220,30 +216,51 @@ class EudaimoniaPredictorGenerator:
             logging.error(f"❌ Unexpected error with NewsAPI for {country_name}: {e}")
             return None
 
-    def _fetch_fresh_media_counts(self, country_name: str, query: str, media_cloud_key: str = None, newsapi_key: str = None) -> int:
+    def _fetch_fresh_media_articles(self, country_name: str, query: str, media_cloud_key: str = None, newsapi_key: str = None) -> list:
         """
-        Fetch conteos frescos de menciones en medios usando Media Cloud o NewsAPI.
+        Fetch artículos frescos usando Media Cloud o NewsAPI.
         Implementa fallback estratégico entre fuentes.
         """
-        count = 0
+        articles = []
         
         # Primero intentar con Media Cloud si tenemos key
         if media_cloud_key:
-            media_cloud_count = self._fetch_media_cloud_count(country_name, query, media_cloud_key)
-            if media_cloud_count is not None:
-                return media_cloud_count
+            media_cloud_articles = self._fetch_media_cloud_articles(country_name, query, media_cloud_key)
+            if media_cloud_articles is not None:
+                return media_cloud_articles
             else:
                 logging.warning(f"⚠️ Media Cloud failed for {country_name}, trying NewsAPI")
         
         # Fallback a NewsAPI si Media Cloud falla o no tenemos key
         if newsapi_key:
-            newsapi_count = self._fetch_newsapi_count(country_name, query, newsapi_key)
-            if newsapi_count is not None:
-                return newsapi_count
+            newsapi_articles = self._fetch_newsapi_articles(country_name, query, newsapi_key)
+            if newsapi_articles is not None:
+                return newsapi_articles
         
-        # Si ambas APIs fallan, registrar advertencia pero continuar
-        logging.warning(f"⚠️ Both Media Cloud and NewsAPI failed for {country_name}, using fallback value 0")
-        return 0
+        # Si ambas APIs fallan, registrar advertencia
+        logging.warning(f"⚠️ Both Media Cloud and NewsAPI failed for {country_name}, returning empty list")
+        return []
+
+    def _load_existing_data(self):
+        """Carga el JSON existente si lo hay."""
+        if os.path.exists(self.OUTPUT_FILE):
+            try:
+                with open(self.OUTPUT_FILE, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, FileNotFoundError):
+                logging.warning("⚠️ No se pudo leer el archivo de datos existente. Se creará uno nuevo.")
+        return {"metadata": {}, "results": {}}
+
+    def _clean_old_data(self, data: dict):
+        """Elimina datos de más de 30 días para no sobrecargar el archivo."""
+        oldest_date = (datetime.utcnow() - timedelta(days=30)).strftime('%Y-%m-%d')
+        for country_code in data:
+            if 'daily_data' in data[country_code]:
+                data[country_code]['daily_data'] = {
+                    date: entry for date, entry in data[country_code]['daily_data'].items()
+                    if date >= oldest_date
+                }
+        return data
 
     def generate_indices_json(self, media_cloud_key: str = None, newsapi_key: str = None):
         """
@@ -258,13 +275,18 @@ class EudaimoniaPredictorGenerator:
         # Obtener datos históricos
         historical_cpi = self._fetch_historical_cpi()
         historical_gpi = self._fetch_historical_gpi()
-        all_data = {}
+        all_data = self._load_existing_data().get('results', {})
 
-        # Verificar si tenemos al menos una API key para datos frescos
         has_fresh_data_source = media_cloud_key or newsapi_key
         if not has_fresh_data_source:
             logging.warning("⚠️ No API keys provided, will only use historical data")
 
+        # Rango de fechas para la petición (hace 2 días)
+        end_date = datetime.utcnow() - timedelta(days=2)
+        start_date = end_date
+        
+        from_date_str = start_date.strftime('%Y-%m-%d')
+        
         for code in self.country_codes:
             name = self.country_names.get(code, code)
             logging.info(f"📊 Processing data for {name} ({code})...")
@@ -279,59 +301,77 @@ class EudaimoniaPredictorGenerator:
             fresh_corruption_index = 0
             fresh_tension_index = 0
             
-            # Fresco para predicción (solo si tenemos API keys)
+            # Obtener datos frescos del día (si hay API keys)
             if has_fresh_data_source:
                 try:
-                    fresh_corruption_count = self._fetch_fresh_media_counts(name, self.corruption_terms, media_cloud_key, newsapi_key)
-                    fresh_total_count = self._fetch_fresh_media_counts(name, '*', media_cloud_key, newsapi_key)  # Total stories
+                    query_terms = f"{name} OR {self.corruption_terms} OR {self.tension_terms}"
+                    articles = self._fetch_fresh_media_articles(name, query_terms, media_cloud_key, newsapi_key)
                     
-                    if fresh_total_count > 0:
-                        fresh_corruption_index = (fresh_corruption_count / fresh_total_count * 100)
-                    
-                    fresh_tension_count = self._fetch_fresh_media_counts(name, self.tension_terms, media_cloud_key, newsapi_key)
-                    
-                    if fresh_total_count > 0:
-                        fresh_tension_index = (fresh_tension_count / fresh_total_count * 100)
+                    if articles:
+                        # Contar los términos localmente
+                        corruption_count = sum(1 for article in articles if any(term in (article.get('title', '') + article.get('description', '')).lower() for term in self.corruption_terms.split(' OR ')))
+                        tension_count = sum(1 for article in articles if any(term in (article.get('title', '') + article.get('description', '')).lower() for term in self.tension_terms.split(' OR ')))
+                        total_count = len(articles)
                         
+                        if total_count > 0:
+                            fresh_corruption_index = (corruption_count / total_count * 100)
+                            fresh_tension_index = (tension_count / total_count * 100)
                 except Exception as e:
                     logging.error(f"❌ Error processing fresh data for {name}: {e}")
-                    # Continuar con valores por defecto si hay error
             else:
                 logging.info(f"ℹ️  Skipping fresh data for {name} (no API keys)")
             
-            # Predictor de Eudaimonia (usando fresco, fallback histórico si 0)
-            if fresh_corruption_index == 0 and hist_corruption:
-                norm_cor = hist_corruption / 100
-            else:
-                norm_cor = fresh_corruption_index / 100
-                
-            if fresh_tension_index == 0 and hist_tension:
-                norm_ten = (hist_tension - 1) / 2.5 if hist_tension else 0
-            else:
-                norm_ten = fresh_tension_index / 100
-                
-            eudaimonia_predictor = 100 - (((norm_cor + norm_ten) / 2) * 100)
-            eudaimonia_predictor = round(max(0, min(100, eudaimonia_predictor)), 2)  # Asegurar entre 0-100
-            
-            all_data[code] = {
-                "historical": {
-                    "corruption_index": hist_corruption,
-                    "tension_index": hist_tension
-                },
-                "fresh": {
-                    "corruption_index": round(fresh_corruption_index, 2),
-                    "tension_index": round(fresh_tension_index, 2),
-                    "data_available": has_fresh_data_source and fresh_corruption_index + fresh_tension_index > 0
-                },
-                "eudaimonia_predictor": eudaimonia_predictor,
-                "data_source": "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)" if has_fresh_data_source else "CPI/GPI (historical only)"
+            # Asegurar la estructura de datos para el país
+            if code not in all_data:
+                all_data[code] = {
+                    "historical": {},
+                    "daily_data": {},
+                    "eudaimonia_predictor": 0,
+                    "data_source": ""
+                }
+
+            # Actualizar datos históricos
+            all_data[code]["historical"]["corruption_index"] = hist_corruption
+            all_data[code]["historical"]["tension_index"] = hist_tension
+
+            # Guardar los datos frescos del día
+            daily_entry = {
+                "corruption_index": round(fresh_corruption_index, 2),
+                "tension_index": round(fresh_tension_index, 2),
+                "data_available": has_fresh_data_source and (fresh_corruption_index > 0 or fresh_tension_index > 0)
             }
+            all_data[code]["daily_data"][from_date_str] = daily_entry
+
+            # Calcular el predictor de Eudaimonia con la media de los últimos 30 días
+            recent_data_points = [
+                entry for entry in all_data[code]["daily_data"].values()
+                if entry["data_available"]
+            ]
+
+            if recent_data_points:
+                avg_cor = sum(p["corruption_index"] for p in recent_data_points) / len(recent_data_points)
+                avg_ten = sum(p["tension_index"] for p in recent_data_points) / len(recent_data_points)
+                norm_cor = avg_cor / 100
+                norm_ten = avg_ten / 100
+            else:
+                # Fallback a datos históricos si no hay datos frescos recientes
+                norm_cor = (hist_corruption / 100) if hist_corruption else 0
+                norm_ten = (hist_tension / 2.5) if hist_tension else 0 # Normalizando GPI de 1-5 a 0-1
+
+            eudaimonia_predictor = 100 - (((norm_cor + norm_ten) / 2) * 100)
+            eudaimonia_predictor = round(max(0, min(100, eudaimonia_predictor)), 2)
+            
+            all_data[code]["eudaimonia_predictor"] = eudaimonia_predictor
+            all_data[code]["data_source"] = "Media Cloud/NewsAPI (fresh) + CPI/GPI (historical)" if has_fresh_data_source else "CPI/GPI (historical only)"
+        
+        # Limpiar datos viejos antes de guardar
+        all_data = self._clean_old_data(all_data)
         
         final_data = {
             "metadata": {
                 "purpose": "Predictors for Eudaimonia with historical context and fresh data",
                 "processing_date": datetime.now().isoformat(),
-                "time_range_fresh": f"{self.start_date.date()} to {self.end_date.date()}",
+                "time_range_fresh": f"{self.start_date.date()}",
                 "time_range_historical": "2024-2025 annual data",
                 "fresh_data_available": has_fresh_data_source,
                 "countries_processed": len(all_data)
@@ -367,7 +407,7 @@ if __name__ == "__main__":
     
     # Resumen de procesamiento
     countries_with_fresh_data = sum(1 for code, data in result['results'].items() 
-                                  if data['fresh']['data_available'])
+                                  if 'daily_data' in data and any(d['data_available'] for d in data['daily_data'].values()))
     
     logging.info(f"📈 Procesamiento completado:")
     logging.info(f"   - Países procesados: {len(result['results'])}")
