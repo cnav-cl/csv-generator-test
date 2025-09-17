@@ -11,94 +11,94 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 class GDELTScandalDataGenerator:
     """
     Genera un archivo JSON con métricas de escándalos y corrupción basadas en GDELT,
-    utilizando palabras clave en múltiples idiomas.
+    utilizando palabras clave en inglés para todos los países, ya que la API busca en traducciones al inglés.
+    Calcula conteos raw y ratios normalizados por volumen de medios del país.
     """
     DATA_DIR = 'data'
     OUTPUT_FILE = os.path.join(DATA_DIR, 'data_gdelt.json')
     
-    # URL de la API de GDELT - punto final corregido
-    GDELT_BASE_URL = "https://api.gdeltproject.org/api/v2/gkg/timeline"
+    # URL corregida para la API DOC 2.0 de GDELT
+    GDELT_BASE_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
 
     def __init__(self, country_codes: list):
         self.country_codes = country_codes
         self.end_date = datetime.now()
-        self.start_date = self.end_date - timedelta(days=365) # Último año
+        self.start_date = self.end_date - timedelta(days=90)  # Últimos 3 meses para datos frescos
         
-        # Diccionario de términos de búsqueda en diferentes idiomas
-        self.search_terms = {
-            'default': ['corruption', 'scandal', 'bribery', 'money laundering', 'abuse of power'],
-            'ESP': ['corrupción', 'escándalo', 'soborno', 'lavado de dinero', 'abuso de poder'],
-            'CHN': ['腐败', '丑闻', '贿赂', '洗钱'], # Chino (mandarín)
-            'RUS': ['коррупция', 'скандал', 'взяточничество', 'отмывание денег'], # Ruso
-            'DEU': ['Korruption', 'Skandal', 'Bestechung', 'Geldwäsche'], # Alemán
-            'FRA': ['corruption', 'scandale', 'pot-de-vin', 'blanchiment d\'argent'], # Francés
-            'ITA': ['corruzione', 'scandalo', 'tangenti', 'riciclaggio di denaro'], # Italiano
-            'PRT': ['corrupção', 'escândalo', 'suborno', 'lavagem de dinheiro'], # Portugués
-            'KOR': ['부패', '스캔들', '뇌물', '돈세탁'], # Coreano
-            'JPN': ['汚職', 'スキャンダル', '賄賂', 'マネーロンダリング'], # Japonés
-            'SAU': ['فساد', 'فضيحة', 'رشوة', 'غسيل أموال'], # Árabe
-            'TUR': ['yolsuzluk', 'skandal', 'rüşvet', 'kara para aklama'], # Turco
-            'VNM': ['tham nhũng', 'bê bối', 'hối lộ', 'rửa tiền'], # Vietnamita
-            'THA': ['การทุจริต', 'เรื่องอื้อฉาว', 'การติดสินบน', 'การฟอกเงิน'] # Tailandés
-        }
+        # Términos de búsqueda solo en inglés, ya que la API usa traducciones al inglés
+        self.search_terms = ['corruption', 'scandal', 'bribery', 'money laundering', 'abuse of power']
         
-    def _fetch_gdelt_data(self, country_code: str) -> int:
+    def _fetch_gdelt_volume(self, query: str, country_code: str) -> int:
         """
-        Consulta la API de GDELT para obtener el número de eventos de escándalos.
-        Selecciona las palabras clave basadas en el idioma del país.
+        Consulta la API de GDELT para obtener el volumen total de artículos.
         """
-        terms = self.search_terms.get(country_code, self.search_terms['default'])
-        query = f"sourcecountry:{country_code} ({' OR '.join(terms)})"
-        
-        # Parámetros corregidos para la API de GDELT
         params = {
             'query': query,
-            'mode': 'TimelineVol',
+            'mode': 'TimelineVolRaw',
             'format': 'json',
-            'timebin': '15min', # '1min' es demasiado granular y puede ser inestable
-            'startdatetime': self.start_date.strftime('%Y%m%d%H%M%S'),
-            'enddatetime': self.end_date.strftime('%Y%m%d%H%M%S')
+            'startdatetime': self.start_date.strftime('%Y%m%d000000'),
+            'enddatetime': self.end_date.strftime('%Y%m%d235959')
         }
         
-        logging.info(f"Buscando datos de GDELT para {country_code} con términos: {terms}")
+        logging.info(f"Buscando volumen de GDELT para {country_code} con query: {query}")
         try:
             response = requests.get(self.GDELT_BASE_URL, params=params, timeout=30)
             response.raise_for_status()
             data = response.json()
             
-            # GDELT retorna un diccionario con el total de artículos
-            total_events = int(data.get('timeline').get('events', {}).get('total', 0))
-            logging.info(f"✅ Eventos encontrados para {country_code}: {total_events}")
-            return total_events
+            # Sumar el 'Volume' a lo largo de la timeline para obtener el total de artículos
+            if 'timeline' in data:
+                total_volume = sum(entry.get('Volume', 0) for entry in data['timeline'])
+                logging.info(f"✅ Volumen encontrado para {country_code}: {total_volume}")
+                return total_volume
+            else:
+                logging.warning(f"⚠️ No se encontraron datos en GDELT para {country_code} con query: {query}")
+                return 0
         except requests.exceptions.RequestException as e:
             logging.error(f"❌ Error al conectar con la API de GDELT para {country_code}: {e}")
             return 0
-        except (KeyError, IndexError, ValueError):
-            logging.warning(f"⚠️ No se encontraron datos de escándalos en GDELT para {country_code}.")
+        except (KeyError, ValueError):
+            logging.warning(f"⚠️ Formato de respuesta inesperado para {country_code}.")
             return 0
 
     def generate_gdelt_json(self) -> None:
         """
-        Genera el archivo JSON con los datos de GDELT para todos los países.
+        Genera el archivo JSON con los datos de GDELT para todos los países, incluyendo normalización.
         """
         if not os.path.exists(self.DATA_DIR):
             os.makedirs(self.DATA_DIR)
             logging.info(f"Directorio '{self.DATA_DIR}' creado.")
 
         all_gdelt_data = {}
+        terms_quoted = [f'"{term}"' if ' ' in term else term for term in self.search_terms]
+        query_terms = ' OR '.join(terms_quoted)
+        
         for country_code in self.country_codes:
-            event_count = self._fetch_gdelt_data(country_code)
+            # Query para escándalos
+            query_scandal = f"sourcecountry:{country_code} ({query_terms})"
+            scandal_count = self._fetch_gdelt_volume(query_scandal, country_code)
+            
+            # Query para total de artículos del país
+            query_total = f"sourcecountry:{country_code}"
+            total_count = self._fetch_gdelt_volume(query_total, country_code)
+            
+            # Calcular ratio normalizado (porcentaje de artículos sobre escándalos)
+            scandal_ratio = (scandal_count / total_count * 100) if total_count > 0 else 0
+            
             all_gdelt_data[country_code] = {
-                "scandal_events_last_year": event_count,
+                "scandal_article_count_last_3_months": scandal_count,
+                "total_article_count_last_3_months": total_count,
+                "scandal_percentage": round(scandal_ratio, 4),
                 "data_source": "GDELT"
             }
         
         final_data = {
             "metadata": {
                 "source": "GDELT Project API",
-                "purpose": "Proxy para medir transgresión y opacidad",
+                "purpose": "Proxy para medir transgresión y opacidad con datos normalizados por país",
                 "processing_date": datetime.now().isoformat(),
-                "query_terms_per_language": {lang: terms for lang, terms in self.search_terms.items() if lang != 'default'},
+                "query_terms": self.search_terms,
+                "normalization": "Porcentaje de artículos del país que mencionan términos de escándalo (basado en traducciones al inglés)",
                 "time_range": f"{self.start_date.date()} a {self.end_date.date()}"
             },
             "results": all_gdelt_data
@@ -110,13 +110,14 @@ class GDELTScandalDataGenerator:
         logging.info(f"✅ Datos de GDELT guardados en {self.OUTPUT_FILE}")
 
 if __name__ == "__main__":
+    # Códigos de país en 2 letras FIPS, como requiere GDELT
     country_list = [
-        'USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'CAN', 'FRA',
-        'ITA', 'AUS', 'MEX', 'KOR', 'SAU', 'TUR', 'EGY', 'NGA', 'PAK', 'IDN',
-        'VNM', 'PHL', 'ARG', 'COL', 'POL', 'ESP', 'IRN', 'ZAF', 'UKR', 'THA',
-        'VEN', 'CHL', 'PER', 'MYS', 'ROU', 'SWE', 'BEL', 'NLD', 'GRC', 'CZE',
-        'PRT', 'DNK', 'FIN', 'NOR', 'SGP', 'AUT', 'CHE', 'IRL', 'NZL', 'HKG',
-        'ISR', 'ARE'
+        'US', 'CH', 'IN', 'BR', 'RS', 'JA', 'GM', 'UK', 'CA', 'FR',
+        'IT', 'AS', 'MX', 'KS', 'SA', 'TU', 'EG', 'NI', 'PK', 'ID',
+        'VM', 'RP', 'AR', 'CO', 'PL', 'SP', 'IR', 'SF', 'UP', 'TH',
+        'VE', 'CI', 'PE', 'MY', 'RO', 'SW', 'BE', 'NL', 'GR', 'EZ',
+        'PO', 'DA', 'FI', 'NO', 'SN', 'AU', 'SZ', 'EI', 'NZ', 'HK',
+        'IS', 'AE'
     ]
     
     generator = GDELTScandalDataGenerator(country_list)
