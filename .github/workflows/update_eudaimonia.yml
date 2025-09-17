@@ -31,7 +31,6 @@ jobs:
         env:
           MEDIA_CLOUD_KEY: ${{ secrets.MEDIA_CLOUD_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
-          # Lista de países para este trabajo
           COUNTRIES_TO_PROCESS: 'USA,CHN,IND,BRA,RUS,JPN,DEU,GBR,CAN,FRA,ITA,AUS,MEX,KOR,SAU,TUR,EGY,NGA,PAK,IDN,VNM,PHL,ARG,COL,POL,ESP'
         run: python scripts/eudaimonia_predictor.py
 
@@ -41,6 +40,7 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add data/data_indices_eudaimonia.json
           git commit -m "chore: Update indices data (First Half)" || echo "No changes to commit"
+          git pull origin main  # ✅ Solución: Traer los últimos cambios
           git push
 
   update-second-half:
@@ -67,7 +67,6 @@ jobs:
         env:
           MEDIA_CLOUD_KEY: ${{ secrets.MEDIA_CLOUD_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
-          # Lista de países para este trabajo
           COUNTRIES_TO_PROCESS: 'IRN,ZAF,UKR,THA,VEN,CHL,PER,MYS,ROU,SWE,BEL,NLD,GRC,CZE,PRT,DNK,FIN,NOR,SGP,AUT,CHE,IRL,NZL,HKG,ISR,ARE'
         run: python scripts/eudaimonia_predictor.py
 
@@ -77,4 +76,5 @@ jobs:
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add data/data_indices_eudaimonia.json
           git commit -m "chore: Update indices data (Second Half)" || echo "No changes to commit"
+          git pull origin main  # ✅ Solución: Traer los últimos cambios
           git push
