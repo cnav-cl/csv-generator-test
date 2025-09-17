@@ -89,38 +89,41 @@ class EudaimoniaPredictorGenerator:
         
     def _fetch_historical_cpi(self) -> Dict[str, Any]:
         """
-        Fetch CPI histórico/más reciente usando la API de Our World in Data.
+        Fetch historical CPI data from Our World in Data API.
         """
         try:
             logging.info("⏳ Fetching CPI data from Our World in Data API...")
             response = requests.get(self.CPI_URL)
-            response.raise_for_status() # Lanza un error si la petición falla
+            response.raise_for_status()
             data = response.json()
             
             cpi_data = {}
-            # La estructura del JSON de OWID es un poco compleja, navegamos hasta los datos.
             entities = data.get('entities', {})
             variables = data.get('variables', {})
             
-            # Obtener el ID de la variable principal del CPI
             variable_id = list(variables.keys())[0] if variables else None
             if not variable_id:
                 logging.error("❌ Could not find CPI variable in OWID data.")
                 return {}
             
-            # Obtener los datos del CPI
+            # Use a dictionary to map entity_id to the most recent value
             values = variables[variable_id].get('values', [])
-            entities_ids = variables[variable_id].get('entities', [])
+            entity_ids = variables[variable_id].get('entities', [])
+            years = variables[variable_id].get('years', [])
+
+            # Create a lookup for the latest year's data for each entity
+            entity_latest_data = {}
+            for i, entity_id in enumerate(entity_ids):
+                year = years[i]
+                value = values[i]
+                if entity_id not in entity_latest_data or year > entity_latest_data[entity_id]['year']:
+                    entity_latest_data[entity_id] = {'year': year, 'score': value}
             
-            # Crear un mapeo de ID de entidad a nombre de país
-            entity_name_map = {int(k): v.get('name') for k, v in entities.items()}
-            
-            # Navegar por los datos para encontrar la última puntuación por país
-            for i, entity_id in enumerate(entities_ids):
-                country_name = entity_name_map.get(entity_id)
+            # Map entity IDs to country names and store the latest score
+            for entity_id, entry in entity_latest_data.items():
+                country_name = entities.get(str(entity_id), {}).get('name')
                 if country_name:
-                    latest_score = values[i]
-                    cpi_data[country_name] = {'score': latest_score, 'rank': None}
+                    cpi_data[country_name] = {'score': entry['score'], 'rank': None}
 
             logging.info(f"✅ CPI data fetched from OWID for {len(cpi_data)} countries.")
             return cpi_data
@@ -133,7 +136,7 @@ class EudaimoniaPredictorGenerator:
 
     def _fetch_historical_gpi(self) -> Dict[str, Any]:
         """
-        Fetch GPI histórico/más reciente usando la API de Our World in Data.
+        Fetch historical GPI data from Our World in Data API.
         """
         try:
             logging.info("⏳ Fetching GPI data from Our World in Data API...")
@@ -150,16 +153,24 @@ class EudaimoniaPredictorGenerator:
                 logging.error("❌ Could not find GPI variable in OWID data.")
                 return {}
             
+            # Use a dictionary to map entity_id to the most recent value
             values = variables[variable_id].get('values', [])
-            entities_ids = variables[variable_id].get('entities', [])
+            entity_ids = variables[variable_id].get('entities', [])
+            years = variables[variable_id].get('years', [])
+
+            # Create a lookup for the latest year's data for each entity
+            entity_latest_data = {}
+            for i, entity_id in enumerate(entity_ids):
+                year = years[i]
+                value = values[i]
+                if entity_id not in entity_latest_data or year > entity_latest_data[entity_id]['year']:
+                    entity_latest_data[entity_id] = {'year': year, 'score': value}
             
-            entity_name_map = {int(k): v.get('name') for k, v in entities.items()}
-            
-            for i, entity_id in enumerate(entities_ids):
-                country_name = entity_name_map.get(entity_id)
+            # Map entity IDs to country names and store the latest score
+            for entity_id, entry in entity_latest_data.items():
+                country_name = entities.get(str(entity_id), {}).get('name')
                 if country_name:
-                    latest_score = values[i]
-                    gpi_data[country_name] = {'score': latest_score, 'rank': None}
+                    gpi_data[country_name] = {'score': entry['score'], 'rank': None}
 
             logging.info(f"✅ GPI data fetched from OWID for {len(gpi_data)} countries.")
             return gpi_data
