@@ -1,124 +1,227 @@
 import requests
 import json
-import os
-import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any
+import logging
 
 # Configuración de logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicBasic(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-class GDELTScandalDataGenerator:
+class EudaimoniaPredictorGenerator:
     """
-    Genera un archivo JSON con métricas de escándalos y corrupción basadas en GDELT,
-    utilizando palabras clave en inglés para todos los países, ya que la API busca en traducciones al inglés.
-    Calcula conteos raw y ratios normalizados por volumen de medios del país.
+    Genera un archivo JSON con índices de corrupción, tensión y predictor de Eudaimonia basados en datos frescos de CPI y GPI.
+    Para datos frescos, se consulta las fuentes oficiales via API o scraping simple. Nota: Para Media Cloud, requiere API key y tag ids; aquí usamos fuentes públicas.
     """
     DATA_DIR = 'data'
-    OUTPUT_FILE = os.path.join(DATA_DIR, 'data_gdelt.json')
+    OUTPUT_FILE = os.path.join(DATA_DIR, 'data_indices.json')
     
-    # URL corregida para la API DOC 2.0 de GDELT
-    GDELT_BASE_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
-
     def __init__(self, country_codes: list):
         self.country_codes = country_codes
-        self.end_date = datetime.now()
-        self.start_date = self.end_date - timedelta(days=90)  # Últimos 3 meses para datos frescos
-        
-        # Términos de búsqueda solo en inglés, ya que la API usa traducciones al inglés
-        self.search_terms = ['corruption', 'scandal', 'bribery', 'money laundering', 'abuse of power']
-        
-    def _fetch_gdelt_volume(self, query: str, country_code: str) -> int:
-        """
-        Consulta la API de GDELT para obtener el volumen total de artículos.
-        """
-        params = {
-            'query': query,
-            'mode': 'TimelineVolRaw',
-            'format': 'json',
-            'startdatetime': self.start_date.strftime('%Y%m%d000000'),
-            'enddatetime': self.end_date.strftime('%Y%m%d235959')
+        self.country_names = {  # Mapeo ISO3 to name for GPI
+            'USA': 'United States',
+            'CHN': 'China',
+            'IND': 'India',
+            'BRA': 'Brazil',
+            'RUS': 'Russia',
+            'JPN': 'Japan',
+            'DEU': 'Germany',
+            'GBR': 'United Kingdom',
+            'CAN': 'Canada',
+            'FRA': 'France',
+            'ITA': 'Italy',
+            'AUS': 'Australia',
+            'MEX': 'Mexico',
+            'KOR': 'South Korea',
+            'SAU': 'Saudi Arabia',
+            'TUR': 'Turkey',
+            'EGY': 'Egypt',
+            'NGA': 'Nigeria',
+            'PAK': 'Pakistan',
+            'IDN': 'Indonesia',
+            'VNM': 'Vietnam',
+            'PHL': 'Philippines',
+            'ARG': 'Argentina',
+            'COL': 'Colombia',
+            'POL': 'Poland',
+            'ESP': 'Spain',
+            'IRN': 'Iran',
+            'ZAF': 'South Africa',
+            'UKR': 'Ukraine',
+            'THA': 'Thailand',
+            'VEN': 'Venezuela',
+            'CHL': 'Chile',
+            'PER': 'Peru',
+            'MYS': 'Malaysia',
+            'ROU': 'Romania',
+            'SWE': 'Sweden',
+            'BEL': 'Belgium',
+            'NLD': 'Netherlands',
+            'GRC': 'Greece',
+            'CZE': 'Czech Republic',
+            'PRT': 'Portugal',
+            'DNK': 'Denmark',
+            'FIN': 'Finland',
+            'NOR': 'Norway',
+            'SGP': 'Singapore',
+            'AUT': 'Austria',
+            'CHE': 'Switzerland',
+            'IRL': 'Ireland',
+            'NZL': 'New Zealand',
+            'HKG': 'Hong Kong',
+            'ISR': 'Israel',
+            'ARE': 'United Arab Emirates'
         }
         
-        logging.info(f"Buscando volumen de GDELT para {country_code} con query: {query}")
-        try:
-            response = requests.get(self.GDELT_BASE_URL, params=params, timeout=30)
-            response.raise_for_status()
-            data = response.json()
-            
-            # Sumar el 'Volume' a lo largo de la timeline para obtener el total de artículos
-            if 'timeline' in data:
-                total_volume = sum(entry.get('Volume', 0) for entry in data['timeline'])
-                logging.info(f"✅ Volumen encontrado para {country_code}: {total_volume}")
-                return total_volume
-            else:
-                logging.warning(f"⚠️ No se encontraron datos en GDELT para {country_code} con query: {query}")
-                return 0
-        except requests.exceptions.RequestException as e:
-            logging.error(f"❌ Error al conectar con la API de GDELT para {country_code}: {e}")
-            return 0
-        except (KeyError, ValueError):
-            logging.warning(f"⚠️ Formato de respuesta inesperado para {country_code}.")
-            return 0
-
-    def generate_gdelt_json(self) -> None:
+    def _fetch_cpi_data(self):
+        # Fetch from Wikipedia or Transparency, here example with requests and beautifulsoup
+        # Note: Install beautifulsoup4 if needed: pip install beautifulsoup4 lxml
+        from bs4 import BeautifulSoup
+        url = "https://en.wikipedia.org/wiki/Corruption_Perceptions_Index"
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'lxml')
+        # Find the table for 2024, parse rows
+        # This is pseudo-code; adjust to actual table class/id
+        table = soup.find('table', {'class': 'wikitable'})
+        cpi = {}
+        for row in table.find_all('tr'):
+            cells = row.find_all('td')
+            if len(cells) > 2:
+                country = cells[0].text.strip()
+                score = int(cells[1].text.strip())
+                rank = int(cells[2].text.strip())
+                cpi[country] = {'score': score, 'rank': rank}
+        return cpi
+    
+    def _fetch_gpi_data(self):
+        # Fetch from visionofhumanity map, but since JS, alternatively download PDF and parse, or use API if available
+        # For simplicity, use a static URL or assume CSV
+        # Alternative: Use Media Cloud for custom, with API key
+        # Here, pseudo for GPI
+        url = "https://www.visionofhumanity.org/wp-content/uploads/2025/06/Global-Peace-Index-2025-web.pdf"
+        # To parse PDF, install pdfplumber: pip install pdfplumber
+        import pdfplumber
+        with requests.get(url, stream=True) as r:
+            with open('gpi.pdf', 'wb') as f:
+                f.write(r.content)
+        with pdfplumber.open('gpi.pdf') as pdf:
+            # Parse pages with table, adjust page numbers
+            gpi = {}
+            for page in pdf.pages:
+                table = page.extract_table()
+                for row in table[1:]:  # Skip header
+                    country = row[0]
+                    score = float(row[1])
+                    rank = int(row[2])
+                    gpi[country] = {'score': score, 'rank': rank}
+        return gpi
+    
+    def generate_indices_json(self, media_cloud_api_key: str = None):
         """
-        Genera el archivo JSON con los datos de GDELT para todos los países, incluyendo normalización.
+        Genera el JSON con los índices.
+        Para Media Cloud, si se proporciona API key, usar para datos frescos de menciones.
         """
-        if not os.path.exists(self.DATA_DIR):
-            os.makedirs(self.DATA_DIR)
-            logging.info(f"Directorio '{self.DATA_DIR}' creado.")
-
-        all_gdelt_data = {}
-        terms_quoted = [f'"{term}"' if ' ' in term else term for term in self.search_terms]
-        query_terms = ' OR '.join(terms_quoted)
-        
-        for country_code in self.country_codes:
-            # Query para escándalos
-            query_scandal = f"sourcecountry:{country_code} ({query_terms})"
-            scandal_count = self._fetch_gdelt_volume(query_scandal, country_code)
-            
-            # Query para total de artículos del país
-            query_total = f"sourcecountry:{country_code}"
-            total_count = self._fetch_gdelt_volume(query_total, country_code)
-            
-            # Calcular ratio normalizado (porcentaje de artículos sobre escándalos)
-            scandal_ratio = (scandal_count / total_count * 100) if total_count > 0 else 0
-            
-            all_gdelt_data[country_code] = {
-                "scandal_article_count_last_3_months": scandal_count,
-                "total_article_count_last_3_months": total_count,
-                "scandal_percentage": round(scandal_ratio, 4),
-                "data_source": "GDELT"
+        if media_cloud_api_key:
+            # Use Media Cloud for fresh media mentions
+            # First, need tag ids for countries. Assume user has a dict or fetch
+            country_tag_ids = {  # Example, user to fill or fetch
+                'USA': 34412234,  # Example for US
+                # Add for others, from https://sources.mediacloud.org/#collections/countries
             }
+            all_data = {}
+            for code in self.country_codes:
+                tag_id = country_tag_ids.get(code)
+                if tag_id:
+                    # Query for corruption mentions
+                    query_corruption = 'corruption OR scandal OR bribery OR "money laundering" OR "abuse of power"'
+                    params = {
+                        'q': query_corruption,
+                        'tags_id': tag_id,
+                        'start_date': (datetime.now() - timedelta(days=90)).strftime('%Y-%m-%d'),
+                        'end_date': datetime.now().strftime('%Y-%m-%d')
+                    }
+                    headers = {'Authorization': f'Bearer {media_cloud_api_key}'}
+                    response = requests.get('https://api.mediacloud.org/api/v2/stories/count', params=params, headers=headers)
+                    corruption_count = response.json().get('count', 0)
+                    
+                    # Total stories for normalization
+                    params['q'] = '*'
+                    response = requests.get('https://api.mediacloud.org/api/v2/stories/count', params=params, headers=headers)
+                    total_count = response.json().get('count', 0)
+                    
+                    corruption_percentage = (corruption_count / total_count * 100) if total_count > 0 else 0
+                    
+                    # Similar for tension
+                    query_tension = 'protest OR unrest OR violence OR conflict OR crisis'
+                    params['q'] = query_tension
+                    response = requests.get('https://api.mediacloud.org/api/v2/stories/count', params=params, headers=headers)
+                    tension_count = response.json().get('count', 0)
+                    tension_percentage = (tension_count / total_count * 100) if total_count > 0 else 0
+                    
+                    # Eudaimonia predictor as inverse average
+                    avg = (corruption_percentage + tension_percentage) / 2
+                    eudaimonia = 100 - avg
+                    
+                    all_data[code] = {
+                        "corruption_index": round(corruption_percentage, 4),
+                        "tension_index": round(tension_percentage, 4),
+                        "eudaimonia_predictor": round(eudaimonia, 4),
+                        "data_source": "Media Cloud"
+                    }
+                else:
+                    logging.warning(f"Tag ID not found for {code}")
+        else:
+            # Use CPI and GPI as fallback
+            cpi = self._fetch_cpi_data()
+            gpi = self._fetch_gpi_data()
+            all_data = {}
+            for code in self.country_codes:
+                name = self.country_names.get(code, code)
+                cpi_score = cpi.get(name, {}).get('score')
+                gpi_score = gpi.get(name, {}).get('score')
+                corruption_index = 100 - cpi_score if cpi_score else None
+                tension_index = gpi_score if gpi_score else None
+                if corruption_index is not None and tension_index is not None:
+                    norm_cor = corruption_index / 100
+                    norm_ten = (tension_index - 1) / 2.5
+                    eudaimonia = 100 - (((norm_cor + norm_ten) / 2) * 100)
+                    eudaimonia = round(eudaimonia, 2)
+                else:
+                    eudaimonia = None
+                all_data[code] = {
+                    "corruption_index": corruption_index,
+                    "tension_index": tension_index,
+                    "eudaimonia_predictor": eudaimonia,
+                    "data_source": "CPI and GPI"
+                }
         
         final_data = {
             "metadata": {
-                "source": "GDELT Project API",
-                "purpose": "Proxy para medir transgresión y opacidad con datos normalizados por país",
+                "source": "Media Cloud or CPI/GPI",
+                "purpose": "Predictors for Eudaimonia",
                 "processing_date": datetime.now().isoformat(),
-                "query_terms": self.search_terms,
-                "normalization": "Porcentaje de artículos del país que mencionan términos de escándalo (basado en traducciones al inglés)",
-                "time_range": f"{self.start_date.date()} a {self.end_date.date()}"
+                "time_range": "Last 3 months for Media Cloud or 2024-2025 for CPI/GPI"
             },
-            "results": all_gdelt_data
+            "results": all_data
         }
+        
+        if not os.path.exists(self.DATA_DIR):
+            os.makedirs(self.DATA_DIR)
         
         with open(self.OUTPUT_FILE, 'w', encoding='utf-8') as f:
             json.dump(final_data, f, indent=2, ensure_ascii=False)
         
-        logging.info(f"✅ Datos de GDELT guardados en {self.OUTPUT_FILE}")
+        logging.info(f"✅ Datos guardados en {self.OUTPUT_FILE}")
 
 if __name__ == "__main__":
-    # Códigos de país en 2 letras FIPS, como requiere GDELT
     country_list = [
-        'US', 'CH', 'IN', 'BR', 'RS', 'JA', 'GM', 'UK', 'CA', 'FR',
-        'IT', 'AS', 'MX', 'KS', 'SA', 'TU', 'EG', 'NI', 'PK', 'ID',
-        'VM', 'RP', 'AR', 'CO', 'PL', 'SP', 'IR', 'SF', 'UP', 'TH',
-        'VE', 'CI', 'PE', 'MY', 'RO', 'SW', 'BE', 'NL', 'GR', 'EZ',
-        'PO', 'DA', 'FI', 'NO', 'SN', 'AU', 'SZ', 'EI', 'NZ', 'HK',
-        'IS', 'AE'
+        'USA', 'CHN', 'IND', 'BRA', 'RUS', 'JPN', 'DEU', 'GBR', 'CAN', 'FRA',
+        'ITA', 'AUS', 'MEX', 'KOR', 'SAU', 'TUR', 'EGY', 'NGA', 'PAK', 'IDN',
+        'VNM', 'PHL', 'ARG', 'COL', 'POL', 'ESP', 'IRN', 'ZAF', 'UKR', 'THA',
+        'VEN', 'CHL', 'PER', 'MYS', 'ROU', 'SWE', 'BEL', 'NLD', 'GRC', 'CZE',
+        'PRT', 'DNK', 'FIN', 'NOR', 'SGP', 'AUT', 'CHE', 'IRL', 'NZL', 'HKG',
+        'ISR', 'ARE'
     ]
     
-    generator = GDELTScandalDataGenerator(country_list)
-    generator.generate_gdelt_json()
+    generator = EudaimoniaPredictorGenerator(country_list)
+    # Para Media Cloud, pasa tu API key
+    generator.generate_indices_json(media_cloud_api_key='510d87d1bd34bab035ce9b4d5d12ca2e343a078c')  # Reemplaza con tu key o None para fallback
