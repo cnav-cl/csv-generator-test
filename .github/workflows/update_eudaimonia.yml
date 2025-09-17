@@ -31,6 +31,7 @@ jobs:
         env:
           MEDIA_CLOUD_KEY: ${{ secrets.MEDIA_CLOUD_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+          # Lista de países para este trabajo
           COUNTRIES_TO_PROCESS: 'USA,CHN,IND,BRA,RUS,JPN,DEU,GBR,CAN,FRA,ITA,AUS,MEX,KOR,SAU,TUR,EGY,NGA,PAK,IDN,VNM,PHL,ARG,COL,POL,ESP'
         run: python scripts/eudaimonia_predictor.py
 
@@ -66,6 +67,7 @@ jobs:
         env:
           MEDIA_CLOUD_KEY: ${{ secrets.MEDIA_CLOUD_KEY }}
           NEWSAPI_KEY: ${{ secrets.NEWSAPI_KEY }}
+          # Lista de países para este trabajo
           COUNTRIES_TO_PROCESS: 'IRN,ZAF,UKR,THA,VEN,CHL,PER,MYS,ROU,SWE,BEL,NLD,GRC,CZE,PRT,DNK,FIN,NOR,SGP,AUT,CHE,IRL,NZL,HKG,ISR,ARE'
         run: python scripts/eudaimonia_predictor.py
 
